@@ -6,31 +6,39 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-/// <summary>
-/// Enum listing the types of towers available:
-/// <para>Bolt: Fires a simple projectile</para>
-/// </summary>
-enum TowerType { BOLT }
-
 namespace TowerDefense {
-    internal class Tower {
+    /// <summary>
+    /// A tower gameplay object.
+    /// </summary>
+    class Tower {
+        /// <summary>
+        /// The template used to build this tower.
+        /// </summary>
+        private TowerTemplate template;
 
         /// <summary>
-        /// The type of this tower.
+        /// The tile coordinates of the top-left corner of the base of this tower.
         /// </summary>
-        private TowerType type;
+        private Point pos;
 
         /// <summary>
-        /// The sprite of this tower.
+        /// The width of the base of this tower, measured in units of tiles.
         /// </summary>
-        private Texture2D sprite;
+        private int width;
 
-        public Tower(TowerType type, Texture2D sprite) {
-            Type = type;
-            Sprite = sprite;
-        }
+        /// <summary>
+        /// The height of the base of this tower, measured in units of tiles.
+        /// </summary>
+        private int height;
 
-        public Texture2D Sprite { get => sprite; set => sprite = value; }
-        internal TowerType Type { get => type; set => type = value; }
+
+        /* Setters and Getters */
+
+        public Point Pos { get => pos; set => pos = value; }
+        public int Width { get => width; set => width = value; }
+        public int Height { get => height; set => height = value; }
+        public TowerTemplate Template { get => template; set => template = value; }
+        public Texture2D Sprite { get => template.Sprite; set => template.Sprite = value; }
+        public TowerType Type { get => template.Type; set => template.Type = value; }
     }
 }

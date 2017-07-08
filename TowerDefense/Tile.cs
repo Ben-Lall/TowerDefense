@@ -11,15 +11,15 @@ using System.Threading.Tasks;
 /// </summary>
 enum TileType { OPEN, LIMITED, WALL}
 
-/// <summary>
-/// A Tile making up the map of the game world.  Each tile has a level of traversability as follows: 
-///     Open:    Any creature, including the player, may move across this tile.
-///     Limited: Only the player may cross this tile.
-///     Wall:    None may cross this tile.
-///     
-/// Each Tile also stores the coordinate position of its top-left corner.  The game screen is 160x90 units.
-/// </summary>
 namespace TowerDefense {
+    /// <summary>
+    /// A Tile making up the map of the game world.  Each tile has a level of traversability as follows: 
+    ///     Open:    Any creature, including the player, may move across this tile.
+    ///     Limited: Only the player may cross this tile.
+    ///     Wall:    None may cross this tile.
+    ///     
+    /// Each Tile also stores the coordinate position of its top-left corner.  The game screen is 160x90 units.
+    /// </summary>
     class Tile {
 
         /// <summary>

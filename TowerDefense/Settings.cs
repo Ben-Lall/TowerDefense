@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TowerDefense {
+    /// <summary>
+    /// A static data structure containing a list of settings set by and calculated from the user's settings.
+    /// </summary>
     static class Settings {
         /// <summary>
         /// Integer representing the width of all tiles.
@@ -29,44 +32,10 @@ namespace TowerDefense {
 
         /* Setters and Getters */
 
-        public static int TileWidth {
-            get {
-                return tileWidth;
-            }
-            set {
-                tileWidth = value;
-            }
-        }
+        public static int TileWidth { get => tileWidth; set => tileWidth = value; }
+        public static int TileHeight { get => tileHeight; set => tileHeight = value; }
+        public static int ViewportRowLength { get => viewportRowLength; set => viewportRowLength = value; }
+        public static int ViewportColumnLength { get => viewportColumnLength; set => viewportColumnLength = value; }
 
-        public static int TileHeight {
-            get {
-                return tileHeight;
-            }
-            set {
-                tileHeight = value;
-            }
-        }
-
-        public static int ViewportRowLength {
-            get {
-                return viewportRowLength;
-            }
-            set {
-                viewportRowLength = value;
-            }
-        }
-
-        public static int ViewportColumnLength {
-            get {
-                return viewportColumnLength;
-            }
-            set {
-                viewportColumnLength = value;
-            }
-        }
     }
-
-
-
-
 }

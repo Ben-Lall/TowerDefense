@@ -6,11 +6,25 @@ using System.Collections.Generic;
 
 namespace TowerDefense {
     /// <summary>
-    /// This is the main type for your game.
+    /// This is the main type for the game.
     /// </summary>
     public class Game1 : Game {
+        /* System */
+
+        /// <summary>
+        /// Graphics device.
+        /// </summary>
         GraphicsDeviceManager graphics;
+
+        /// <summary>
+        /// SpriteBatch.
+        /// </summary>
         SpriteBatch spriteBatch;
+
+        /// <summary>
+        /// The mouse's current state.
+        /// </summary>
+        MouseState mouseState;
 
         /* Graphics */
 
@@ -46,7 +60,7 @@ namespace TowerDefense {
         /// <summary>
         /// List of towers unlocked by the player
         /// </summary>
-        List<Tower> ulTowers;
+        List<TowerTemplate> ulTowers;
 
         /* UI */
 
@@ -54,6 +68,16 @@ namespace TowerDefense {
         /// List of rectangles, where each rectangle represents the hit area of a menu button.
         /// </summary>
         List<Button> buttons;
+
+        /// <summary>
+        /// Boolean representing whether or not the player has selected a tower and is working on placing it.
+        /// </summary>
+        bool isPlacingTower;
+
+        /// <summary>
+        /// A Template of the tower whose placement is currently being deliberated, if any.
+        /// </summary>
+        TowerTemplate pendingTowerTemplate;
 
         /* Sprites */
 
@@ -100,37 +124,33 @@ namespace TowerDefense {
             screenWidth = Window.ClientBounds.Width;
             screenHeight = Window.ClientBounds.Height;
 
-            // Set the menu panel's height and width
+            // Set the menu panel's height and width.
             menuPanelWidth = screenWidth / 8;
             menuPanelHeight = screenHeight;
 
-            // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120, 1120 = 1280 * (7/8)
+            // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120, 1120 = 1280 * (7/8).
             Settings.TileWidth = 16;
             Settings.TileHeight = 16;
 
-            // Set the number of tiles viewable on the screen, since the menu panel will obstruct the map slightly
+            // Set the number of tiles viewable on the screen, since the menu panel will obstruct the map slightly.
             Settings.ViewportRowLength = (screenWidth - menuPanelWidth) / Settings.TileWidth;
             Settings.ViewportColumnLength = screenHeight / Settings.TileHeight;
 
             // Initialize the gameplay objects
             map = new Tile[Settings.ViewportColumnLength, Settings.ViewportRowLength];
 
-            // Initialize list of unlocked towers with the base bolt tower
-            ulTowers = new List<Tower>();
-            ulTowers.Add(new Tower(TowerType.BOLT, tower));
-            ulTowers.Add(new Tower(TowerType.BOLT, tower));
-            ulTowers.Add(new Tower(TowerType.BOLT, tower));
-            ulTowers.Add(new Tower(TowerType.BOLT, tower));
-            ulTowers.Add(new Tower(TowerType.BOLT, tower));
-            ulTowers.Add(new Tower(TowerType.BOLT, tower));
+            // Initialize list of unlocked towers with the base bolt tower.
+            ulTowers = new List<TowerTemplate>();
+            ulTowers.Add(new TowerTemplate(TowerType.BOLT, tower));
 
+            // Initialize list of menu buttons.
             buttons = new List<Button>();
-            
-            // Create sprites for drawing
+
+            // Create sprites for drawing.
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData<Color>(new Color[] { Color.White });
-            // TEMP: load map (since ideally there'd be a title screen)
-            loadMap();
+            // TEMP: load map (since ideally there'd be a title screen).
+            LoadMap();
 
         }
 
@@ -155,57 +175,133 @@ namespace TowerDefense {
             // TODO: Unload any non ContentManager content here
         }
 
+        /* Game logic functions */
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
             // If a tower has been added/removed from the list, refresh the buttons list
-            if(buttons.Count != ulTowers.Count) {
-                buttons.Clear();
-                // Add a button for each tower in the list
-                for(int i = 0; i < ulTowers.Count; i++) {
-                    Rectangle buttonBox = new Rectangle(screenWidth - menuPanelWidth + (menuPanelWidth / 4), (i * menuPanelHeight / 12) + (5 * i) + 5,
-                                                        menuPanelWidth / 2, menuPanelHeight / 12);
-                    buttons.Add(new Button(buttonBox, towerButton, tower, null));
-                }
+            if (buttons.Count != ulTowers.Count) {
+                RefreshButtonsList();
             }
 
-            MouseState newState = Mouse.GetState();
-
-            // Find the tile currently hovered over
+            HandleInput();
 
             base.Update(gameTime);
         }
 
         /// <summary>
-        /// This is called when the game should draw itself.
+        /// Refresh the list of buttons to reflect the list of currently unlocked towers.
         /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        private void RefreshButtonsList() {
+            buttons.Clear();
+            // Add a button for each tower in the list
+            for (int i = 0; i < ulTowers.Count; i++) {
+                Rectangle buttonBox = new Rectangle(screenWidth - menuPanelWidth + (menuPanelWidth / 4), (i * menuPanelHeight / 12) + (5 * i) + 5,
+                                                    menuPanelWidth / 2, menuPanelHeight / 12);
+                buttons.Add(new Button(buttonBox, towerButton, tower, null));
+            }
+        }
+
+        /// <summary>
+        /// Handle user input.
+        /// </summary>
+        private void HandleInput() {
+            // Update mouseState
+            mouseState = Mouse.GetState();
+
+            if (mouseState.LeftButton == ButtonState.Pressed) {
+                HandleLeftMouseClick(mouseState);
+            }
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+        }
+
+        /// <summary>
+        /// Handle a left mouse click event.
+        /// </summary>
+        /// <param name="mouseState">The mouse's current state.</param>
+        private void HandleLeftMouseClick(MouseState mouseState) {
+            if (isPlacingTower) {
+                // TODO: Place tower if free space & resources.
+            } else if (TowerButtonSelected(mouseState) != null) {
+                Button selectedButton = TowerButtonSelected(mouseState);
+                BeginTowerPlacement(ulTowers[buttons.IndexOf(selectedButton)]);
+            }
+
+        }
+
+        /// <summary>
+        /// Begin tower placement.
+        /// </summary>
+        /// <param name="template">The template of the tower whose placement has begun.</param>
+        private void BeginTowerPlacement(TowerTemplate template) {
+            isPlacingTower = true;
+            pendingTowerTemplate = template;
+            
+        }
+
+        /// <summary>
+        /// Return the button that the mouse is hovering over, or null if it isn't mousing over any buttons.
+        /// </summary>
+        /// <param name="mouseState">The mouse's current state.</param>
+        /// <returns>The Button that the mouse is hovering over, or null if it isn't mousing over any buttons.</returns>
+        private Button TowerButtonSelected(MouseState mouseState) {
+            // Run quick check to see if mouse is within the boundaries of possible tower button placement.
+            if (buttons.Count > 0 && mouseState.X >= buttons[0].X && mouseState.X <= buttons[0].X + buttons[0].Width) {
+                // Then find a button with a matching Y coordinate (if any).
+                foreach(Button b in buttons) {
+                    if(mouseState.Y >= b.Y && mouseState.Y <= b.Y + b.Height) {
+                        return b;
+                    }
+                }
+                // If no such button was found, return null.
+                return null;
+            }
+            // If no such button was found, return null.
+            return null;
+        }
+
+        /* Drawing functions */
+
+            /// <summary>
+            /// This is called when the game should draw itself.
+            /// </summary>
+            /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
 
             /* Draw gameplay elements */
 
-            drawTiles();
+            DrawTiles();
 
             /* Draw UI elements */
 
-            drawMenuPanel();
+            DrawMenuPanel();
+
+            if(isPlacingTower) {
+                DrawPendingTower();
+            }
 
             spriteBatch.End();
             base.Draw(gameTime);
         }
 
         /// <summary>
+        /// Draw a silhouette of the pending tower over the mouse's current location.  Draw it with a red tint if the target area is obstructed.
+        /// </summary>
+        private void DrawPendingTower() {
+            
+        }
+
+        /// <summary>
         /// Draw the menu panel to the correct position on the screen.
         /// </summary>
-        protected void drawMenuPanel() {
+        protected void DrawMenuPanel() {
             int menuPanelX = screenWidth - menuPanelWidth;
             spriteBatch.Draw(menuPanel, new Rectangle(menuPanelX, 0, menuPanelWidth, menuPanelHeight), Color.White);
 
@@ -224,29 +320,29 @@ namespace TowerDefense {
         /// <param name="width">Δx from the start to the end of this line.</param>
         /// <param name="height">Δy from start to the end of this line.</param>
         /// <param name="color">The color of this line.</param>
-        protected void drawLine(int x, int y, int width, int height, Color color) {
+        protected void DrawLine(int x, int y, int width, int height, Color color) {
             spriteBatch.Draw(pixel, new Rectangle(x, y, width, height), color);
         }
 
         /// <summary>
         /// Draw the grid dividing tiles.
         /// </summary>
-        protected void drawGrid() {
+        protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
             for(int i = 0; i < screenHeight; i += Settings.TileHeight) {
-                drawLine(0, i, screenWidth - menuPanelWidth, 1, Color.Black);
+                DrawLine(0, i, screenWidth - menuPanelWidth, 1, Color.Black);
             }
 
             // Draw vertical lines across the screen at each tile width
             for (int j = 0; j < screenWidth - menuPanelWidth; j += Settings.TileWidth) {
-                drawLine(j, 0, 1, screenHeight, Color.Black);
+                DrawLine(j, 0, 1, screenHeight, Color.Black);
             }
         }
 
         /// <summary>
         /// Draw the grid of tiles and their colorations.
         /// </summary>
-        protected void drawTiles() {
+        protected void DrawTiles() {
             
             //Shade in the limited tiles.
             for (int i = 0; i < Settings.ViewportColumnLength; i++) {
@@ -260,13 +356,13 @@ namespace TowerDefense {
             }
 
             // Overlay grid
-            drawGrid();
+            DrawGrid();
         }
 
         /// <summary>
         /// Load in the next map.
         /// </summary>
-        protected void loadMap() {
+        protected void LoadMap() {
             Random r = new Random();
             for(int i = 0; i < Settings.ViewportColumnLength; i++) {
                 for(int j = 0; j < Settings.ViewportRowLength; j++) {

@@ -9,11 +9,10 @@ using System.Threading.Tasks;
 enum ButtonType {TOWER};
 
 namespace TowerDefense {
+    /// <summary>
+    /// A menu button.  Has a visual appearance, and executes an action when pressed.
+    /// </summary>
     class Button {
-        /// <summary>
-        /// True if the mouse is hovering over this button, false otherwise.
-        /// </summary>
-        private Boolean hover;
 
         /// <summary>
         /// Rectangle representing the hit detection area of this button.
@@ -39,7 +38,6 @@ namespace TowerDefense {
             HitBox = shape;
             Background = background;
             Contents = contents;
-            Hover = false;
             pressAction = action;
         }
 
@@ -85,10 +83,13 @@ namespace TowerDefense {
 
         /* Setters and getters */
 
-        public bool Hover { get => hover; set => hover = value; }
         public Rectangle HitBox { get => hitBox; set => hitBox = value; }
         public Texture2D Background { get => background; set => background = value; }
         public Texture2D Contents { get => contents; set => contents = value; }
         public Action PressAction { get => pressAction; set => pressAction = value; }
+        public int X { get => hitBox.X; set => hitBox.X = value; }
+        public int Y { get => hitBox.Y; set => hitBox.Y = value; }
+        public int Width { get => hitBox.Width; set => hitBox.Width = value; }
+        public int Height { get => hitBox.Height; set => hitBox.Height = value; }
     }
 }
