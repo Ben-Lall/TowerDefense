@@ -31,6 +31,18 @@ namespace TowerDefense {
         /// </summary>
         private int height;
 
+        /// <summary>
+        /// Constructor for a Tower, using a TowerTemplate
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="pos"></param>
+        public Tower(TowerTemplate template, Point pos) {
+            Template = template;
+            Pos = pos;
+            Width = template.Width;
+            Height = template.Height;
+        }
+
 
         /* Setters and Getters */
 
@@ -40,5 +52,7 @@ namespace TowerDefense {
         public TowerTemplate Template { get => template; set => template = value; }
         public Texture2D Sprite { get => template.Sprite; set => template.Sprite = value; }
         public TowerType Type { get => template.Type; set => template.Type = value; }
+        public int SpriteWidth { get => Sprite.Width; }
+        public int SpriteHeight { get => Sprite.Height; }
     }
 }

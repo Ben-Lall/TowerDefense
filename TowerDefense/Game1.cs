@@ -58,7 +58,7 @@ namespace TowerDefense {
         /* Gameplay */
 
         /// <summary>
-        /// List of towers unlocked by the player
+        /// List of templates of towers unlocked by the player
         /// </summary>
         List<TowerTemplate> ulTowers;
 
@@ -215,9 +215,11 @@ namespace TowerDefense {
 
             if (mouseState.LeftButton == ButtonState.Pressed) {
                 HandleLeftMouseClick(mouseState);
+            } else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) {
+                isPlacingTower = false;
+                pendingTowerTemplate = null;
             }
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+                
         }
 
         /// <summary>
@@ -225,11 +227,11 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="mouseState">The mouse's current state.</param>
         private void HandleLeftMouseClick(MouseState mouseState) {
-            if (isPlacingTower) {
-                // TODO: Place tower if free space & resources.
-            } else if (TowerButtonSelected(mouseState) != null) {
-                Button selectedButton = TowerButtonSelected(mouseState);
+            Button selectedButton = TowerButtonSelected(mouseState);
+            if (selectedButton != null) {
                 BeginTowerPlacement(ulTowers[buttons.IndexOf(selectedButton)]);
+            } else if (isPlacingTower) {
+                // TODO: Place tower if free space & resources.
             }
 
         }
@@ -241,7 +243,6 @@ namespace TowerDefense {
         private void BeginTowerPlacement(TowerTemplate template) {
             isPlacingTower = true;
             pendingTowerTemplate = template;
-            
         }
 
         /// <summary>
@@ -277,7 +278,7 @@ namespace TowerDefense {
 
             /* Draw gameplay elements */
 
-            DrawTiles();
+            DrawMap();
 
             /* Draw UI elements */
 
@@ -294,8 +295,85 @@ namespace TowerDefense {
         /// <summary>
         /// Draw a silhouette of the pending tower over the mouse's current location.  Draw it with a red tint if the target area is obstructed.
         /// </summary>
-        private void DrawPendingTower() {
+        protected void DrawPendingTower() {
+            Point drawSize = new Point(pendingTowerTemplate.Width * Settings.TileWidth, pendingTowerTemplate.SpriteHeight);
+            if (CursorIsOnMap()) {
+                Point placementPos = GetCursorAreaPoint(pendingTowerTemplate.Width, pendingTowerTemplate.Height);
+
+                // Highlight selected tiles
+                for(int y = placementPos.Y; y < placementPos.Y + pendingTowerTemplate.Height; y++) {
+                    for(int x = placementPos.X; x < placementPos.X + pendingTowerTemplate.Width; x++) {
+                        Color tileColor = (map[y, x].Type == TileType.OPEN) ? Color.Green : Color.Red;
+                        DrawTile(x, y, tileColor);
+                    }
+                }
+
+                //Redraw the grid
+                DrawGrid();
+
+                //Draw the tower to snap to the selected tiles
+                Point drawPos = new Point(placementPos.X * Settings.TileWidth, placementPos.Y * Settings.TileHeight);
+                spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
+
+                //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
+            } else {
+                Point drawPos = new Point(mouseState.X, mouseState.Y) - new Point(pendingTowerTemplate.Width * Settings.TileWidth / 2, (2 * pendingTowerTemplate.SpriteHeight) / 3);
+                spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
+            }
             
+        }
+
+        /// <summary>
+        /// Returns a Point representing the coordinates of the top-left tile of the area highlighted by the cursor.
+        /// </summary>
+        /// <param name="width">Total width in units of tiles around the cursor</param>
+        /// <param name="height">Total height in units of tiles around the cursor</param>
+        /// <returns></returns>
+        protected Point GetCursorAreaPoint(int width, int height) {
+            Point cursorTilePos = PixelToClosestTile(new Point(mouseState.X, mouseState.Y));
+            int x = Boundarize(cursorTilePos.X - width / 2, 0, Settings.ViewportRowLength - width);
+            int y = Boundarize(cursorTilePos.Y - height / 2, 0, Settings.ViewportColumnLength - height);
+            return new Point(x, y);  
+        }
+
+        /// <summary>
+        /// Return target if it's within the boundaries, otherwise, return the boundary closest to tar.
+        /// </summary>
+        /// <param name="tar"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <returns>int i, i is between low and high (inclusive)</returns>
+        protected int Boundarize(int tar, int low, int high) {
+            return Math.Max(Math.Min(tar, high), low);
+        }
+
+        /// <summary>
+        /// Return the map coordinates of the given pixel.
+        /// </summary>
+        /// <param name="pixel">Point containing the coordiantes of the pixel.</param>
+        /// <returns></returns>
+        protected Point PixelToTile(Point pixel) {
+            return new Point(pixel.X / Settings.TileWidth, pixel.Y / Settings.TileHeight);
+        }
+
+        /// <summary>
+        /// Return the map coordinates of the tile the given pixel is nearest to, rounded up.
+        /// </summary>
+        /// <param name="pixel">Point containing the coordiantes of the pixel.</param>
+        /// <returns></returns>
+        protected Point PixelToClosestTile(Point pixel) {
+            int x = pixel.X % Settings.TileWidth;
+            int y = pixel.Y % Settings.TileHeight;
+
+            return PixelToTile(pixel + new Point(x, y));
+        }
+
+        /// <summary>
+        /// Return true if the cursor is on the map, false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        protected bool CursorIsOnMap() {
+            return mouseState.X < (screenWidth - menuPanelWidth);
         }
 
         /// <summary>
@@ -342,21 +420,24 @@ namespace TowerDefense {
         /// <summary>
         /// Draw the grid of tiles and their colorations.
         /// </summary>
-        protected void DrawTiles() {
-            
+        protected void DrawMap() {
             //Shade in the limited tiles.
             for (int i = 0; i < Settings.ViewportColumnLength; i++) {
                 for(int j = 0; j < Settings.ViewportRowLength; j++) {
                     if(map[i,j].Type == TileType.LIMITED) {
-                        spriteBatch.Draw(pixel, new Rectangle(j * Settings.TileWidth, i * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), Color.Gray);
+                        DrawTile(j, i, Color.Gray);
                     } else if(map[i, j].Type == TileType.OPEN) {
-                        spriteBatch.Draw(pixel, new Rectangle(j * Settings.TileWidth, i * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), Color.White);
+                        DrawTile(j, i, Color.White);
                     }
                 }
             }
 
             // Overlay grid
             DrawGrid();
+        }
+
+        protected void DrawTile(int x, int y, Color color) {
+            spriteBatch.Draw(pixel, new Rectangle(x * Settings.TileWidth, y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), color);
         }
 
         /// <summary>
