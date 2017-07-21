@@ -34,8 +34,8 @@ namespace TowerDefense {
         /// <summary>
         /// Constructor for a Tower, using a TowerTemplate
         /// </summary>
-        /// <param name="template"></param>
-        /// <param name="pos"></param>
+        /// <param name="template">Template used to construct this tower.</param>
+        /// <param name="pos">Coordinate position of the top-left corner of this tower, in units of tiles.</param>
         public Tower(TowerTemplate template, Point pos) {
             Template = template;
             Pos = pos;
@@ -43,10 +43,14 @@ namespace TowerDefense {
             Height = template.Height;
         }
 
+        public void Draw(SpriteBatch spritebatch) {
+            spritebatch.Draw(Sprite, new Rectangle(DrawPos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+        }
+
 
         /* Setters and Getters */
-
         public Point Pos { get => pos; set => pos = value; }
+        public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
         public int Width { get => width; set => width = value; }
         public int Height { get => height; set => height = value; }
         public TowerTemplate Template { get => template; set => template = value; }

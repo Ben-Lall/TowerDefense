@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace TowerDefense {
     /// <summary>
@@ -25,6 +26,11 @@ namespace TowerDefense {
         /// The mouse's current state.
         /// </summary>
         MouseState mouseState;
+
+        /// <summary>
+        /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
+        /// </summary>
+        SortedSet<Object> drawSet;
 
         /* Graphics */
 
@@ -62,6 +68,21 @@ namespace TowerDefense {
         /// </summary>
         List<TowerTemplate> ulTowers;
 
+        /// <summary>
+        /// List of Towers currently on the game map.
+        /// </summary>
+        List<Tower> towers;
+
+        /// <summary>
+        /// List of monsters currently on the game map.
+        /// </summary>
+        List<Monster> monsters;
+
+        /// <summary>
+        /// Integer representing the current wave.  Always > 0.
+        /// </summary>
+        int currentWave;
+
         /* UI */
 
         /// <summary>
@@ -80,26 +101,6 @@ namespace TowerDefense {
         TowerTemplate pendingTowerTemplate;
 
         /* Sprites */
-
-        /// <summary>
-        /// A baseline 1x1 texture used to draw lines.
-        /// </summary>
-        Texture2D pixel;
-
-        /// <summary>
-        /// A texture representing a tower.
-        /// </summary>
-        Texture2D tower;
-
-        /// <summary>
-        /// A texture for the tower selection panel.
-        /// </summary>
-        Texture2D menuPanel;
-
-        /// <summary>
-        /// A texture for the tower selection buttons.
-        /// </summary>
-        Texture2D towerButton;
 
         public Game1() {
             graphics = new GraphicsDeviceManager(this);
@@ -136,19 +137,20 @@ namespace TowerDefense {
             Settings.ViewportRowLength = (screenWidth - menuPanelWidth) / Settings.TileWidth;
             Settings.ViewportColumnLength = screenHeight / Settings.TileHeight;
 
-            // Initialize the gameplay objects
+            // Initialize the gameplay objects.
             map = new Tile[Settings.ViewportColumnLength, Settings.ViewportRowLength];
 
-            // Initialize list of unlocked towers with the base bolt tower.
-            ulTowers = new List<TowerTemplate>();
-            ulTowers.Add(new TowerTemplate(TowerType.BOLT, tower));
-
-            // Initialize list of menu buttons.
+            //Initialize collections
+            towers = new List<Tower>();
+            monsters = new List<Monster>();
+            drawSet = new SortedSet<Object>(new DrawComparer());
             buttons = new List<Button>();
 
-            // Create sprites for drawing.
-            pixel = new Texture2D(GraphicsDevice, 1, 1);
-            pixel.SetData<Color>(new Color[] { Color.White });
+            Globals.InitializeGlobals(GraphicsDevice);
+
+            ulTowers = new List<TowerTemplate>();
+            ulTowers.Add(Globals.BoltTowerTemplate);
+            
             // TEMP: load map (since ideally there'd be a title screen).
             LoadMap();
 
@@ -162,9 +164,11 @@ namespace TowerDefense {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            tower = Content.Load<Texture2D>("tower");
-            menuPanel = Content.Load<Texture2D>("menu_panel");
-            towerButton = Content.Load<Texture2D>("menu_panel");
+            Globals.TowerTex = Content.Load<Texture2D>("torreMagica");
+            Globals.MenuPanel = Content.Load<Texture2D>("menu_panel");
+            Globals.TowerButton = Content.Load<Texture2D>("menu_panel");
+            Globals.ImpTex = Content.Load<Texture2D>("imp");
+            Globals.HubTex = Content.Load<Texture2D>("hub");
         }
 
         /// <summary>
@@ -202,7 +206,7 @@ namespace TowerDefense {
             for (int i = 0; i < ulTowers.Count; i++) {
                 Rectangle buttonBox = new Rectangle(screenWidth - menuPanelWidth + (menuPanelWidth / 4), (i * menuPanelHeight / 12) + (5 * i) + 5,
                                                     menuPanelWidth / 2, menuPanelHeight / 12);
-                buttons.Add(new Button(buttonBox, towerButton, tower, null));
+                buttons.Add(new Button(buttonBox, Globals.TowerButton, Globals.TowerTex, null));
             }
         }
 
@@ -216,8 +220,12 @@ namespace TowerDefense {
             if (mouseState.LeftButton == ButtonState.Pressed) {
                 HandleLeftMouseClick(mouseState);
             } else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) {
-                isPlacingTower = false;
-                pendingTowerTemplate = null;
+                if (isPlacingTower) {// Stop tower placement
+                    isPlacingTower = false;
+                    pendingTowerTemplate = null;
+                } else {
+                    //TODO: Open menu
+                }
             }
                 
         }
@@ -230,10 +238,78 @@ namespace TowerDefense {
             Button selectedButton = TowerButtonSelected(mouseState);
             if (selectedButton != null) {
                 BeginTowerPlacement(ulTowers[buttons.IndexOf(selectedButton)]);
-            } else if (isPlacingTower) {
-                // TODO: Place tower if free space & resources.
+            } else if (isPlacingTower && CursorIsOnMap() && ValidTowerLocation()) {
+                PlacePendingTower();
             }
 
+        }
+
+        /// <summary>
+        /// Place the currently pending tower.
+        /// </summary>
+        private void PlacePendingTower() {
+            // TODO: Check for proper resources.
+            Point pos = GetAreaStartPoint();
+            // Place Tower
+            Tower newTower = new Tower(pendingTowerTemplate, pos);
+            AddTower(newTower);
+        }
+
+        /// <summary>
+        /// Adds the given tower to the game world.
+        /// </summary>
+        /// <param name="tower">The tower to be added.</param>
+        private void AddTower(Tower tower) {
+            towers.Add(tower);
+            drawSet.Add(tower);
+
+            // Mark each of its tiles as TOWER
+            for (int y = 0; y < tower.Height; y++) {
+                for (int x = 0; x < tower.Width; x++) {
+                    Map(tower.Pos.X + x, tower.Pos.Y + y).ContainsTower = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the given monster to the game world.
+        /// </summary>
+        /// <param name="monster">The monster to be added.</param>
+        private void AddMonster(Monster monster) {
+            monsters.Add(monster);
+            drawSet.Add(monster);
+        }
+
+        /// <summary>
+        /// Assumes isPlacingTower = true, and CursorIsOnMap() = true.  Return true if the area the cursor is hovering over allows
+        /// for enough space to place the currently selected tower. Returns false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        protected bool ValidTowerLocation() {
+            //Return false if any of the tiles in the pending tower's selection area are obstructed, and true otherwise.
+            Point pos = GetAreaStartPoint();
+            for(int y = pos.Y; y < pos.Y + pendingTowerTemplate.Height; y++) {
+                for(int x = pos.X; x < pos.X + pendingTowerTemplate.Width; x++) {
+                    if(Map(x, y).ObstructsTower()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Returns a Point representing the coordinates of the top-left tile of the area highlighted by the cursor, where the dimensions are
+        /// the dimensions of the pending tower.
+        /// </summary>
+        /// <returns></returns>
+        protected Point GetAreaStartPoint() {
+            int width = pendingTowerTemplate.Width;
+            int height = pendingTowerTemplate.Height;
+            Point cursorTilePos = PixelToClosestTile(new Point(mouseState.X, mouseState.Y));
+            int x = Boundarize(cursorTilePos.X - width / 2, 0, Settings.ViewportRowLength - width);
+            int y = Boundarize(cursorTilePos.Y - height / 2, 0, Settings.ViewportColumnLength - height);
+            return new Point(x, y);
         }
 
         /// <summary>
@@ -279,6 +355,7 @@ namespace TowerDefense {
             /* Draw gameplay elements */
 
             DrawMap();
+            DrawGameplayObjects();
 
             /* Draw UI elements */
 
@@ -293,26 +370,28 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Draw each element in drawSet.
+        /// </summary>
+        private void DrawGameplayObjects() {
+            foreach (object obj in drawSet) {
+                if (obj.GetType() == typeof(Tower)) {
+                    ((Tower)obj).Draw(spriteBatch);
+                } else if (obj.GetType() == typeof(Monster)) {
+                    ((Monster)obj).Draw(spriteBatch);
+                }
+            }
+        }
+
+        /// <summary>
         /// Draw a silhouette of the pending tower over the mouse's current location.  Draw it with a red tint if the target area is obstructed.
         /// </summary>
         protected void DrawPendingTower() {
-            Point drawSize = new Point(pendingTowerTemplate.Width * Settings.TileWidth, pendingTowerTemplate.SpriteHeight);
+            Point drawSize = new Point(pendingTowerTemplate.SpriteWidth, pendingTowerTemplate.SpriteHeight);
             if (CursorIsOnMap()) {
-                Point placementPos = GetCursorAreaPoint(pendingTowerTemplate.Width, pendingTowerTemplate.Height);
-
-                // Highlight selected tiles
-                for(int y = placementPos.Y; y < placementPos.Y + pendingTowerTemplate.Height; y++) {
-                    for(int x = placementPos.X; x < placementPos.X + pendingTowerTemplate.Width; x++) {
-                        Color tileColor = (map[y, x].Type == TileType.OPEN) ? Color.Green : Color.Red;
-                        DrawTile(x, y, tileColor);
-                    }
-                }
-
-                //Redraw the grid
-                DrawGrid();
+                Point placementPos = GetAreaStartPoint();
 
                 //Draw the tower to snap to the selected tiles
-                Point drawPos = new Point(placementPos.X * Settings.TileWidth, placementPos.Y * Settings.TileHeight);
+                Point drawPos = new Tower(pendingTowerTemplate, placementPos).DrawPos;
                 spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
 
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
@@ -321,19 +400,6 @@ namespace TowerDefense {
                 spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
             }
             
-        }
-
-        /// <summary>
-        /// Returns a Point representing the coordinates of the top-left tile of the area highlighted by the cursor.
-        /// </summary>
-        /// <param name="width">Total width in units of tiles around the cursor</param>
-        /// <param name="height">Total height in units of tiles around the cursor</param>
-        /// <returns></returns>
-        protected Point GetCursorAreaPoint(int width, int height) {
-            Point cursorTilePos = PixelToClosestTile(new Point(mouseState.X, mouseState.Y));
-            int x = Boundarize(cursorTilePos.X - width / 2, 0, Settings.ViewportRowLength - width);
-            int y = Boundarize(cursorTilePos.Y - height / 2, 0, Settings.ViewportColumnLength - height);
-            return new Point(x, y);  
         }
 
         /// <summary>
@@ -381,7 +447,7 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMenuPanel() {
             int menuPanelX = screenWidth - menuPanelWidth;
-            spriteBatch.Draw(menuPanel, new Rectangle(menuPanelX, 0, menuPanelWidth, menuPanelHeight), Color.White);
+            spriteBatch.Draw(Globals.MenuPanel, new Rectangle(menuPanelX, 0, menuPanelWidth, menuPanelHeight), Color.White);
 
             /* Draw buttons for the panel. */
             foreach(Button b in buttons) {
@@ -399,7 +465,7 @@ namespace TowerDefense {
         /// <param name="height">Δy from start to the end of this line.</param>
         /// <param name="color">The color of this line.</param>
         protected void DrawLine(int x, int y, int width, int height, Color color) {
-            spriteBatch.Draw(pixel, new Rectangle(x, y, width, height), color);
+            spriteBatch.Draw(Globals.Pixel, new Rectangle(x, y, width, height), color);
         }
 
         /// <summary>
@@ -421,39 +487,125 @@ namespace TowerDefense {
         /// Draw the grid of tiles and their colorations.
         /// </summary>
         protected void DrawMap() {
-            //Shade in the limited tiles.
-            for (int i = 0; i < Settings.ViewportColumnLength; i++) {
-                for(int j = 0; j < Settings.ViewportRowLength; j++) {
-                    if(map[i,j].Type == TileType.LIMITED) {
-                        DrawTile(j, i, Color.Gray);
-                    } else if(map[i, j].Type == TileType.OPEN) {
-                        DrawTile(j, i, Color.White);
+            // Shade in the tiles based on their type.
+            for (int y = 0; y < Settings.ViewportColumnLength; y++) {
+                for(int x = 0; x < Settings.ViewportRowLength; x++) {
+                    if(Map(x, y).Type == TileType.LIMITED) {
+                        DrawTile(x, y, Color.Gray);
+                    } else if(Map(x, y).Type == TileType.OPEN) {
+                        DrawTile(x, y, Color.White);
                     }
                 }
             }
 
+            // If the player is currently in placement mode, highlight the selected tiles.
+            if (isPlacingTower && CursorIsOnMap()) {
+                Point pos = GetAreaStartPoint();
+                for (int y = pos.Y; y < pos.Y + pendingTowerTemplate.Height; y++) {
+                    for (int x = pos.X; x < pos.X + pendingTowerTemplate.Width; x++) {
+                        if (Map(x, y).ObstructsTower()) {
+                            DrawTile(x, y, Color.Red);
+                        } else {
+                            DrawTile(x, y, Color.Green);
+                        }
+                    }
+                }
+            }
             // Overlay grid
             DrawGrid();
         }
 
         protected void DrawTile(int x, int y, Color color) {
-            spriteBatch.Draw(pixel, new Rectangle(x * Settings.TileWidth, y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), color);
+            spriteBatch.Draw(Globals.Pixel, new Rectangle(x * Settings.TileWidth, y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), color);
         }
 
         /// <summary>
         /// Load in the next map.
         /// </summary>
         protected void LoadMap() {
+            // Fill in the game map with limited tiles.
+            for(int y = 0; y < Settings.ViewportColumnLength; y++) {
+                for(int x = 0; x < Settings.ViewportRowLength; x++) {
+                    map[y, x] = new Tile(TileType.LIMITED, x * Settings.TileWidth, y * Settings.TileHeight);
+                }
+            }
+
+            // Draw a horizontal parabola-shaped pathway
+            for (int x = 0; x < Settings.ViewportRowLength; x++) {
+                int fx = (int)Math.Sqrt(x / 3) + 1;
+
+                for(int y = -1; y < 2; y++) {
+                    Map(x, Settings.ViewportColumnLength / 2 + fx + y).Type = TileType.OPEN;
+                }
+                for(int y = -1; y < 2; y++) {
+                    Map(x, Settings.ViewportColumnLength / 2 - fx - y).Type = TileType.OPEN;
+                }
+            }
+
+            // Draw a horizontal line through the center
+            for (int y = 0; y < Settings.ViewportColumnLength; y++) {
+                for (int x = -1; x < 2; x++) {
+                    Map(Settings.ViewportRowLength / 2 + x, y).Type = TileType.OPEN;
+                }
+            }
+
+            // Draw a 5x5 square in the center
+            for(int y = -2; y <= 2; y++) {
+                for(int x = -2; x <= 2; x++) {
+                    Map(Settings.ViewportRowLength / 2 + x, Settings.ViewportColumnLength / 2 + y).Type = TileType.OPEN;
+                }
+            }
+
+            // Place hub in the center
+            AddTower(new Tower(Globals.HubTemplate, new Point(Settings.ViewportRowLength / 2 - 1, Settings.ViewportColumnLength / 2 - 1)));
+
+            currentWave = 0;
+
+            SpawnWave();
+        }
+
+        public void SpawnWave() {
+            currentWave++;
             Random r = new Random();
-            for(int i = 0; i < Settings.ViewportColumnLength; i++) {
-                for(int j = 0; j < Settings.ViewportRowLength; j++) {
-                    if(r.Next(100) <= 70) {
-                        map[i, j] = new Tile(TileType.OPEN, j * Settings.TileWidth, i * Settings.TileHeight);
-                    } else {
-                        map[i, j] = new Tile(TileType.LIMITED, j * Settings.TileWidth, i * Settings.TileHeight);
+            int spawnAmt = (currentWave - 1) * 5 + 10 + r.Next(0, 5);
+
+            // Get the set of valid tiles -- OPEN tiles on the boundary of the screen.
+            List<Tile> spawnTiles = new List<Tile>();
+            for(int i = 0; i < Math.Max(Settings.ViewportRowLength, Settings.ViewportRowLength); i++) {
+                if (i < Settings.ViewportRowLength) {
+                    if (Map(i, 0).Type == TileType.OPEN) {
+                        spawnTiles.Add(Map(i, 0));
+                    }
+                    if (Map(i, Settings.ViewportColumnLength - 1).Type == TileType.OPEN) {
+                        spawnTiles.Add(Map(i, Settings.ViewportColumnLength - 1));
+                    }
+                }
+
+                if (i < Settings.ViewportColumnLength) {
+                    if (Map(0, i).Type == TileType.OPEN) {
+                        spawnTiles.Add(Map(0, i));
+                    }
+                    if (Map(Settings.ViewportRowLength - 1, i).Type == TileType.OPEN) {
+                        spawnTiles.Add(Map(Settings.ViewportRowLength - 1, i));
                     }
                 }
             }
+
+            // Spawn each enemy at a random tile.
+            for(int i = 0; i < spawnAmt; i++) {
+                Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
+                AddMonster(new Monster(Globals.ImpTex, MonsterType.IMP, new Point(spawnTile.X , spawnTile.Y), 10));
+            }
+        }
+
+        /// <summary>
+        /// Returns the tile at the given coordianates.
+        /// </summary>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <returns>map[y, x]</returns>
+        private Tile Map(int x, int y) {
+            return map[y, x];
         }
     }
 }

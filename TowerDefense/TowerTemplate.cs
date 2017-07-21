@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 /// Enum listing the types of towers available:
 /// <para>Bolt: Fires a simple projectile</para>
 /// </summary>
-enum TowerType { BOLT }
+enum TowerType { BOLT, HUB }
 
 namespace TowerDefense {
     /// <summary>
@@ -51,6 +51,10 @@ namespace TowerDefense {
                 case TowerType.BOLT:
                     Width = 2;
                     Height = 2;
+                    break;
+                case TowerType.HUB:
+                    Width = 3;
+                    Height = 3;
                     break;
                 default:
                     Width = 2;

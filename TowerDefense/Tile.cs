@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,55 +27,51 @@ namespace TowerDefense {
         /// A TileType value representing the traversability of this tile.
         /// </summary>
         private TileType type;
+
         /// <summary>
-        /// Integer representing the x position of the top-left corner of this tile.
+        /// Boolean representing whether or not this tile contains a tower or part of a tower.
         /// </summary>
-        private int xPos;
+        private bool containsTower;
+
         /// <summary>
-        /// Integer representing the y position of the top-left corner of this tile.
+        /// Point representing this tile's coordinates in the world map.
         /// </summary>
-        private int yPos;
+        private Point pos;
 
         /// <summary>
         /// Constructor for a tile
         /// </summary>
         /// <param name="type">TileType representing the type of tile this is.</param>
-        /// <param name="xPos"></param>
-        /// <param name="yPos"></param>
-        public Tile(TileType type, int xPos, int yPos) {
-            this.type = type;
-            this.xPos = xPos;
-            this.yPos = yPos;
+        /// <param name="xPos">X coorinate of this tile's position.</param>
+        /// <param name="yPos">Y coordinate of this tile's position.</param>
+        public Tile(TileType type, int x, int y) {
+            Type = type;
+            Pos = new Point(x, y);
+            ContainsTower = false;
+        }
+
+        /// <summary>
+        /// Return true if this tile is not obstructed, false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsEmpty() {
+            return Type == TileType.OPEN;
+        }
+
+        /// <summary>
+        /// Return true if this tile will obstruct the building of a tower, false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        public bool ObstructsTower() {
+            return ContainsTower || Type == TileType.WALL || Type == TileType.OPEN;
         }
 
         /* Setters and Getters */
 
-        public TileType Type {
-            get {
-                return type;
-            }
-            set {
-                type = value;
-            }
-        }
-
-        public int XPos {
-            get {
-                return xPos;
-            }
-            set {
-                xPos = value;
-            }
-        }
-
-        public int YPos {
-            get {
-                return yPos;
-            }
-            set {
-                yPos = value;
-            }
-        }
-
+        public TileType Type { get => type; set => type = value; }
+        public bool ContainsTower { get => containsTower; set => containsTower = value; }
+        public Point Pos { get => pos; set => pos = value; }
+        public int X { get => Pos.X; }
+        public int Y { get => Pos.Y; }
     }
 }
