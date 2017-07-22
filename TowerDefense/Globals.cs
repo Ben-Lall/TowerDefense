@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TowerDefense {
+    /// <summary>
+    /// A class containing global variables and helper methods.
+    /// </summary>
     static class Globals {
         /// <summary>
         /// Array containing every monster in the game, indexed by the MonsterType enumerator.
@@ -30,8 +33,6 @@ namespace TowerDefense {
         /* Monster Textures */
         private static Texture2D impTex;
 
-
-
         public static void InitializeGlobals(GraphicsDevice graphics) {
             MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];
             Pixel = new Texture2D(graphics, 1, 1);
@@ -41,6 +42,17 @@ namespace TowerDefense {
             BoltTowerTemplate = new TowerTemplate(TowerType.BOLT, TowerTex);
             HubTemplate = new TowerTemplate(TowerType.HUB, HubTex);
         }
+
+        /// <summary>
+        /// Returns the Manhattan Distance between two points.
+        /// </summary>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <returns></returns>
+        public static int ManhattanDistance(Point p1, Point p2) {
+            return Math.Abs(p1.X - p2.X) + Math.Abs(p1.Y - p2.Y);
+        }
+
 
         internal static Monster[] MonsterCatalog { get => monsterCatalog; set => monsterCatalog = value; }
         internal static TowerTemplate BoltTowerTemplate { get => boltTowerTemplate; set => boltTowerTemplate = value; }

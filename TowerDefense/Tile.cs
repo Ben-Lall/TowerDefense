@@ -55,7 +55,7 @@ namespace TowerDefense {
         /// </summary>
         /// <returns></returns>
         public bool IsEmpty() {
-            return Type == TileType.OPEN;
+            return Type == TileType.OPEN && !containsTower;
         }
 
         /// <summary>

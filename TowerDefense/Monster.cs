@@ -38,6 +38,11 @@ namespace TowerDefense {
         /// </summary>
         private int currentHealth;
 
+        /// <summary>
+        /// Pathfinder for this monster.
+        /// </summary>
+        private Pathfinder pf;
+
         public Monster(Texture2D sprite, MonsterType type, Point pos, int maxHealth) {
             Sprite = sprite;
             Type = type;
