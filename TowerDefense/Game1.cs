@@ -396,7 +396,7 @@ namespace TowerDefense {
 
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
             } else {
-                Point drawPos = new Point(mouseState.X, mouseState.Y) - new Point(pendingTowerTemplate.Width * Settings.TileWidth / 2, (2 * pendingTowerTemplate.SpriteHeight) / 3);
+                Point drawPos = new Point(mouseState.X, mouseState.Y) - new Point(pendingTowerTemplate.SpriteWidth  / 2, (2 * pendingTowerTemplate.SpriteHeight) / 3);
                 spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
             }
             
