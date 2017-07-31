@@ -26,11 +26,9 @@ namespace TowerDefense {
             // Initialize the priority queue
             pq = new SortedSet<SearchNode>(new AStarComparer());
             pq.Add(new SearchNode(map[start.Y, start.X], null, Globals.Distance(start, target)));
-            int c = 0;
 
             // A* search
             while (!GoalTest(pq.First(), target)) {
-                c += 1;
                 SearchNode s = pq.First();
                 pq.Remove(s);
                 AddAdjacencies(s, target, map);
@@ -53,20 +51,10 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Return the next tile in the path, removing it from the path.
-        /// </summary>
-        /// <returns></returns>
-        public Tile Next() {
-            Tile t = path.First.Value;
-            path.RemoveFirst();
-            return t;
-        }
-
-        /// <summary>
         /// Goal test for the A* search.  Returns true if the tile is adjacent or diagonal to the target tile.
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="target"></param>
+        /// <param name="s">The search node to be tested.</param>
+        /// <param name="target">The coordinates of the goal tile.</param>
         /// <returns></returns>
         private bool GoalTest(SearchNode s, Point target) {
             return Globals.Distance(s.tile.Pos, target) <= Globals.SQRT2;
@@ -76,7 +64,6 @@ namespace TowerDefense {
         /// Add to the given priority queue all valid search nodes adjacent to the given one.
         /// </summary>
         /// <param name="s">The "source" search node that all entered search nodes will be adjacent to.</param>
-        /// <param name="pq">The priority queue to which nodes will be added.</param>
         /// <param name="target">The coordinates of the goal tile.</param>
         /// <param name="map">Game map.</param>
         private void AddAdjacencies(SearchNode s, Point target, Tile[,] map) {
@@ -111,6 +98,7 @@ namespace TowerDefense {
             }
         }
 
+        /** Setters and Getters **/
 
         public LinkedList<Tile> Path { get => path; }
 
@@ -138,7 +126,7 @@ namespace TowerDefense {
         internal Tile tile;
 
         /// <summary>
-        /// The parent of this node.  In terms of the "real-world", this is the tile traversed directly before this one.
+        /// The parent of this node.  In terms of the "real-world", this is the SearchNode representing the tile traversed directly before this one.
         /// </summary>
         internal SearchNode parent;
 
@@ -166,8 +154,14 @@ namespace TowerDefense {
                 return -1;
             } else if(s1.priority > s2.priority) {
                 return 1;
-            } else {
-                return 0; // TODO: replace with a smarter function that results in the choice of the tile containing the least monsters.
+            } else { // s1.priority == s2.priority
+                if(s1.cost < s2.cost) {
+                    return -1;
+                } else if(s1.cost > s2.cost) {
+                    return 1;
+                } else { // s1.cost == s2.cost
+                    return 0;
+                }
             }
         }
     }
