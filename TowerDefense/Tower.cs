@@ -50,6 +50,8 @@ namespace TowerDefense {
 
         /* Setters and Getters */
         public Point Pos { get => pos; set => pos = value; }
+        public int X { get => Pos.X; set => pos.X = value; }
+        public int Y { get => Pos.Y; set => pos.Y = value; }
         public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
         public int Width { get => width; set => width = value; }
         public int Height { get => height; set => height = value; }

@@ -22,14 +22,18 @@ namespace TowerDefense {
         /// </summary>
         private LinkedList<Tile> path;
 
-        public Pathfinder(Point start, Point target, Tile[][] map) {
+        public Pathfinder(Point start, Point target, Tile[,] map) {
             // Initialize the priority queue
-            pq = new SortedSet<SearchNode>();
-            pq.Add(new SearchNode(map[start.Y][start.X], null, Globals.ManhattanDistance(start, target)));
+            pq = new SortedSet<SearchNode>(new AStarComparer());
+            pq.Add(new SearchNode(map[start.Y, start.X], null, Globals.Distance(start, target)));
+            int c = 0;
 
             // A* search
-            while (!GoalTest(pq.Min, target)) {
-                AddAdjacencies(pq.First(), target, map);
+            while (!GoalTest(pq.First(), target)) {
+                c += 1;
+                SearchNode s = pq.First();
+                pq.Remove(s);
+                AddAdjacencies(s, target, map);
             }
 
             GeneratePath(pq.First());
@@ -44,7 +48,7 @@ namespace TowerDefense {
             SearchNode current = tail;
             while(current.parent != null) {
                 path.AddFirst(current.tile);
-                current = tail.parent;
+                current = current.parent;
             }
         }
 
@@ -59,13 +63,13 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Goal test for the A* search.  Returns true if the tile is adjacent to the target tile.
+        /// Goal test for the A* search.  Returns true if the tile is adjacent or diagonal to the target tile.
         /// </summary>
         /// <param name="s"></param>
         /// <param name="target"></param>
         /// <returns></returns>
         private bool GoalTest(SearchNode s, Point target) {
-            return Globals.ManhattanDistance(s.tile.Pos, target) == 1;
+            return Globals.Distance(s.tile.Pos, target) <= Globals.SQRT2;
         }
 
         /// <summary>
@@ -75,37 +79,40 @@ namespace TowerDefense {
         /// <param name="pq">The priority queue to which nodes will be added.</param>
         /// <param name="target">The coordinates of the goal tile.</param>
         /// <param name="map">Game map.</param>
-        private void AddAdjacencies(SearchNode s, Point target, Tile[][] map) {
-            // Check and add the two rows on either side of the given tile
-            for(int i = -1; i < 2; i++) {
+        private void AddAdjacencies(SearchNode s, Point target, Tile[,] map) {
+            // Check and add the 6 tiles above and below the given tile
+            for(int i = s.tile.X == 0 ? 0 : -1; i < (s.tile.X == Settings.ViewportRowLength - 1 ? 1 : 2); i++) {
                 if(s.tile.Y > 0) {
-                    Tile t = map[s.tile.Y - 1][s.tile.X + i];
+                    Tile t = map[s.tile.Y - 1, s.tile.X + i];
                     if (t.IsEmpty()) {
-                        pq.Add(new SearchNode(t, s, Globals.ManhattanDistance(t.Pos, target)));
+                        pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
                     }
                 }
                 if(s.tile.Y < Settings.ViewportColumnLength - 1) { // TODO: change to world map column length
-                    Tile t = map[s.tile.Y + 1][s.tile.X + i];
+                    Tile t = map[s.tile.Y + 1, s.tile.X + i];
                     if (t.IsEmpty()) {
-                        pq.Add(new SearchNode(t, s, Globals.ManhattanDistance(t.Pos, target)));
+                        pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
                     }
                 }
             }
 
             // Check and add the two tiles on either side of the given tile
             if(s.tile.X > 0) {
-                Tile t = map[s.tile.Y][s.tile.X - 1];
+                Tile t = map[s.tile.Y, s.tile.X - 1];
                 if(t.IsEmpty()) {
-                    pq.Add(new SearchNode(t, s, Globals.ManhattanDistance(t.Pos, target)));
+                    pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
                 }
             }
             if (s.tile.X < Settings.ViewportRowLength - 1) {
-                Tile t = map[s.tile.Y][s.tile.X + 1];
+                Tile t = map[s.tile.Y, s.tile.X + 1];
                 if (t.IsEmpty()) {
-                    pq.Add(new SearchNode(t, s, Globals.ManhattanDistance(t.Pos, target)));
+                    pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
                 }
             }
         }
+
+
+        public LinkedList<Tile> Path { get => path; }
 
     }
 
@@ -116,7 +123,7 @@ namespace TowerDefense {
         /// <summary>
         /// Integer representing the priority of this node. g(x) + h(x), where:
         /// g(x) = total cost to travel to this node
-        /// h(x) = heuristic cost to travel to the target node (Manhattan distance)
+        /// h(x) = heuristic cost to travel to the target node (Euclidean distance)
         /// </summary>
         internal double priority;
 
@@ -141,10 +148,14 @@ namespace TowerDefense {
         /// <param name="tile">The Tile this node represents</param>
         /// <param name="parent">The node preceding this one</param>
         /// <param name="h">The result of the heuristic function for this search</param>
-        internal SearchNode(Tile tile, SearchNode parent, int h) {
+        internal SearchNode(Tile tile, SearchNode parent, double h) {
             this.tile = tile;
             this.parent = parent;
-            cost = parent.cost + (Math.Sqrt(Math.Pow(Math.Abs(tile.X - parent.tile.X), 2) + Math.Pow(Math.Abs(tile.Y - parent.tile.Y), 2)));
+            if (parent != null) {
+                cost = parent.cost + Globals.Distance(parent.tile.Pos, tile.Pos);
+            } else {
+                cost = 0;
+            }
             priority = cost + h;
         }
     }

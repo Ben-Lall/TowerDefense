@@ -39,28 +39,72 @@ namespace TowerDefense {
         private int currentHealth;
 
         /// <summary>
+        /// Double representing this creature's speed, at a rate of tiles / second.
+        /// </summary>
+        private double speed;
+
+        /// <summary>
         /// Pathfinder for this monster.
         /// </summary>
         private Pathfinder pf;
 
-        public Monster(Texture2D sprite, MonsterType type, Point pos, int maxHealth) {
+        public Monster(Texture2D sprite, MonsterType type, Point pos, Point target, int maxHealth, Tile[,] map) {
             Sprite = sprite;
             Type = type;
-            Pos = pos;
+            Pos = new Point(pos.X * Settings.TileWidth, pos.Y * Settings.TileHeight) + TileToPointOffset;
             MaxHealth = maxHealth;
             CurrentHealth = maxHealth;
+            pf = new Pathfinder(TilePos, target, map);
+            speed = 10;
         }
-
+        
+        /// <summary>
+        /// Draw the monster at its current position.
+        /// </summary>
+        /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spritebatch) {
             spritebatch.Draw(Sprite, new Rectangle(Pos, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
+        /// <summary>
+        /// Draw the path this monster is currently on.
+        /// </summary>
+        /// <param name="spriteBatch"></param>
+        public void DrawPath(SpriteBatch spriteBatch) {
+            foreach (Tile t in pf.Path) {
+                spriteBatch.Draw(Globals.Pixel, new Rectangle(t.X * Settings.TileWidth, t.Y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), Color.Crimson * 0.5f);
+            }
+        }
+
+        /// <summary>
+        /// Move this monster towards its next tile.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public void move(GameTime gameTime) {
+            if (pf.Path.Count > 0) {
+                Point nextTileCoord = pf.Path.First().Pos;
+                Point nextTilePos = new Point(nextTileCoord.X * Settings.TileWidth, nextTileCoord.Y * Settings.TileHeight) + TileToPointOffset;
+                Vector2 dirVector = Vector2.Normalize((nextTilePos - Pos).ToVector2());
+                Pos += new Point(
+                    (int)(dirVector.X * gameTime.ElapsedGameTime.TotalSeconds * Speed * Settings.TileWidth),
+                    (int)(dirVector.Y * gameTime.ElapsedGameTime.TotalSeconds * Speed * Settings.TileHeight));
+
+                // Remove this tile from the path if it has been reached
+                if (nextTilePos - Pos == new Point(0, 0)) {
+                    pf.Path.RemoveFirst();
+                }
+            }
+        }
+
         public Texture2D Sprite { get => sprite; set => sprite = value; }
         public Point Pos { get => pos; set => pos = value; }
+        private Point TileToPointOffset { get => new Point(Settings.TileWidth / 2 - SpriteWidth / 2,Settings.TileHeight / 2 - SpriteHeight / 2); }
+        public Point TilePos { get => new Point((Pos.X  + TileToPointOffset.X) / Settings.TileWidth, (Pos.Y + TileToPointOffset.Y) / Settings.TileHeight); }
         public int SpriteWidth { get => Sprite.Width; }
         public int SpriteHeight { get => Sprite.Height; }
         public int MaxHealth { get => maxHealth; set => maxHealth = value; }
         public int CurrentHealth { get => currentHealth; set => currentHealth = value; }
         internal MonsterType Type { get => type; set => type = value; }
+        public double Speed { get => speed; set => speed = value; }
     }
 }

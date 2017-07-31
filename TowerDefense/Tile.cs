@@ -34,7 +34,7 @@ namespace TowerDefense {
         private bool containsTower;
 
         /// <summary>
-        /// Point representing this tile's coordinates in the world map.
+        /// Coordinate position of this tile in the world map.
         /// </summary>
         private Point pos;
 
