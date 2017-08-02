@@ -44,6 +44,11 @@ namespace TowerDefense {
         /// </summary>
         bool mousePressed;
 
+        /// <summary>
+        /// Toggle boolean for back button.
+        /// </summary>
+        bool backPressed;
+
         /* Graphics */
 
         /// <summary>
@@ -216,6 +221,7 @@ namespace TowerDefense {
                     RefreshButtonsList();
                 }
 
+                UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
             }
 
@@ -225,11 +231,25 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Update towers. This calls each tower and has them execute their automatic abilities.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        private void UpdateTowers(GameTime gameTime) {
+            foreach (Tower t in towers) {
+                t.Act(gameTime, monsters);
+            }
+        }
+
+        /// <summary>
         /// Update monsters.  For now, this only entails movement.
         /// </summary>
         private void UpdateMonsters(GameTime gameTime) {
+            // Remove dead monsters from the list.
+            monsters.RemoveAll(x => x.CurrentHealth == 0);
+            drawSet.RemoveWhere(x => x.GetType() == typeof(Monster) && ((Monster)x).CurrentHealth == 0);
+
             foreach (Monster m in monsters) {
-                m.move(gameTime);
+                m.Move(gameTime);
             }
         }
 
@@ -262,13 +282,18 @@ namespace TowerDefense {
             }
 
             /** Keyboard Handling **/
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) {
+            if (!backPressed && (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))) {
+                backPressed = true;
                 if (isPlacingTower) {// Stop tower placement
                     isPlacingTower = false;
                     pendingTowerTemplate = null;
+                } else if (!isPlacingTower) {
+                    ClearTowerIllumination();
                 } else if (!pausePressed) {
                     //TODO: Open menu
                 }
+            } else if(Keyboard.GetState().IsKeyUp(Keys.Escape)) {
+                backPressed = false;
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !pausePressed) {
@@ -593,9 +618,9 @@ namespace TowerDefense {
             for (int y = 0; y < Settings.ViewportColumnLength; y++) {
                 for(int x = 0; x < Settings.ViewportRowLength; x++) {
                     if(Map(x, y).Type == TileType.LIMITED) {
-                        DrawTile(x, y, Color.Gray);
+                        DrawTile(x, y, Color.DarkOliveGreen);
                     } else if(Map(x, y).Type == TileType.OPEN) {
-                        DrawTile(x, y, Color.White);
+                        DrawTile(x, y, Color.SandyBrown);
                     }
                 }
             }

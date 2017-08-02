@@ -92,6 +92,22 @@ namespace TowerDefense {
             return closestCoord;
         }
 
+        /** Collision **/
+
+        /// <summary>
+        /// Check if the given monster intersects with the given tower's firing range.
+        /// </summary>
+        /// <param name="t">The Tower.</param>
+        /// <param name="m">The Monster.</param>
+        /// <returns>true if they intersect, false otherwise.</returns>
+        public static bool Intersects(Tower t, Monster m) {
+            // Check that the extremities of the circle are outside of the boundaries of the rectangle.
+            return !((t.Pos.X - t.FireRadius) * Settings.TileWidth > m.X + m.SpriteWidth ||
+                   (t.Pos.X + t.FireRadius) * Settings.TileWidth < m.X ||
+                   (t.Pos.Y - t.FireRadius) * Settings.TileWidth > m.Y + m.SpriteHeight ||
+                   (t.Pos.Y + t.FireRadius) * Settings.TileWidth < m.Y);
+        }
+
 
         internal static Monster[] MonsterCatalog { get => monsterCatalog; set => monsterCatalog = value; }
         internal static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT, TowerTex); }

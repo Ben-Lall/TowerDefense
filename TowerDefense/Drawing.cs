@@ -36,6 +36,26 @@ namespace TowerDefense {
             }
         }
 
+        /// <summary>
+        /// Draw a jagged bolt from the start point to the end point.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        public static void DrawBolt(Point start, Point end) {
+            int boltLength = Settings.TileHeight;
+            Point boltEnd;
+
+        }
+
+        /// <summary>
+        /// Draw a circle centered on p with a radius of r.
+        /// </summary>
+        /// <param name="p">Center coordinate.</param>
+        /// <param name="r">Circle radius.</param>
+        public static void DrawCircle(SpriteBatch spriteBatch, Point p, int r) {
+            DrawCircle(spriteBatch, p.X, p.Y, r);
+        }
+
     }
 
 

@@ -48,6 +48,15 @@ namespace TowerDefense {
         /// </summary>
         private Pathfinder pf;
 
+        /// <summary>
+        /// Constructor for a new Monster.
+        /// </summary>
+        /// <param name="sprite">Sprite for this monster.</param>
+        /// <param name="type">Type of monster.</param>
+        /// <param name="pos">The tile position of this monster.</param>
+        /// <param name="target">The target for this monster to reach.</param>
+        /// <param name="maxHealth">The maximum health of this monster.</param>
+        /// <param name="map">The world map.</param>
         public Monster(Texture2D sprite, MonsterType type, Point pos, Point target, int maxHealth, Tile[,] map) {
             Sprite = sprite;
             Type = type;
@@ -67,6 +76,18 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Get the distance between this monster and its target, measured in units of tiles.
+        /// </summary>
+        /// <returns></returns>
+        public int DistanceToTarget() {
+            return pf.Path.Count;
+        }
+
+        public void TakeDamage(int damage) {
+            CurrentHealth = Math.Max(0, CurrentHealth - damage);
+        }
+
+        /// <summary>
         /// Draw the path this monster is currently on.
         /// </summary>
         /// <param name="spriteBatch"></param>
@@ -80,7 +101,7 @@ namespace TowerDefense {
         /// Move this monster towards its next tile.
         /// </summary>
         /// <param name="gameTime"></param>
-        public void move(GameTime gameTime) {
+        public void Move(GameTime gameTime) {
             if (pf.Path.Count > 0) {
                 Point nextTileCoord = pf.Path.First().Pos;
                 Point nextTilePos = new Point(nextTileCoord.X * Settings.TileWidth, nextTileCoord.Y * Settings.TileHeight) + TileToPointOffset;
@@ -98,8 +119,11 @@ namespace TowerDefense {
 
         public Texture2D Sprite { get => sprite; set => sprite = value; }
         public Point Pos { get => pos; set => pos = value; }
+        public int X { get => Pos.X; set => pos.X = value; }
+        public int Y { get => Pos.Y; set => pos.Y = value; }
         private Point TileToPointOffset { get => new Point(Settings.TileWidth / 2 - SpriteWidth / 2,Settings.TileHeight / 2 - SpriteHeight / 2); }
         public Point TilePos { get => new Point((Pos.X  + TileToPointOffset.X) / Settings.TileWidth, (Pos.Y + TileToPointOffset.Y) / Settings.TileHeight); }
+        public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
         public int SpriteWidth { get => Sprite.Width; }
         public int SpriteHeight { get => Sprite.Height; }
         public int MaxHealth { get => maxHealth; set => maxHealth = value; }

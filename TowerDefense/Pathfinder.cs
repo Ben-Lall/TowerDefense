@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 /// <summary>
 /// A path made of 2D Vectors that used to illustrate a pathway between two points.  Typically used for monster pathfinding, and generated using the A* search algorithm.
+/// TODO: Take List of towers instead of Point target, and have each node recalculate its hueristic value to the new closest hub.  The current implementation works because there is only
+/// 1 hub on the map, if there are more then the initial target could potentially be sub-par.
 /// </summary>
 namespace TowerDefense {
 
