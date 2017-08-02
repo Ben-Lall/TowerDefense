@@ -118,11 +118,6 @@ namespace TowerDefense {
         bool isPlacingTower;
 
         /// <summary>
-        /// List of currently highlighted towers. These towers are to have their stats shown (firing rate, etc). 
-        /// </summary>
-        List<Tower> selectedTowers;
-
-        /// <summary>
         /// A Template of the tower whose placement is currently being deliberated, if any.
         /// </summary>
         TowerTemplate pendingTowerTemplate;
@@ -169,7 +164,6 @@ namespace TowerDefense {
 
             //Initialize collections
             towers = new List<Tower>();
-            selectedTowers = new List<Tower>();
             monsters = new List<Monster>();
             drawSet = new SortedSet<Object>(new DrawComparer());
             buttons = new List<Button>();
@@ -298,20 +292,25 @@ namespace TowerDefense {
                     BeginTowerPlacement(ulTowers[buttons.IndexOf((Button)selectedItem)]);
                 } else if (selectedItem.GetType() == typeof(Tower)) { // if a tower was clicked
                     if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) { // and shift was held
-                        if (selectedTowers.Contains((Tower)selectedItem)) {
-                            selectedTowers.Remove((Tower)selectedItem);
-                        } else {
-                            selectedTowers.Add((Tower)selectedItem);
-                        }
+                        ((Tower)selectedItem).Selected = !((Tower)selectedItem).Selected;
                     } else { // shift was not held
-                        selectedTowers.Clear();
-                        selectedTowers.Add((Tower)selectedItem);
+                        ClearTowerIllumination();
+                        ((Tower)selectedItem).Selected = true;
                     }
                 } 
             } else if (isPlacingTower && CursorIsOnMap() && ValidTowerLocation()) {
                 PlacePendingTower();
             } else { // Actions that would deselect the selected towers on mouse click
-                selectedTowers.Clear();
+                ClearTowerIllumination();
+            }
+        }
+
+        /// <summary>
+        /// Clears all tower illumination.
+        /// </summary>
+        private void ClearTowerIllumination() {
+            foreach (Tower t in towers) {
+                t.Selected = false;
             }
         }
 
@@ -444,40 +443,10 @@ namespace TowerDefense {
                 DrawPendingTower();
             }
 
-            if(selectedTowers.Count > 0) {
-                foreach (Tower t in selectedTowers) {
-                    DrawFiringRange(t);
-                }
-            }
-
             DrawDebug();
 
             spriteBatch.End();
             base.Draw(gameTime);
-        }
-
-        /// <summary>
-        /// Draw the firing range of the selected tower as a circle around its base.
-        /// </summary>
-        /// <param name="t">Tower whose firing range is to be drawn.</param>
-        private void DrawFiringRange(Tower t) {
-            DrawCircle(Settings.TileWidth * (t.X + t.Width / 2), Settings.TileHeight * (t.Y + t.Height / 2), (int)(t.FireRadius * Settings.TileWidth));
-        }
-
-        /// <summary>
-        /// Draw a circle centered on (x, y) with a radius of r.
-        /// </summary>
-        /// <param name="x">Center x coordinate.</param>
-        /// <param name="y">Center y coordinate.</param>
-        /// <param name="r">Circle radius.</param>
-        private void DrawCircle(int x, int y, int r) {
-            for(int i = x - r; i <= x + r; i++) {
-                int fx = (int)Math.Sqrt((r * r) - Math.Pow(i - x, 2));
-                int y1 = y + fx;
-                int y2 = y - fx;
-                spriteBatch.Draw(Globals.Pixel, new Rectangle(i, y1, 1, 1), Color.Blue);
-                spriteBatch.Draw(Globals.Pixel, new Rectangle(i, y2, 1, 1), Color.Blue);
-            }
         }
 
         private void DrawUI() {
@@ -506,11 +475,19 @@ namespace TowerDefense {
         /// Draw each element in drawSet.
         /// </summary>
         private void DrawGameplayObjects() {
+            // Draw towers / creatures in the proper order.
             foreach (object obj in drawSet) {
                 if (obj.GetType() == typeof(Tower)) {
                     ((Tower)obj).Draw(spriteBatch);
                 } else if (obj.GetType() == typeof(Monster)) {
                     ((Monster)obj).Draw(spriteBatch);
+                }
+            }
+
+            // Draw firing ranges of all selected towers
+            foreach(Tower t in towers) {
+                if (t.Selected) {
+                    t.DrawFiringRange(spriteBatch);
                 }
             }
         }
@@ -530,7 +507,7 @@ namespace TowerDefense {
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
 
                 // Draw the firing range of this tower's projected position.
-                DrawFiringRange(projectedTower);
+                projectedTower.DrawFiringRange(spriteBatch);
 
             } else { // Draw the tower so that it follows the cursor
                 Point drawPos = new Point(mouseState.X, mouseState.Y) - new Point(pendingTowerTemplate.SpriteWidth  / 2, (2 * pendingTowerTemplate.SpriteHeight) / 3);
@@ -594,29 +571,17 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Draw a line.
-        /// </summary>
-        /// <param name="x">Starting x position of this line</param>
-        /// <param name="y">Starting y position of this line</param>
-        /// <param name="width">Δx from the start to the end of this line.</param>
-        /// <param name="height">Δy from start to the end of this line.</param>
-        /// <param name="color">The color of this line.</param>
-        protected void DrawLine(int x, int y, int width, int height, Color color) {
-            spriteBatch.Draw(Globals.Pixel, new Rectangle(x, y, width, height), color);
-        }
-
-        /// <summary>
         /// Draw the grid dividing tiles.
         /// </summary>
         protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
             for(int i = 0; i < screenHeight; i += Settings.TileHeight) {
-                DrawLine(0, i, screenWidth - menuPanelWidth, 1, Color.Black);
+                Drawing.DrawLine(spriteBatch, 0, i, screenWidth - menuPanelWidth, 1, Color.Black);
             }
 
             // Draw vertical lines across the screen at each tile width
             for (int j = 0; j < screenWidth - menuPanelWidth; j += Settings.TileWidth) {
-                DrawLine(j, 0, 1, screenHeight, Color.Black);
+                Drawing.DrawLine(spriteBatch, j, 0, 1, screenHeight, Color.Black);
             }
         }
 

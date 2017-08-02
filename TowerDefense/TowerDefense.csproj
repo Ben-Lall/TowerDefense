@@ -43,6 +43,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Button.cs" />
+    <Compile Include="Drawing.cs" />
     <Compile Include="Monster.cs" />
     <Compile Include="DrawComparer.cs" />
     <Compile Include="Globals.cs" />
