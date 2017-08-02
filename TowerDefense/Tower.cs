@@ -43,10 +43,31 @@ namespace TowerDefense {
             Height = template.Height;
         }
 
+        /// <summary>
+        /// Draw this tower to its current position on the screen.
+        /// </summary>
+        /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spritebatch) {
             spritebatch.Draw(Sprite, new Rectangle(DrawPos, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
+        /// <summary>
+        /// Determine if this tower is placed on top of the given tile.
+        /// </summary>
+        /// <param name="tile"></param>
+        /// <returns>Return true if this tower overlaps the given tile. False otherwise.</returns>
+        public bool ContainsTile(Tile tile) {
+            return (X <= tile.X && tile.X <= X + Width && Y <= tile.Y && tile.Y <= Y + Height);
+        }
+
+        /// <summary>
+        /// Determine if this tower is placed on top of the given point.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns>Return true if this tower overlaps the given point. False otherwise.</returns>
+        public bool ContainsTile(Point p) {
+            return (X <= p.X && p.X < X + Width && Y <= p.Y && p.Y < Y + Height);
+        }
 
         /* Setters and Getters */
         public Point Pos { get => pos; set => pos = value; }
@@ -56,6 +77,9 @@ namespace TowerDefense {
         public int Width { get => width; set => width = value; }
         public int Height { get => height; set => height = value; }
         public TowerTemplate Template { get => template; set => template = value; }
+        public int Damage { get => Template.Damage; set => Template.Damage = value; }
+        public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
+        public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
         public Texture2D Sprite { get => template.Sprite; set => template.Sprite = value; }
         public TowerType Type { get => template.Type; set => template.Type = value; }
         public int SpriteWidth { get => Sprite.Width; }

@@ -39,6 +39,11 @@ namespace TowerDefense {
         /// </summary>
         bool pausePressed;
 
+        /// <summary>
+        /// Toggle boolean for the mouse button.
+        /// </summary>
+        bool mousePressed;
+
         /* Graphics */
 
         /// <summary>
@@ -113,6 +118,11 @@ namespace TowerDefense {
         bool isPlacingTower;
 
         /// <summary>
+        /// List of currently highlighted towers. These towers are to have their stats shown (firing rate, etc). 
+        /// </summary>
+        List<Tower> selectedTowers;
+
+        /// <summary>
         /// A Template of the tower whose placement is currently being deliberated, if any.
         /// </summary>
         TowerTemplate pendingTowerTemplate;
@@ -159,15 +169,16 @@ namespace TowerDefense {
 
             //Initialize collections
             towers = new List<Tower>();
+            selectedTowers = new List<Tower>();
             monsters = new List<Monster>();
             drawSet = new SortedSet<Object>(new DrawComparer());
             buttons = new List<Button>();
-
+            
             Globals.InitializeGlobals(GraphicsDevice);
 
             ulTowers = new List<TowerTemplate>();
             ulTowers.Add(Globals.BoltTowerTemplate);
-            
+
             // TEMP: load map (since ideally there'd be a title screen).
             LoadMap();
 
@@ -223,7 +234,7 @@ namespace TowerDefense {
         /// Update monsters.  For now, this only entails movement.
         /// </summary>
         private void UpdateMonsters(GameTime gameTime) {
-            foreach(Monster m in monsters) {
+            foreach (Monster m in monsters) {
                 m.move(gameTime);
             }
         }
@@ -249,8 +260,11 @@ namespace TowerDefense {
             mouseState = Mouse.GetState();
 
             /** Mouse handling **/
-            if (mouseState.LeftButton == ButtonState.Pressed) {
+            if (mouseState.LeftButton == ButtonState.Pressed && !mousePressed) {
                 HandleLeftMouseClick(mouseState);
+                mousePressed = true;
+            } else if(mouseState.LeftButton == ButtonState.Released) {
+                mousePressed = false;
             }
 
             /** Keyboard Handling **/
@@ -258,7 +272,7 @@ namespace TowerDefense {
                 if (isPlacingTower) {// Stop tower placement
                     isPlacingTower = false;
                     pendingTowerTemplate = null;
-                } else if(!pausePressed) {
+                } else if (!pausePressed) {
                     //TODO: Open menu
                 }
             }
@@ -267,10 +281,10 @@ namespace TowerDefense {
                 // Toggle pause if menu is not open
                 paused = !paused;
                 pausePressed = true;
-            } else if(Keyboard.GetState().IsKeyUp(Keys.Space) && pausePressed) {
+            } else if (Keyboard.GetState().IsKeyUp(Keys.Space) && pausePressed) {
                 pausePressed = false;
             }
-                
+
         }
 
         /// <summary>
@@ -278,13 +292,27 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="mouseState">The mouse's current state.</param>
         private void HandleLeftMouseClick(MouseState mouseState) {
-            Button selectedButton = TowerButtonSelected(mouseState);
-            if (selectedButton != null) {
-                BeginTowerPlacement(ulTowers[buttons.IndexOf(selectedButton)]);
+            object selectedItem = GetClickedObject(mouseState);
+            if (selectedItem != null) {
+                if (selectedItem.GetType() == typeof(Button)) { // if a button was pressed
+                    BeginTowerPlacement(ulTowers[buttons.IndexOf((Button)selectedItem)]);
+                } else if (selectedItem.GetType() == typeof(Tower)) { // if a tower was clicked
+                    if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) { // and shift was held
+                        if (selectedTowers.Contains((Tower)selectedItem)) {
+                            selectedTowers.Remove((Tower)selectedItem);
+                        } else {
+                            selectedTowers.Add((Tower)selectedItem);
+                        }
+                    } else { // shift was not held
+                        selectedTowers.Clear();
+                        selectedTowers.Add((Tower)selectedItem);
+                    }
+                } 
             } else if (isPlacingTower && CursorIsOnMap() && ValidTowerLocation()) {
                 PlacePendingTower();
+            } else { // Actions that would deselect the selected towers on mouse click
+                selectedTowers.Clear();
             }
-
         }
 
         /// <summary>
@@ -365,11 +393,11 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Return the button that the mouse is hovering over, or null if it isn't mousing over any buttons.
+        /// Get the object that the mouse is hovering over.
         /// </summary>
         /// <param name="mouseState">The mouse's current state.</param>
-        /// <returns>The Button that the mouse is hovering over, or null if it isn't mousing over any buttons.</returns>
-        private Button TowerButtonSelected(MouseState mouseState) {
+        /// <returns>The object that the mouse is hovering over, or null if it isn't mousing over any object.</returns>
+        private object GetClickedObject(MouseState mouseState) {
             // Run quick check to see if mouse is within the boundaries of possible tower button placement.
             if (buttons.Count > 0 && mouseState.X >= buttons[0].X && mouseState.X <= buttons[0].X + buttons[0].Width) {
                 // Then find a button with a matching Y coordinate (if any).
@@ -378,10 +406,18 @@ namespace TowerDefense {
                         return b;
                     }
                 }
-                // If no such button was found, return null.
-                return null;
             }
-            // If no such button was found, return null.
+
+            // Next, check if a tower was selected
+            else if (CursorIsOnMap()) {
+                Point clickedTile = PixelToTile(mouseState.Position);
+                foreach(Tower t in towers) {
+                    if(t.ContainsTile(clickedTile)) {
+                        return t;
+                    }
+                }
+            }
+
             return null;
         }
 
@@ -408,10 +444,40 @@ namespace TowerDefense {
                 DrawPendingTower();
             }
 
+            if(selectedTowers.Count > 0) {
+                foreach (Tower t in selectedTowers) {
+                    DrawFiringRange(t);
+                }
+            }
+
             DrawDebug();
 
             spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        /// <summary>
+        /// Draw the firing range of the selected tower as a circle around its base.
+        /// </summary>
+        /// <param name="t">Tower whose firing range is to be drawn.</param>
+        private void DrawFiringRange(Tower t) {
+            DrawCircle(Settings.TileWidth * (t.X + t.Width / 2), Settings.TileHeight * (t.Y + t.Height / 2), (int)(t.FireRadius * Settings.TileWidth));
+        }
+
+        /// <summary>
+        /// Draw a circle centered on (x, y) with a radius of r.
+        /// </summary>
+        /// <param name="x">Center x coordinate.</param>
+        /// <param name="y">Center y coordinate.</param>
+        /// <param name="r">Circle radius.</param>
+        private void DrawCircle(int x, int y, int r) {
+            for(int i = x - r; i <= x + r; i++) {
+                int fx = (int)Math.Sqrt((r * r) - Math.Pow(i - x, 2));
+                int y1 = y + fx;
+                int y2 = y - fx;
+                spriteBatch.Draw(Globals.Pixel, new Rectangle(i, y1, 1, 1), Color.Blue);
+                spriteBatch.Draw(Globals.Pixel, new Rectangle(i, y2, 1, 1), Color.Blue);
+            }
         }
 
         private void DrawUI() {
@@ -454,15 +520,19 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawPendingTower() {
             Point drawSize = new Point(pendingTowerTemplate.SpriteWidth, pendingTowerTemplate.SpriteHeight);
-            if (CursorIsOnMap()) {
+            if (CursorIsOnMap()) { // Draw the tower so that it snaps to the hovered grid position.
                 Point placementPos = GetAreaStartPoint();
 
                 //Draw the tower to snap to the selected tiles
-                Point drawPos = new Tower(pendingTowerTemplate, placementPos).DrawPos;
-                spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
+                Tower projectedTower = new Tower(pendingTowerTemplate, placementPos);
+                spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(projectedTower.DrawPos, drawSize), Color.White);
 
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
-            } else {
+
+                // Draw the firing range of this tower's projected position.
+                DrawFiringRange(projectedTower);
+
+            } else { // Draw the tower so that it follows the cursor
                 Point drawPos = new Point(mouseState.X, mouseState.Y) - new Point(pendingTowerTemplate.SpriteWidth  / 2, (2 * pendingTowerTemplate.SpriteHeight) / 3);
                 spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
             }
