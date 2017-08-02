@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace TowerDefense {
-    static class Drawing {
+    static class Graphics {
         /// <summary>
         /// Draw a line.
         /// </summary>

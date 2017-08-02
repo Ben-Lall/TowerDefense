@@ -59,10 +59,10 @@ namespace TowerDefense {
         /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spriteBatch) {
             if (Selected) {
-                Drawing.DrawLine(spriteBatch, X * Settings.TileWidth, Y * Settings.TileHeight, Width * Settings.TileWidth, 1, Color.Green);
-                Drawing.DrawLine(spriteBatch, X * Settings.TileWidth, (Y + Height) * Settings.TileHeight, Width * Settings.TileWidth, 1, Color.Green);
-                Drawing.DrawLine(spriteBatch, X * Settings.TileWidth, Y * Settings.TileHeight, 1, Height * Settings.TileHeight, Color.Green);
-                Drawing.DrawLine(spriteBatch, (X + Width) * Settings.TileWidth, Y * Settings.TileHeight, 1, Height * Settings.TileHeight, Color.Green);
+                Graphics.DrawLine(spriteBatch, X * Settings.TileWidth, Y * Settings.TileHeight, Width * Settings.TileWidth, 1, Color.Green);
+                Graphics.DrawLine(spriteBatch, X * Settings.TileWidth, (Y + Height) * Settings.TileHeight, Width * Settings.TileWidth, 1, Color.Green);
+                Graphics.DrawLine(spriteBatch, X * Settings.TileWidth, Y * Settings.TileHeight, 1, Height * Settings.TileHeight, Color.Green);
+                Graphics.DrawLine(spriteBatch, (X + Width) * Settings.TileWidth, Y * Settings.TileHeight, 1, Height * Settings.TileHeight, Color.Green);
 
                 //TODO: add aura
             }
@@ -74,7 +74,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spriteBatch"></param>
         public void DrawFiringRange(SpriteBatch spriteBatch) {
-            Drawing.DrawCircle(spriteBatch, CenterPoint, (int)(FireRadius * Settings.TileWidth));
+            Graphics.DrawCircle(spriteBatch, CenterPoint, (int)(FireRadius * Settings.TileWidth));
         }
 
 
@@ -108,7 +108,7 @@ namespace TowerDefense {
             }
 
             if(target != null) {
-                Drawing.DrawBolt(FirePoint, target.CenterPoint);
+                Graphics.DrawBolt(FirePoint, target.CenterPoint);
                 target.TakeDamage(Damage);
                 CoolDown += (1.0 / FireRate);
             }

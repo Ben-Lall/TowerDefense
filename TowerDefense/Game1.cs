@@ -445,7 +445,7 @@ namespace TowerDefense {
             return null;
         }
 
-        /* Drawing functions */
+        /* Graphics functions */
 
             /// <summary>
             /// This is called when the game should draw itself.
@@ -601,12 +601,12 @@ namespace TowerDefense {
         protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
             for(int i = 0; i < screenHeight; i += Settings.TileHeight) {
-                Drawing.DrawLine(spriteBatch, 0, i, screenWidth - menuPanelWidth, 1, Color.Black);
+                Graphics.DrawLine(spriteBatch, 0, i, screenWidth - menuPanelWidth, 1, Color.Black);
             }
 
             // Draw vertical lines across the screen at each tile width
             for (int j = 0; j < screenWidth - menuPanelWidth; j += Settings.TileWidth) {
-                Drawing.DrawLine(spriteBatch, j, 0, 1, screenHeight, Color.Black);
+                Graphics.DrawLine(spriteBatch, j, 0, 1, screenHeight, Color.Black);
             }
         }
 
