@@ -83,8 +83,8 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         /// <param name="monsters">List of monsters, in the event that it needs to fire.</param>
-        public void Act(GameTime gameTime, List<Monster> monsters) {
-            CoolDown -= gameTime.ElapsedGameTime.TotalSeconds;
+        public void Update(GameTime gameTime, List<Monster> monsters) {
+            CoolDown = Math.Max(0, CoolDown - gameTime.ElapsedGameTime.TotalSeconds);
             if(CoolDown <= 0) {
                 Fire(monsters);
             }
@@ -100,7 +100,7 @@ namespace TowerDefense {
             Monster target = null;
             foreach(Monster m in monsters) {
                 if (Globals.Intersects(this, m)) {
-                    if(m.DistanceToTarget() < lowestDistance) {
+                      if(m.DistanceToTarget() < lowestDistance) {
                         lowestDistance = m.DistanceToTarget();
                         target = m;
                     }
@@ -108,9 +108,9 @@ namespace TowerDefense {
             }
 
             if(target != null) {
-                Graphics.DrawBolt(FirePoint, target.CenterPoint);
                 target.TakeDamage(Damage);
                 CoolDown += (1.0 / FireRate);
+                Globals.effects.Add(new LightningBolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White));
             }
         }
 
@@ -137,7 +137,8 @@ namespace TowerDefense {
         public int X { get => Pos.X; set => pos.X = value; }
         public int Y { get => Pos.Y; set => pos.Y = value; }
         public Point CenterPoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y + Height / 2)); }
-        public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (2  * (Y + Height)) / 3); }
+        public Point CenterTile { get => new Point(X + Width / 2, Y + Height / 2); }
+        public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight *  (Y - 2 * (Height) / 3)); }
         public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
         public int Width { get => width; set => width = value; }
         public int Height { get => height; set => height = value; }
@@ -145,6 +146,7 @@ namespace TowerDefense {
         public int Damage { get => Template.Damage; set => Template.Damage = value; }
         public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
         public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
+        public Point PixelRadius { get => new Point((int)(FireRadius * Settings.TileWidth), (int)(FireRadius * Settings.TileHeight)); }
         public double CoolDown { get => coolDown; set => coolDown = value; }
         public Texture2D Sprite { get => template.Sprite; set => template.Sprite = value; }
         public TowerType Type { get => template.Type; set => template.Type = value; }

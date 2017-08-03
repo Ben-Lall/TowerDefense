@@ -25,7 +25,7 @@ namespace TowerDefense {
         /// <summary>
         /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
         /// </summary>
-        SortedSet<Object> drawSet;
+        List<Object> drawSet;
 
         /* Input */
 
@@ -127,7 +127,8 @@ namespace TowerDefense {
         /// </summary>
         TowerTemplate pendingTowerTemplate;
 
-        /* Sprites */
+
+        DrawComparer drawComparer = new DrawComparer();
 
         public Game1() {
             graphics = new GraphicsDeviceManager(this);
@@ -170,10 +171,10 @@ namespace TowerDefense {
             //Initialize collections
             towers = new List<Tower>();
             monsters = new List<Monster>();
-            drawSet = new SortedSet<Object>(new DrawComparer());
+            drawSet = new List<Object>();
             buttons = new List<Button>();
             
-            Globals.InitializeGlobals(GraphicsDevice);
+            Globals.InitializeGlobals();
 
             ulTowers = new List<TowerTemplate>();
             ulTowers.Add(Globals.BoltTowerTemplate);
@@ -190,13 +191,8 @@ namespace TowerDefense {
         protected override void LoadContent() {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            Art.LoadContent(Content, GraphicsDevice);
 
-            Globals.Font = Content.Load<SpriteFont>("Font");
-            Globals.TowerTex = Content.Load<Texture2D>("torreMagica");
-            Globals.MenuPanel = Content.Load<Texture2D>("menu_panel");
-            Globals.TowerButton = Content.Load<Texture2D>("menu_panel");
-            Globals.ImpTex = Content.Load<Texture2D>("imp");
-            Globals.HubTex = Content.Load<Texture2D>("hub");
         }
 
         /// <summary>
@@ -216,6 +212,7 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
             // If a tower has been added/removed from the list, refresh the buttons list
+            drawSet.Sort(drawComparer);
             if (!paused) {
                 if (buttons.Count != ulTowers.Count) {
                     RefreshButtonsList();
@@ -223,6 +220,7 @@ namespace TowerDefense {
 
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
+                UpdateEffects(gameTime);
             }
 
             HandleInput();
@@ -231,12 +229,23 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Update effects.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        private void UpdateEffects(GameTime gameTime) {
+            Globals.effects.RemoveAll(x => x.IsComplete);
+            foreach(LightningBolt e in Globals.effects) {
+                e.Update();
+            }
+        }
+
+        /// <summary>
         /// Update towers. This calls each tower and has them execute their automatic abilities.
         /// </summary>
         /// <param name="gameTime"></param>
         private void UpdateTowers(GameTime gameTime) {
             foreach (Tower t in towers) {
-                t.Act(gameTime, monsters);
+               t.Update(gameTime, monsters);
             }
         }
 
@@ -245,8 +254,8 @@ namespace TowerDefense {
         /// </summary>
         private void UpdateMonsters(GameTime gameTime) {
             // Remove dead monsters from the list.
-            monsters.RemoveAll(x => x.CurrentHealth == 0);
-            drawSet.RemoveWhere(x => x.GetType() == typeof(Monster) && ((Monster)x).CurrentHealth == 0);
+            monsters.RemoveAll(x => !x.IsAlive);
+            drawSet.RemoveAll(x => x.GetType() == typeof(Monster) && !((Monster)x).IsAlive);
 
             foreach (Monster m in monsters) {
                 m.Move(gameTime);
@@ -262,7 +271,7 @@ namespace TowerDefense {
             for (int i = 0; i < ulTowers.Count; i++) {
                 Rectangle buttonBox = new Rectangle(screenWidth - menuPanelWidth + (menuPanelWidth / 4), (i * menuPanelHeight / 12) + (5 * i) + 5,
                                                     menuPanelWidth / 2, menuPanelHeight / 12);
-                buttons.Add(new Button(buttonBox, Globals.TowerButton, Globals.TowerTex, null));
+                buttons.Add(new Button(buttonBox, Art.TowerButton, Art.Tower, null));
             }
         }
 
@@ -470,17 +479,28 @@ namespace TowerDefense {
 
             DrawDebug();
 
+            foreach(LightningBolt e in Globals.effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
+                e.Draw(spriteBatch);
+            }
+
             spriteBatch.End();
             base.Draw(gameTime);
         }
 
         private void DrawUI() {
             DrawMenuPanel();
+            String pauseText = "Paused!";
+            Vector2 pauseTextSize = Art.Font.MeasureString(pauseText);
+            Vector2 pausePosition = new Vector2(screenWidth - 5, screenHeight - 25) - pauseTextSize;
             if (paused) {
-                String pauseText = "Paused!";
-                Vector2 pauseTextSize = Globals.Font.MeasureString(pauseText);
-                spriteBatch.DrawString(Globals.Font, pauseText, new Vector2(screenWidth - 5, screenHeight - 25) - pauseTextSize, Color.Black);
+                spriteBatch.DrawString(Art.Font, pauseText, pausePosition, Color.Black);
             }
+
+            String monsterText = "Monsters: " + monsters.Count;
+            Vector2 monsterTextSize = Art.Font.MeasureString(monsterText);
+            Vector2 monsterTextPosition = new Vector2(screenWidth - 5, pausePosition.Y) - monsterTextSize;
+            spriteBatch.DrawString(Art.Font, monsterText, monsterTextPosition, Color.Black);
+
         }
 
         /// <summary>
@@ -491,8 +511,8 @@ namespace TowerDefense {
             if(CursorIsOnMap()) {
                 // Draw currently hovered tile coordinates
                 String hoverTileText = "Hover: (" + (mouseState.X / Settings.TileWidth) + ", " + (mouseState.Y / Settings.TileHeight) + ")";
-                Vector2 hoverSize = Globals.Font.MeasureString(hoverTileText);
-                spriteBatch.DrawString(Globals.Font, hoverTileText, new Vector2(screenWidth - 5, screenHeight - 5) - hoverSize, Color.Black);
+                Vector2 hoverSize = Art.Font.MeasureString(hoverTileText);
+                spriteBatch.DrawString(Art.Font, hoverTileText, new Vector2(screenWidth - 5, screenHeight - 5) - hoverSize, Color.Black);
             }
         }
 
@@ -586,7 +606,7 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMenuPanel() {
             int menuPanelX = screenWidth - menuPanelWidth;
-            spriteBatch.Draw(Globals.MenuPanel, new Rectangle(menuPanelX, 0, menuPanelWidth, menuPanelHeight), Color.White);
+            spriteBatch.Draw(Art.MenuPanel, new Rectangle(menuPanelX, 0, menuPanelWidth, menuPanelHeight), Color.White);
 
             /* Draw buttons for the panel. */
             foreach(Button b in buttons) {
@@ -643,7 +663,7 @@ namespace TowerDefense {
         }
 
         protected void DrawTile(int x, int y, Color color) {
-            spriteBatch.Draw(Globals.Pixel, new Rectangle(x * Settings.TileWidth, y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), color);
+            spriteBatch.Draw(Art.Pixel, new Rectangle(x * Settings.TileWidth, y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), color);
         }
 
         /// <summary>
@@ -722,7 +742,7 @@ namespace TowerDefense {
             // Spawn each enemy at a random tile.
             for(int i = 0; i < spawnAmt; i++) {
                 Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
-                AddMonster(new Monster(Globals.ImpTex, MonsterType.IMP, spawnTile.Pos, Globals.GetClosestTilePos(spawnTile.Pos, TowerType.HUB, towers), 10, map));
+                AddMonster(new Monster(Art.Imp, MonsterType.IMP, spawnTile.Pos, Globals.GetClosestTilePos(spawnTile.Pos, TowerType.HUB, towers), 10, map));
             }
         }
 

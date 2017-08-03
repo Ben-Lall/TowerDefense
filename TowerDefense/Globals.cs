@@ -18,30 +18,15 @@ namespace TowerDefense {
         /// </summary>
         private static Monster[] monsterCatalog;
 
-        /** Tower Templates **/
-        private static TowerTemplate boltTowerTemplate;
-        private static TowerTemplate hubTemplate;
+        /// <summary>
+        /// List of effects currently playing on the screen.
+        /// </summary>
+        public static List<LightningBolt> effects;
 
-        /** Textures **/
-        /** Fonts **/
-        private static SpriteFont font;
-
-        /* UI Textures */
-        private static Texture2D menuPanelTex;
-        private static Texture2D pixel;
-
-        /* Tower Textures */
-        private static Texture2D towerTex;
-        private static Texture2D towerButtonTex;
-        private static Texture2D hubTex;
-
-        /* Monster Textures */
-        private static Texture2D impTex;
-
-        public static void InitializeGlobals(GraphicsDevice graphics) {
+        public static void InitializeGlobals() {
             MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];
-            Pixel = new Texture2D(graphics, 1, 1);
-            Pixel.SetData<Color>(new Color[] { Color.White });
+            effects = new List<LightningBolt>();
+
         }
 
         /// <summary>
@@ -101,24 +86,25 @@ namespace TowerDefense {
         /// <param name="m">The Monster.</param>
         /// <returns>true if they intersect, false otherwise.</returns>
         public static bool Intersects(Tower t, Monster m) {
-            // Check that the extremities of the circle are outside of the boundaries of the rectangle.
-            return !((t.Pos.X - t.FireRadius) * Settings.TileWidth > m.X + m.SpriteWidth ||
-                   (t.Pos.X + t.FireRadius) * Settings.TileWidth < m.X ||
-                   (t.Pos.Y - t.FireRadius) * Settings.TileWidth > m.Y + m.SpriteHeight ||
-                   (t.Pos.Y + t.FireRadius) * Settings.TileWidth < m.Y);
+            // Tower range is interpreted as the ellipse ((x - t.CenterPoint.x)^2)/a^2 + ((y - t.CenterPoint.y)^2)/b^2 = 1
+            // Where a = (t.PixelRadius.X)^2 and b = (t.PixelRadius.Y)^2
+            // Check the 8 relevant points on a rectangle to see if it intersects.
+            return (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1;
+
+
         }
 
 
         internal static Monster[] MonsterCatalog { get => monsterCatalog; set => monsterCatalog = value; }
-        internal static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT, TowerTex); }
-        internal static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB, HubTex); }
-        public static SpriteFont Font { get => font; set => font = value; }
-        public static Texture2D MenuPanel { get => menuPanelTex; set => menuPanelTex = value; }
-        public static Texture2D HubTex { get => hubTex; set => hubTex = value; }
-        public static Texture2D TowerTex { get => towerTex; set => towerTex = value; }
-        public static Texture2D TowerButton { get => towerButtonTex; set => towerButtonTex = value; }
-        public static Texture2D Pixel { get => pixel; set => pixel = value; }
-        public static Texture2D ImpTex { get => impTex; set => impTex = value; }
+        internal static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT, Art.Tower); }
+        internal static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB, Art.Hub); }
 
         /** Constants **/
         public static double SQRT2 { get { return Math.Sqrt(2); } }

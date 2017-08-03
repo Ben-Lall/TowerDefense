@@ -66,7 +66,7 @@ namespace TowerDefense {
                 case TowerType.BOLT:
                     Width = 2;
                     Height = 2;
-                    Damage = 4;
+                    Damage = 8;
                     FireRate = 1;
                     FireRadius = 5;
                     break;

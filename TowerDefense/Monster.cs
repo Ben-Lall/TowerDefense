@@ -93,7 +93,7 @@ namespace TowerDefense {
         /// <param name="spriteBatch"></param>
         public void DrawPath(SpriteBatch spriteBatch) {
             foreach (Tile t in pf.Path) {
-                spriteBatch.Draw(Globals.Pixel, new Rectangle(t.X * Settings.TileWidth, t.Y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), Color.Crimson * 0.5f);
+                spriteBatch.Draw(Art.Pixel, new Rectangle(t.X * Settings.TileWidth, t.Y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), Color.Crimson * 0.5f);
             }
         }
 
@@ -130,5 +130,6 @@ namespace TowerDefense {
         public int CurrentHealth { get => currentHealth; set => currentHealth = value; }
         internal MonsterType Type { get => type; set => type = value; }
         public double Speed { get => speed; set => speed = value; }
+        public bool IsAlive { get => CurrentHealth > 0; }
     }
 }
