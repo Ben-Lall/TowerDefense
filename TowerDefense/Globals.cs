@@ -21,11 +21,11 @@ namespace TowerDefense {
         /// <summary>
         /// List of effects currently playing on the screen.
         /// </summary>
-        public static List<LightningBolt> effects;
+        public static List<Bolt> effects;
 
         public static void InitializeGlobals() {
             MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];
-            effects = new List<LightningBolt>();
+            effects = new List<Bolt>();
 
         }
 

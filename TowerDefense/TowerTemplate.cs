@@ -67,7 +67,7 @@ namespace TowerDefense {
                     Width = 2;
                     Height = 2;
                     Damage = 8;
-                    FireRate = 1;
+                    FireRate = 1.5;
                     FireRadius = 20;
                     break;
                 case TowerType.HUB:

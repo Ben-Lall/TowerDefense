@@ -243,8 +243,8 @@ namespace TowerDefense {
         /// <param name="gameTime"></param>
         private void UpdateEffects(GameTime gameTime) {
             Globals.effects.RemoveAll(x => x.IsComplete);
-            foreach(LightningBolt e in Globals.effects) {
-                e.Update();
+            foreach(Bolt e in Globals.effects) {
+                e.Update(gameTime);
             }
         }
 
@@ -491,7 +491,7 @@ namespace TowerDefense {
             // Change spriteBatch into the mode for drawing effects.
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Texture, maxBlend);
-            foreach (LightningBolt e in Globals.effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
+            foreach (Bolt e in Globals.effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
                 e.Draw(spriteBatch);
             }
 

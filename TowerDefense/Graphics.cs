@@ -79,23 +79,25 @@ namespace TowerDefense {
 
     }
 
-    class LightningBolt {
+    class Bolt {
         public List<Line> Segments = new List<Line>();
 
         public float Alpha { get; set; }
         public float FadeOutRate { get; set; }
+        public float FadeOutTime { get; set; }
         public Color Tint { get; set; }
 
         public bool IsComplete { get { return Alpha <= 0; } }
 
-        public LightningBolt(Vector2 source, Vector2 dest) : this(source, dest, new Color(0.9f, 0.8f, 1f)) { }
+        public Bolt(Vector2 source, Vector2 dest) : this(source, dest, new Color(0.9f, 0.8f, 1f), 0.5f) { }
 
-        public LightningBolt(Vector2 source, Vector2 dest, Color color) {
+        public Bolt(Vector2 source, Vector2 dest, Color color, float fadeOutTime) {
             Segments = CreateBolt(source, dest, 2);
 
             Tint = color;
             Alpha = 1f;
-            FadeOutRate = 0.03f;
+            FadeOutTime = fadeOutTime;
+            FadeOutRate = ((float)((1.0 - (0.15 * fadeOutTime)) / (0.85 * fadeOutTime))) / 100;
         }
 
         public void Draw(SpriteBatch spriteBatch) {
@@ -106,11 +108,13 @@ namespace TowerDefense {
                 segment.Draw(spriteBatch, Tint * (Alpha * 0.6f));
         }
 
-        public virtual void Update() {
+        public virtual void Update(GameTime gameTime) {
+            // This update formula will allow the lightning bolt to "flash" more vibrantly for the first 15% of its lifetime, 
+            // before fizzling out fast enough to disappear at the end.
             if (Alpha > 0.85f) {
-                Alpha -= 0.01f;
+                Alpha -= 0.01f * (gameTime.ElapsedGameTime.Milliseconds / 10);
             } else {
-                Alpha -= FadeOutRate;
+                Alpha -= FadeOutRate * (gameTime.ElapsedGameTime.Milliseconds / 10);
             }
         }
 
