@@ -107,7 +107,11 @@ namespace TowerDefense {
         }
 
         public virtual void Update() {
-            Alpha -= FadeOutRate;
+            if (Alpha > 0.85f) {
+                Alpha -= 0.01f;
+            } else {
+                Alpha -= FadeOutRate;
+            }
         }
 
         protected static List<Line> CreateBolt(Vector2 source, Vector2 dest, float thickness) {
@@ -121,12 +125,12 @@ namespace TowerDefense {
             positions.Add(0);
 
             for (int i = 0; i < length / 4; i++)
-                positions.Add(Rand.Next(0, 1));
+                positions.Add((float)Rand.NextDouble());
 
             positions.Sort();
 
             const int Sway = 80;
-            const float Jaggedness = 1 / Sway;
+            const float Jaggedness = 1.0f / Sway;
 
             Vector2 prevPoint = source;
             float prevDisplacement = 0;

@@ -130,6 +130,15 @@ namespace TowerDefense {
 
         DrawComparer drawComparer = new DrawComparer();
 
+        private static readonly BlendState maxBlend = new BlendState() {
+            AlphaBlendFunction = BlendFunction.Max,
+            ColorBlendFunction = BlendFunction.Max,
+            AlphaDestinationBlend = Blend.One,
+            AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            ColorSourceBlend = Blend.One
+        };
+
         public Game1() {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -479,7 +488,10 @@ namespace TowerDefense {
 
             DrawDebug();
 
-            foreach(LightningBolt e in Globals.effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
+            // Change spriteBatch into the mode for drawing effects.
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Texture, maxBlend);
+            foreach (LightningBolt e in Globals.effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
                 e.Draw(spriteBatch);
             }
 
