@@ -166,16 +166,20 @@ namespace TowerDefense {
             menuPanelWidth = screenWidth / 8;
             menuPanelHeight = screenHeight;
 
-            // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120, 1120 = 1280 * (7/8).
+            // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120: 1120 = 1280 * (7/8).
             Settings.TileWidth = 16;
             Settings.TileHeight = 16;
 
-            // Set the number of tiles viewable on the screen, since the menu panel will obstruct the map slightly.
-            Settings.ViewportRowLength = (screenWidth - menuPanelWidth) / Settings.TileWidth;
-            Settings.ViewportColumnLength = screenHeight / Settings.TileHeight;
+            // Set the number of tiles viewable on the screen
+            Settings.ViewRows = screenWidth / Settings.TileWidth;
+            Settings.ViewCols = screenHeight / Settings.TileHeight;
+
+            // Set the map dimensions
+            Settings.MapWidth = Math.Max(Settings.ViewRows, 100);
+            Settings.MapHeight = Math.Max(Settings.ViewCols, 100);
 
             // Initialize the gameplay objects.
-            map = new Tile[Settings.ViewportColumnLength, Settings.ViewportRowLength];
+            map = new Tile[Settings.MapWidth, Settings.MapHeight];
 
             //Initialize collections
             towers = new List<Tower>();
@@ -300,6 +304,7 @@ namespace TowerDefense {
             }
 
             /** Keyboard Handling **/
+            // Back/cancel
             if (!backPressed && (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))) {
                 backPressed = true;
                 if (isPlacingTower) {// Stop tower placement
@@ -314,12 +319,27 @@ namespace TowerDefense {
                 backPressed = false;
             }
 
+            // Pause
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !pausePressed) {
                 // Toggle pause if menu is not open
                 paused = !paused;
                 pausePressed = true;
             } else if (Keyboard.GetState().IsKeyUp(Keys.Space) && pausePressed) {
                 pausePressed = false;
+            }
+
+            // Movement keys
+            if (Keyboard.GetState().IsKeyDown(Keys.W)) {
+                Globals.Viewport = new Point(Globals.Viewport.X, Clamp(Globals.Viewport.Y - 1, 0, Settings.MaxViewportY));
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.S)) {
+                Globals.Viewport = new Point(Globals.Viewport.X, Clamp(Globals.Viewport.Y + 1, 0, Settings.MaxViewportY));
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.A)) {
+                Globals.Viewport = new Point(Clamp(Globals.Viewport.X - 1, 0, Settings.MaxViewportX), Globals.Viewport.Y);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.D)) {
+                Globals.Viewport = new Point(Clamp(Globals.Viewport.X + 1, 0, Settings.MaxViewportX), Globals.Viewport.Y);
             }
 
         }
@@ -414,14 +434,15 @@ namespace TowerDefense {
         /// <summary>
         /// Returns a Point representing the coordinates of the top-left tile of the area highlighted by the cursor, where the dimensions are
         /// the dimensions of the pending tower.
+        /// Assumes isPlacingTower = true, and CursorIsOnMap() = true.
         /// </summary>
         /// <returns></returns>
         protected Point GetAreaStartPoint() {
             int width = pendingTowerTemplate.Width;
             int height = pendingTowerTemplate.Height;
-            Point cursorTilePos = PixelToClosestTile(new Point(mouseState.X, mouseState.Y));
-            int x = Boundarize(cursorTilePos.X - width / 2, 0, Settings.ViewportRowLength - width);
-            int y = Boundarize(cursorTilePos.Y - height / 2, 0, Settings.ViewportColumnLength - height);
+            Point cursorTilePos = PixelToClosestTile(mouseState.Position);
+            int x = Clamp(cursorTilePos.X - width / 2, 0, Settings.MapWidth - width);
+            int y = Clamp(cursorTilePos.Y - height / 2, 0, Settings.MapHeight - height);
             return new Point(x, y);
         }
 
@@ -470,7 +491,7 @@ namespace TowerDefense {
             /// </summary>
             /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.Blue);
             spriteBatch.Begin();
 
             /* Draw gameplay elements */
@@ -499,11 +520,23 @@ namespace TowerDefense {
             base.Draw(gameTime);
         }
 
+        /// <summary>
+        /// Draw the UI to the screen.
+        /// </summary>
         private void DrawUI() {
-            DrawMenuPanel();
+            if (!isPlacingTower) {
+                DrawMenuPanel();
+            }
+            DrawUIText();
+        }
+
+        /// <summary>
+        /// Draw the UI text to the screen.
+        /// </summary>
+        private void DrawUIText() {
             String pauseText = "Paused!";
             Vector2 pauseTextSize = Art.Font.MeasureString(pauseText);
-            Vector2 pausePosition = new Vector2(screenWidth - 5, screenHeight - 25) - pauseTextSize;
+            Vector2 pausePosition = new Vector2(screenWidth - 5, screenHeight - 45) - pauseTextSize;
             if (paused) {
                 spriteBatch.DrawString(Art.Font, pauseText, pausePosition, Color.Black);
             }
@@ -512,20 +545,25 @@ namespace TowerDefense {
             Vector2 monsterTextSize = Art.Font.MeasureString(monsterText);
             Vector2 monsterTextPosition = new Vector2(screenWidth - 5, pausePosition.Y) - monsterTextSize;
             spriteBatch.DrawString(Art.Font, monsterText, monsterTextPosition, Color.Black);
-
         }
 
         /// <summary>
         /// Draw debug information to the screen.
         /// </summary>
         private void DrawDebug() {
+            String hoverTileText = "";
+            Vector2 hoverTextSize = new Vector2();
             // Draw hover information
-            if(CursorIsOnMap()) {
+            if (CursorIsOnMap()) {
                 // Draw currently hovered tile coordinates
-                String hoverTileText = "Hover: (" + (mouseState.X / Settings.TileWidth) + ", " + (mouseState.Y / Settings.TileHeight) + ")";
-                Vector2 hoverSize = Art.Font.MeasureString(hoverTileText);
-                spriteBatch.DrawString(Art.Font, hoverTileText, new Vector2(screenWidth - 5, screenHeight - 5) - hoverSize, Color.Black);
+                hoverTileText = "Hover: (" + PixelToClosestTile(mouseState.Position).X + ", " + PixelToClosestTile(mouseState.Position).Y + ")";
+                hoverTextSize = Art.Font.MeasureString(hoverTileText);
+                spriteBatch.DrawString(Art.Font, hoverTileText, new Vector2(screenWidth - 5, screenHeight - 5) - hoverTextSize, Color.Black);
             }
+
+            String viewportText = "Viewport: " + Globals.Viewport.X + ", " + Globals.Viewport.Y + ")";
+            Vector2 viewportTextSize = Art.Font.MeasureString(viewportText);
+            spriteBatch.DrawString(Art.Font, viewportText, new Vector2(screenWidth - 5, hoverTileText.Length == 0 ? screenHeight - 5 : screenHeight - 5 - hoverTextSize.Y) - viewportTextSize, Color.Black);
         }
 
         /// <summary>
@@ -534,10 +572,12 @@ namespace TowerDefense {
         private void DrawGameplayObjects() {
             // Draw towers / creatures in the proper order.
             foreach (object obj in drawSet) {
-                if (obj.GetType() == typeof(Tower)) {
-                    ((Tower)obj).Draw(spriteBatch);
-                } else if (obj.GetType() == typeof(Monster)) {
-                    ((Monster)obj).Draw(spriteBatch);
+                if(IsOnScreen(obj)) {
+                    if (obj.GetType() == typeof(Tower)) {
+                        ((Tower)obj).Draw(spriteBatch);
+                    } else if (obj.GetType() == typeof(Monster)) {
+                        ((Monster)obj).Draw(spriteBatch);
+                    }
                 }
             }
 
@@ -559,28 +599,24 @@ namespace TowerDefense {
 
                 //Draw the tower to snap to the selected tiles
                 Tower projectedTower = new Tower(pendingTowerTemplate, placementPos);
-                spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(projectedTower.DrawPos, drawSize), Color.White);
+                projectedTower.Draw(spriteBatch);
 
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
 
                 // Draw the firing range of this tower's projected position.
                 projectedTower.DrawFiringRange(spriteBatch);
 
-            } else { // Draw the tower so that it follows the cursor
-                Point drawPos = new Point(mouseState.X, mouseState.Y) - new Point(pendingTowerTemplate.SpriteWidth  / 2, (2 * pendingTowerTemplate.SpriteHeight) / 3);
-                spriteBatch.Draw(pendingTowerTemplate.Sprite, new Rectangle(drawPos, drawSize), Color.White);
             }
-            
         }
 
         /// <summary>
-        /// Return target if it's within the boundaries, otherwise, return the boundary closest to tar.
+        /// Restrict the given value to the boundaries.
         /// </summary>
         /// <param name="tar"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns>int i, i is between low and high (inclusive)</returns>
-        protected int Boundarize(int tar, int low, int high) {
+        protected int Clamp(int tar, int low, int high) {
             return Math.Max(Math.Min(tar, high), low);
         }
 
@@ -590,7 +626,7 @@ namespace TowerDefense {
         /// <param name="pixel">Point containing the coordiantes of the pixel.</param>
         /// <returns></returns>
         protected Point PixelToTile(Point pixel) {
-            return new Point(pixel.X / Settings.TileWidth, pixel.Y / Settings.TileHeight);
+            return new Point(Globals.Viewport.X + pixel.X / Settings.TileWidth, Globals.Viewport.Y + pixel.Y / Settings.TileHeight);
         }
 
         /// <summary>
@@ -606,11 +642,32 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Checks if the given object is within the borders of the viewport.
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
+        protected bool IsOnScreen(object o) {
+            Point a = new Point();
+            Point b = new Point();
+            if(o.GetType() == typeof(Tower)) {
+                a = ((Tower)o).PixelPos;
+                b = new Point(((Tower)o).SpriteWidth, ((Tower)o).SpriteHeight);
+            } else if (o.GetType() == typeof(Monster)) {
+                a = ((Monster)o).Pos;
+                b = new Point(((Monster)o).SpriteWidth, ((Monster)o).SpriteHeight);
+            }
+            return new Rectangle(Globals.ViewportPx, Settings.ViewPortDimensionsPx).Intersects(new Rectangle(a, b));
+        }
+
+        /// <summary>
         /// Return true if the cursor is on the map, false otherwise.
         /// </summary>
         /// <returns></returns>
         protected bool CursorIsOnMap() {
-            return 0 < mouseState.X && mouseState.X < (screenWidth - menuPanelWidth) && mouseState.Y > 0 && mouseState.Y < Settings.ViewportColumnLength * Settings.TileHeight;
+            if(isPlacingTower) {
+                return 0 < mouseState.X && mouseState.X < screenWidth && mouseState.Y > 0 && mouseState.Y < Settings.ViewColsPx;
+            }
+            return 0 < mouseState.X && mouseState.X < (screenWidth - menuPanelWidth) && mouseState.Y > 0 && mouseState.Y < Settings.ViewColsPx;
         }
 
         /// <summary>
@@ -633,11 +690,11 @@ namespace TowerDefense {
         protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
             for(int i = 0; i < screenHeight; i += Settings.TileHeight) {
-                Graphics.DrawLine(spriteBatch, 0, i, screenWidth - menuPanelWidth, 1, Color.Black);
+                Graphics.DrawLine(spriteBatch, 0, i, screenWidth, 1, Color.Black);
             }
 
             // Draw vertical lines across the screen at each tile width
-            for (int j = 0; j < screenWidth - menuPanelWidth; j += Settings.TileWidth) {
+            for (int j = 0; j < screenWidth; j += Settings.TileWidth) {
                 Graphics.DrawLine(spriteBatch, j, 0, 1, screenHeight, Color.Black);
             }
         }
@@ -647,8 +704,8 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMap() {
             // Shade in the tiles based on their type.
-            for (int y = 0; y < Settings.ViewportColumnLength; y++) {
-                for(int x = 0; x < Settings.ViewportRowLength; x++) {
+            for (int y = Globals.Viewport.Y; y < Settings.ViewCols + Globals.Viewport.Y; y++) {
+                for(int x = Globals.Viewport.X; x < Settings.ViewRows + Globals.Viewport.X; x++) {
                     if(Map(x, y).Type == TileType.LIMITED) {
                         DrawTile(x, y, Color.DarkOliveGreen);
                     } else if(Map(x, y).Type == TileType.OPEN) {
@@ -674,8 +731,14 @@ namespace TowerDefense {
             DrawGrid();
         }
 
+        /// <summary>
+        /// Draw a tile to the game screen.
+        /// </summary>
+        /// <param name="x">x position.</param>
+        /// <param name="y">y position.</param>
+        /// <param name="color">The color</param>
         protected void DrawTile(int x, int y, Color color) {
-            spriteBatch.Draw(Art.Pixel, new Rectangle(x * Settings.TileWidth, y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), color);
+            spriteBatch.Draw(Art.Pixel, new Rectangle((x * Settings.TileWidth) - Globals.ViewportPx.X, (y * Settings.TileHeight) - Globals.ViewportPx.Y, Settings.TileWidth, Settings.TileHeight), color);
         }
 
         /// <summary>
@@ -683,40 +746,40 @@ namespace TowerDefense {
         /// </summary>
         protected void LoadMap() {
             // Fill in the game map with limited tiles.
-            for(int y = 0; y < Settings.ViewportColumnLength; y++) {
-                for(int x = 0; x < Settings.ViewportRowLength; x++) {
+            for(int y = 0; y < Settings.MapHeight; y++) {
+                for(int x = 0; x < Settings.MapWidth; x++) {
                     map[y, x] = new Tile(TileType.LIMITED, x, y);
                 }
             }
 
             // Draw a horizontal parabola-shaped pathway
-            for (int x = 0; x < Settings.ViewportRowLength; x++) {
+            for (int x = 0; x < Settings.MapWidth; x++) {
                 int fx = (int)Math.Sqrt(x / 3) + 1;
 
                 for(int y = -1; y < 2; y++) {
-                    Map(x, Settings.ViewportColumnLength / 2 + fx + y).Type = TileType.OPEN;
+                    Map(x, Settings.MapHeight / 2 + fx + y).Type = TileType.OPEN;
                 }
                 for(int y = -1; y < 2; y++) {
-                    Map(x, Settings.ViewportColumnLength / 2 - fx - y).Type = TileType.OPEN;
+                    Map(x, Settings.MapHeight / 2 - fx - y).Type = TileType.OPEN;
                 }
             }
 
             // Draw a horizontal line through the center
-            for (int y = 0; y < Settings.ViewportColumnLength; y++) {
+            for (int y = 0; y < Settings.MapHeight; y++) {
                 for (int x = -1; x < 2; x++) {
-                    Map(Settings.ViewportRowLength / 2 + x, y).Type = TileType.OPEN;
+                    Map(Settings.MapWidth / 2 + x, y).Type = TileType.OPEN;
                 }
             }
 
             // Draw a 5x5 square in the center
             for(int y = -2; y <= 2; y++) {
                 for(int x = -2; x <= 2; x++) {
-                    Map(Settings.ViewportRowLength / 2 + x, Settings.ViewportColumnLength / 2 + y).Type = TileType.OPEN;
+                    Map(Settings.MapWidth / 2 + x, Settings.MapHeight / 2 + y).Type = TileType.OPEN;
                 }
             }
 
             // Place hub in the center
-            hub = new Tower(Globals.HubTemplate, new Point(Settings.ViewportRowLength / 2 - 1, Settings.ViewportColumnLength / 2 - 1));
+            hub = new Tower(Globals.HubTemplate, new Point(Settings.MapWidth / 2 - 1, Settings.MapHeight / 2 - 1));
             AddTower(hub);
 
             currentWave = 0;
@@ -731,22 +794,22 @@ namespace TowerDefense {
 
             // Get the set of valid tiles -- OPEN tiles on the boundary of the screen.
             List<Tile> spawnTiles = new List<Tile>();
-            for(int i = 0; i < Math.Max(Settings.ViewportRowLength, Settings.ViewportRowLength); i++) {
-                if (i < Settings.ViewportRowLength) {
+            for(int i = 0; i < Math.Max(Settings.MapHeight, Settings.MapWidth); i++) {
+                if (i < Settings.MapWidth) {
                     if (Map(i, 0).Type == TileType.OPEN) {
                         spawnTiles.Add(Map(i, 0));
                     }
-                    if (Map(i, Settings.ViewportColumnLength - 1).Type == TileType.OPEN) {
-                        spawnTiles.Add(Map(i, Settings.ViewportColumnLength - 1));
+                    if (Map(i, Settings.MapHeight - 1).Type == TileType.OPEN) {
+                        spawnTiles.Add(Map(i, Settings.MapHeight - 1));
                     }
                 }
 
-                if (i < Settings.ViewportColumnLength) {
+                if (i < Settings.MapHeight) {
                     if (Map(0, i).Type == TileType.OPEN) {
                         spawnTiles.Add(Map(0, i));
                     }
-                    if (Map(Settings.ViewportRowLength - 1, i).Type == TileType.OPEN) {
-                        spawnTiles.Add(Map(Settings.ViewportRowLength - 1, i));
+                    if (Map(Settings.MapWidth - 1, i).Type == TileType.OPEN) {
+                        spawnTiles.Add(Map(Settings.MapWidth - 1, i));
                     }
                 }
             }

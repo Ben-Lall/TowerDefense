@@ -72,7 +72,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spritebatch) {
-            spritebatch.Draw(Sprite, new Rectangle(Pos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            spritebatch.Draw(Sprite, new Rectangle(Pos - Globals.ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
         /// <summary>

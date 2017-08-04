@@ -11,7 +11,6 @@ namespace TowerDefense {
     /// A class containing global variables and helper methods.
     /// </summary>
     static class Globals {
-        /** Constants **/
 
         /// <summary>
         /// Array containing every monster in the game, indexed by the MonsterType enumerator.
@@ -22,6 +21,16 @@ namespace TowerDefense {
         /// List of effects currently playing on the screen.
         /// </summary>
         public static List<Bolt> effects;
+
+        /// <summary>
+        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of tiles.
+        /// </summary>
+        public static Point Viewport { get; set; }
+
+        /// <summary>
+        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of pixels.
+        /// </summary>
+        public static Point ViewportPx { get => new Point(Viewport.X * Settings.TileWidth, Viewport.Y * Settings.TileHeight); }
 
         public static void InitializeGlobals() {
             MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];

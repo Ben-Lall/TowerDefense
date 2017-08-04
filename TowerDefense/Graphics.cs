@@ -72,9 +72,9 @@ namespace TowerDefense {
             Vector2 middleOrigin = new Vector2(0, Art.BoltLine.Height / 2f);
             Vector2 middleScale = new Vector2(tangent.Length(), thicknessScale);
 
-            spriteBatch.Draw(Art.BoltLine, A, null, color, rotation, middleOrigin, middleScale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(Art.BoltCap, A, null, color, rotation, capOrigin, thicknessScale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(Art.BoltCap, B, null, color, rotation + MathHelper.Pi, capOrigin, thicknessScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Art.BoltLine, A - Globals.ViewportPx.ToVector2(), null, color, rotation, middleOrigin, middleScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Art.BoltCap, A - Globals.ViewportPx.ToVector2(), null, color, rotation, capOrigin, thicknessScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Art.BoltCap, B - Globals.ViewportPx.ToVector2(), null, color, rotation + MathHelper.Pi, capOrigin, thicknessScale, SpriteEffects.None, 0f);
         }
 
     }

@@ -70,14 +70,14 @@ namespace TowerDefense {
         /// <param name="map">Game map.</param>
         private void AddAdjacencies(SearchNode s, Point target, Tile[,] map) {
             // Check and add the 6 tiles above and below the given tile
-            for(int i = s.tile.X == 0 ? 0 : -1; i < (s.tile.X == Settings.ViewportRowLength - 1 ? 1 : 2); i++) {
+            for(int i = s.tile.X == 0 ? 0 : -1; i < (s.tile.X == Settings.MapWidth - 1 ? 1 : 2); i++) {
                 if(s.tile.Y > 0) {
                     Tile t = map[s.tile.Y - 1, s.tile.X + i];
                     if (t.IsEmpty()) {
                         pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
                     }
                 }
-                if(s.tile.Y < Settings.ViewportColumnLength - 1) { // TODO: change to world map column length
+                if(s.tile.Y < Settings.MapHeight - 1) {
                     Tile t = map[s.tile.Y + 1, s.tile.X + i];
                     if (t.IsEmpty()) {
                         pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
@@ -92,7 +92,7 @@ namespace TowerDefense {
                     pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));
                 }
             }
-            if (s.tile.X < Settings.ViewportRowLength - 1) {
+            if (s.tile.X < Settings.MapWidth - 1) {
                 Tile t = map[s.tile.Y, s.tile.X + 1];
                 if (t.IsEmpty()) {
                     pq.Add(new SearchNode(t, s, Globals.Distance(t.Pos, target)));

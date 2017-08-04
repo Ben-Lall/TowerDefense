@@ -31,8 +31,8 @@ namespace TowerDefense {
             // Get coordinates of a.
             if (typeOfA == typeof(Tower)) {
                 Tower temp = (Tower)a;
-                aX = temp.Pos.X * Settings.TileWidth;
-                aY = temp.Pos.Y * Settings.TileHeight;
+                aX = temp.PixelPos.X;
+                aY = temp.PixelPos.Y;
             } else if(typeOfA == typeof(Monster)) {
                 Monster temp = (Monster)a;
                 aX = temp.Pos.X - temp.SpriteWidth / 2;
@@ -42,8 +42,8 @@ namespace TowerDefense {
             // Get coordinates of b.
             if (typeOfB == typeof(Tower)) {
                 Tower temp = (Tower)b;
-                bX = temp.Pos.X * Settings.TileWidth;
-                bY = temp.Pos.Y * Settings.TileHeight;
+                bX = temp.PixelPos.X;
+                bY = temp.PixelPos.Y;
             } else if (typeOfB == typeof(Monster)) {
                 Monster temp = (Monster)b;
                 bX = temp.Pos.X - temp.SpriteWidth / 2;

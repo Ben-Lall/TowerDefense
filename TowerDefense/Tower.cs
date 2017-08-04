@@ -59,14 +59,14 @@ namespace TowerDefense {
         /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spriteBatch) {
             if (Selected) {
-                Graphics.DrawLine(spriteBatch, X * Settings.TileWidth, Y * Settings.TileHeight, Width * Settings.TileWidth, 1, Color.Green);
-                Graphics.DrawLine(spriteBatch, X * Settings.TileWidth, (Y + Height) * Settings.TileHeight, Width * Settings.TileWidth, 1, Color.Green);
-                Graphics.DrawLine(spriteBatch, X * Settings.TileWidth, Y * Settings.TileHeight, 1, Height * Settings.TileHeight, Color.Green);
-                Graphics.DrawLine(spriteBatch, (X + Width) * Settings.TileWidth, Y * Settings.TileHeight, 1, Height * Settings.TileHeight, Color.Green);
+                Graphics.DrawLine(spriteBatch, PxX - Globals.ViewportPx.X, PxY - Globals.ViewportPx.Y, Width * Settings.TileWidth, 1, Color.Green);
+                Graphics.DrawLine(spriteBatch, PxX - Globals.ViewportPx.X, (Y + Height) * Settings.TileHeight - Globals.ViewportPx.Y, Width * Settings.TileWidth, 1, Color.Green);
+                Graphics.DrawLine(spriteBatch, PxX - Globals.ViewportPx.X, PxY - Globals.ViewportPx.Y, 1, Height * Settings.TileHeight, Color.Green);
+                Graphics.DrawLine(spriteBatch, (X + Width) * Settings.TileWidth - Globals.ViewportPx.X, PxY - Globals.ViewportPx.Y, 1, Height * Settings.TileHeight, Color.Green);
 
                 //TODO: add aura
             }
-            spriteBatch.Draw(Sprite, new Rectangle(DrawPos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            spriteBatch.Draw(Sprite, new Rectangle(DrawPos - Globals.ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spriteBatch"></param>
         public void DrawFiringRange(SpriteBatch spriteBatch) {
-            Graphics.DrawCircle(spriteBatch, CenterPoint, (int)(FireRadius * Settings.TileWidth));
+            Graphics.DrawCircle(spriteBatch, CenterPoint - Globals.ViewportPx, (int)(FireRadius * Settings.TileWidth));
         }
 
 
@@ -134,8 +134,11 @@ namespace TowerDefense {
 
         /* Setters and Getters */
         public Point Pos { get => pos; set => pos = value; }
+        public Point PixelPos { get => new Point(Pos.X * Settings.TileWidth, Pos.Y * Settings.TileHeight); }
         public int X { get => Pos.X; set => pos.X = value; }
         public int Y { get => Pos.Y; set => pos.Y = value; }
+        public int PxX { get => PixelPos.X; }
+        public int PxY { get => PixelPos.Y; }
         public Point CenterPoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y + Height / 2)); }
         public Point CenterTile { get => new Point(X + Width / 2, Y + Height / 2); }
         public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight *  (Y - 2 * (Height) / 3)); }
