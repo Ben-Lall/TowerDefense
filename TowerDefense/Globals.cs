@@ -11,6 +11,144 @@ namespace TowerDefense {
     /// A class containing global variables and helper methods.
     /// </summary>
     static class Globals {
+        /* System */
+
+        /// <summary>
+        /// Graphics device.
+        /// </summary>
+        GraphicsDeviceManager graphics;
+
+        /// <summary>
+        /// SpriteBatch.
+        /// </summary>
+        SpriteBatch spriteBatch;
+
+        /// <summary>
+        /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
+        /// </summary>
+        List<Object> drawSet;
+
+        /* Input */
+
+        /// <summary>
+        /// The mouse's current state.
+        /// </summary>
+        MouseState mouseState;
+
+        /// <summary>
+        /// Toggle boolean for the pause button.
+        /// </summary>
+        bool pausePressed;
+
+        /// <summary>
+        /// Toggle boolean for the mouse button.
+        /// </summary>
+        bool mousePressed;
+
+        /// <summary>
+        /// Toggle boolean for back button.
+        /// </summary>
+        bool backPressed;
+
+        /* Graphics */
+
+        /// <summary>
+        /// Integer representing the width of the window, in pixels.
+        /// </summary>
+        int screenWidth;
+
+        /// <summary>
+        /// Integer representing the height of the window, in pixels.
+        /// </summary>
+        int screenHeight;
+
+        /// <summary>
+        /// Width in pixels of the menu panel.
+        /// </summary>
+        int menuPanelWidth;
+
+        /// <summary>
+        /// Height in pixels of the menu panel.
+        /// </summary>
+        int menuPanelHeight;
+
+        /* Game World */
+
+        /// <summary>
+        /// 2D array representing the game map.  Read by map[i.j], where i refers to the row, and j refers to the column.
+        /// </summary>
+        Tile[,] map;
+
+        /* Gameplay */
+
+        /// <summary>
+        /// Boolean representing if the game is currently paused.
+        /// </summary>
+        bool paused;
+
+        /// <summary>
+        /// List of templates of towers unlocked by the player
+        /// </summary>
+        List<TowerTemplate> ulTowers;
+
+        /// <summary>
+        /// List of Towers currently on the game map.
+        /// </summary>
+        List<Tower> towers;
+
+        /// <summary>
+        /// The hub.
+        /// </summary>
+        Tower hub;
+
+        /// <summary>
+        /// List of monsters currently on the game map.
+        /// </summary>
+        List<Monster> monsters;
+
+        /// <summary>
+        /// Integer representing the current wave.  Always > 0.
+        /// </summary>
+        int currentWave;
+
+        /* UI */
+
+        /// <summary>
+        /// List of rectangles, where each rectangle represents the hit area of a menu button.
+        /// </summary>
+        List<Button> buttons;
+
+        /// <summary>
+        /// Boolean representing whether or not the player has selected a tower and is working on placing it.
+        /// </summary>
+        bool isPlacingTower;
+
+        /// <summary>
+        /// A Template of the tower whose placement is currently being deliberated, if any.
+        /// </summary>
+        TowerTemplate pendingTowerTemplate;
+
+        /// <summary>
+        /// Comparer used to sort objects by drawing order.
+        /// </summary>
+        DrawComparer drawComparer = new DrawComparer();
+
+        /// <summary>
+        /// Blendstate used to reduce additive blending on joints of lightning bolts.
+        /// </summary>
+        private static readonly BlendState maxBlend = new BlendState()
+        {
+            AlphaBlendFunction = BlendFunction.Max,
+            ColorBlendFunction = BlendFunction.Max,
+            AlphaDestinationBlend = Blend.One,
+            AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            ColorSourceBlend = Blend.One
+        };
+
+        
+
+
 
         /// <summary>
         /// Array containing every monster in the game, indexed by the MonsterType enumerator.
@@ -20,7 +158,7 @@ namespace TowerDefense {
         /// <summary>
         /// List of effects currently playing on the screen.
         /// </summary>
-        public static List<Bolt> effects;
+        public static List<Bolt> Effects { get; set; }
 
         /// <summary>
         /// Point representing the coordinates of the top-left corner of the viewport, measured in units of tiles.
@@ -34,7 +172,7 @@ namespace TowerDefense {
 
         public static void InitializeGlobals() {
             MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];
-            effects = new List<Bolt>();
+            Effects = new List<Bolt>();
 
         }
 

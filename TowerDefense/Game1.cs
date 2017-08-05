@@ -10,141 +10,9 @@ namespace TowerDefense {
     /// This is the main type for the game.
     /// </summary>
     public class Game1 : Game {
-        /* System */
-
-        /// <summary>
-        /// Graphics device.
-        /// </summary>
-        GraphicsDeviceManager graphics;
-
-        /// <summary>
-        /// SpriteBatch.
-        /// </summary>
-        SpriteBatch spriteBatch;
-
-        /// <summary>
-        /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
-        /// </summary>
-        List<Object> drawSet;
-
-        /* Input */
-
-        /// <summary>
-        /// The mouse's current state.
-        /// </summary>
-        MouseState mouseState;
-
-        /// <summary>
-        /// Toggle boolean for the pause button.
-        /// </summary>
-        bool pausePressed;
-
-        /// <summary>
-        /// Toggle boolean for the mouse button.
-        /// </summary>
-        bool mousePressed;
-
-        /// <summary>
-        /// Toggle boolean for back button.
-        /// </summary>
-        bool backPressed;
-
-        /* Graphics */
-
-        /// <summary>
-        /// Integer representing the width of the window, in pixels.
-        /// </summary>
-        int screenWidth;
-
-        /// <summary>
-        /// Integer representing the height of the window, in pixels.
-        /// </summary>
-        int screenHeight;
-
-        /// <summary>
-        /// Width in pixels of the menu panel.
-        /// </summary>
-        int menuPanelWidth;
-
-        /// <summary>
-        /// Height in pixels of the menu panel.
-        /// </summary>
-        int menuPanelHeight;
-
-        /* Game World */
-
-        /// <summary>
-        /// 2D array representing the game map.  Read by map[i.j], where i refers to the row, and j refers to the column.
-        /// </summary>
-        Tile[,] map;
-
-        /* Gameplay */
-
-        /// <summary>
-        /// Boolean representing if the game is currently paused.
-        /// </summary>
-        bool paused;
-
-        /// <summary>
-        /// List of templates of towers unlocked by the player
-        /// </summary>
-        List<TowerTemplate> ulTowers;
-
-        /// <summary>
-        /// List of Towers currently on the game map.
-        /// </summary>
-        List<Tower> towers;
-
-        /// <summary>
-        /// The hub.
-        /// </summary>
-        Tower hub;
-
-        /// <summary>
-        /// List of monsters currently on the game map.
-        /// </summary>
-        List<Monster> monsters;
-
-        /// <summary>
-        /// Integer representing the current wave.  Always > 0.
-        /// </summary>
-        int currentWave;
-
-        /* UI */
-
-        /// <summary>
-        /// List of rectangles, where each rectangle represents the hit area of a menu button.
-        /// </summary>
-        List<Button> buttons;
-
-        /// <summary>
-        /// Boolean representing whether or not the player has selected a tower and is working on placing it.
-        /// </summary>
-        bool isPlacingTower;
-
-        /// <summary>
-        /// A Template of the tower whose placement is currently being deliberated, if any.
-        /// </summary>
-        TowerTemplate pendingTowerTemplate;
-
-        /// <summary>
-        /// Comparer used to sort objects by drawing order.
-        /// </summary>
-        DrawComparer drawComparer = new DrawComparer();
-
-        /// <summary>
-        /// Blendstate used to reduce additive blending on joints of lightning bolts.
-        /// </summary>
-        private static readonly BlendState maxBlend = new BlendState() {
-            AlphaBlendFunction = BlendFunction.Max,
-            ColorBlendFunction = BlendFunction.Max,
-            AlphaDestinationBlend = Blend.One,
-            AlphaSourceBlend = Blend.One,
-            ColorDestinationBlend = Blend.One,
-            ColorSourceBlend = Blend.One
-        };
-
-        public Game1() {
+        
+        public Game1()
+        {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -156,7 +24,8 @@ namespace TowerDefense {
         /// related content.  Calling base.Initialize will enumerate through any components
         /// and initialize them as well.
         /// </summary>
-        protected override void Initialize() {
+        protected override void Initialize()
+        {
             base.Initialize();
 
             // Set the screen resolution to be 16:9, as the game is largely balanced around this.
@@ -191,7 +60,7 @@ namespace TowerDefense {
             monsters = new List<Monster>();
             drawSet = new List<Object>();
             buttons = new List<Button>();
-            
+
             Globals.InitializeGlobals();
 
             ulTowers = new List<TowerTemplate>();
@@ -206,7 +75,8 @@ namespace TowerDefense {
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
-        protected override void LoadContent() {
+        protected override void LoadContent()
+        {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Art.LoadContent(Content, GraphicsDevice);
@@ -217,10 +87,11 @@ namespace TowerDefense {
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.
         /// </summary>
-        protected override void UnloadContent() {
+        protected override void UnloadContent()
+        {
             // TODO: Unload any non ContentManager content here
         }
-
+        
         /* Game logic functions */
 
         /// <summary>
@@ -229,9 +100,9 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
-            // If a tower has been added/removed from the list, refresh the buttons list
             drawSet.Sort(drawComparer);
             if (!paused) {
+                // If a tower has been added/removed from the list, refresh the buttons list
                 if (buttons.Count != ulTowers.Count) {
                     RefreshButtonsList();
                 }
@@ -251,8 +122,8 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         private void UpdateEffects(GameTime gameTime) {
-            Globals.effects.RemoveAll(x => x.IsComplete);
-            foreach(Bolt e in Globals.effects) {
+            Globals.Effects.RemoveAll(x => x.IsComplete);
+            foreach(Bolt e in Globals.Effects) {
                 e.Update(gameTime);
             }
         }
@@ -517,7 +388,7 @@ namespace TowerDefense {
             // Change spriteBatch into the mode for drawing effects.
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Texture, maxBlend);
-            foreach (Bolt e in Globals.effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
+            foreach (Bolt e in Globals.Effects) { // TODO: replace with usage of drawSet in DrawGameplayObjects()
                 e.Draw(spriteBatch);
             }
 

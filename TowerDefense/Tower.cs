@@ -159,7 +159,7 @@ namespace TowerDefense {
             if(target != null) {
                 target.TakeDamage(Damage);
                 CoolDown += (1.0 / FireRate);
-                Globals.effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / FireRate)));
+                Globals.Effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / FireRate)));
             }
         }
 
