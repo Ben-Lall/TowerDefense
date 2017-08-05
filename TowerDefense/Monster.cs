@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 enum MonsterType { IMP, NUMBER_OF_MONSTERS }
 
 namespace TowerDefense {
+    /// <summary>
+    /// A monster in the game world.
+    /// </summary>
     class Monster {
         /// <summary>
         /// The sprite of this monster.
@@ -19,7 +22,7 @@ namespace TowerDefense {
         private Texture2D sprite;
 
         /// <summary>
-        /// The type of monster that this template represents.
+        /// The type of monster that this is.
         /// </summary>
         private MonsterType type;
 
@@ -29,7 +32,7 @@ namespace TowerDefense {
         private Point pos;
 
         /// <summary>
-        /// Integer representing this creature's maximum possible health.
+        /// This creature's maximum possible health.
         /// </summary>
         private int maxHealth;
 
@@ -39,7 +42,7 @@ namespace TowerDefense {
         private int currentHealth;
 
         /// <summary>
-        /// Double representing this creature's speed, at a rate of tiles / second.
+        /// This creature's speed, at a rate of tiles / second.
         /// </summary>
         private double speed;
 
@@ -63,7 +66,7 @@ namespace TowerDefense {
             Pos = new Point(pos.X * Settings.TileWidth, pos.Y * Settings.TileHeight) + TileToPointOffset;
             MaxHealth = maxHealth;
             CurrentHealth = maxHealth;
-            pf = new Pathfinder(TilePos, target, map);
+            pf = new Pathfinder(pos, target, map);
             speed = 10;
         }
         
@@ -121,8 +124,15 @@ namespace TowerDefense {
         public Point Pos { get => pos; set => pos = value; }
         public int X { get => Pos.X; set => pos.X = value; }
         public int Y { get => Pos.Y; set => pos.Y = value; }
+
+        /// <summary>
+        /// Offset used to convert Pos when constructing from a tile coordinate.
+        /// </summary>
         private Point TileToPointOffset { get => new Point(Settings.TileWidth / 2 - SpriteWidth / 2,Settings.TileHeight / 2 - SpriteHeight / 2); }
-        public Point TilePos { get => new Point((Pos.X  + TileToPointOffset.X) / Settings.TileWidth, (Pos.Y + TileToPointOffset.Y) / Settings.TileHeight); }
+
+        /// <summary>
+        /// Center pixel of this monster.
+        /// </summary>
         public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
         public int SpriteWidth { get => Sprite.Width; }
         public int SpriteHeight { get => Sprite.Height; }
@@ -130,6 +140,9 @@ namespace TowerDefense {
         public int CurrentHealth { get => currentHealth; set => currentHealth = value; }
         internal MonsterType Type { get => type; set => type = value; }
         public double Speed { get => speed; set => speed = value; }
+        /// <summary>
+        /// Whether or not this monster is alive.
+        /// </summary>
         public bool IsAlive { get => CurrentHealth > 0; }
     }
 }

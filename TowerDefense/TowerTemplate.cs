@@ -29,17 +29,17 @@ namespace TowerDefense {
         private Texture2D sprite;
 
         /// <summary>
-        /// Integer representing the hitpoints of damage this tower deals.
+        /// The hitpoints of damage this tower deals.
         /// </summary>
         private int damage;
 
         /// <summary>
-        /// Double representing this tower's fire rate, at a rate of rounds per second (RPS).
+        /// This tower's fire rate, at a rate of rounds per second (RPS).
         /// </summary>
         private double fireRate;
 
         /// <summary>
-        /// Double representing the radius of this tower's firing range, measured in units of tileWidth.
+        /// This tower's firing range, measured in units of tileWidth.
         /// </summary>
         private double fireRadius;
 

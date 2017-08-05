@@ -16,15 +16,33 @@ namespace TowerDefense {
         /// </summary>
         public TowerTemplate Template { get; set; }
 
+        /// <summary>
+        /// The hitpoints of damage this tower deals.
+        /// </summary>
         public int Damage { get => Template.Damage; set => Template.Damage = value; }
-        public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
-        public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
-        public TowerType Type { get => Template.Type; set => Template.Type = value; }
-        public Texture2D Sprite { get => Template.Sprite; set => Template.Sprite = value; }
 
+        /// <summary>
+        /// This tower's fire rate, at a rate of rounds per second (RPS).
+        /// </summary>
+        public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
+
+        /// <summary>
+        /// This tower's firing range, measured in units of tileWidth.
+        /// </summary>
+        public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
+
+        /// <summary>
+        /// The type of this tower.
+        /// </summary>
+        public TowerType Type { get => Template.Type; set => Template.Type = value; }
+
+        public Texture2D Sprite { get => Template.Sprite; set => Template.Sprite = value; }
         public int SpriteWidth { get => Sprite.Width; }
         public int SpriteHeight { get => Sprite.Height; }
 
+        /// <summary>
+        /// This tower's firing range, measured in units of pixels.
+        /// </summary>
         public Point PixelRadius { get => new Point((int)(FireRadius * Settings.TileWidth), (int)(FireRadius * Settings.TileHeight)); }
 
         /// <summary>
@@ -35,6 +53,9 @@ namespace TowerDefense {
         public int X { get => Pos.X; set => Pos = new Point(value, Y); }
         public int Y { get => Pos.Y; set => Pos = new Point(X, value); }
 
+        /// <summary>
+        /// The pixel coordinates of the top-left corner of the base of this tower.
+        /// </summary>
         public Point PixelPos { get => new Point(Pos.X * Settings.TileWidth, Pos.Y * Settings.TileHeight); }
         
         public int PxX { get => PixelPos.X; }
@@ -63,6 +84,10 @@ namespace TowerDefense {
         public Point CenterPoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y + Height / 2)); }
         public Point CenterTile { get => new Point(X + Width / 2, Y + Height / 2); }
         public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y - 2 * (Height) / 3)); }
+
+        /// <summary>
+        /// The pixel coordinate to where this tower should be drawn.
+        /// </summary>
         public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
 
         /// <summary>

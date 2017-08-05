@@ -127,9 +127,14 @@ namespace TowerDefense {
         /// </summary>
         TowerTemplate pendingTowerTemplate;
 
-
+        /// <summary>
+        /// Comparer used to sort objects by drawing order.
+        /// </summary>
         DrawComparer drawComparer = new DrawComparer();
 
+        /// <summary>
+        /// Blendstate used to reduce additive blending on joints of lightning bolts.
+        /// </summary>
         private static readonly BlendState maxBlend = new BlendState() {
             AlphaBlendFunction = BlendFunction.Max,
             ColorBlendFunction = BlendFunction.Max,
@@ -330,16 +335,16 @@ namespace TowerDefense {
 
             // Movement keys
             if (Keyboard.GetState().IsKeyDown(Keys.W)) {
-                Globals.Viewport = new Point(Globals.Viewport.X, Clamp(Globals.Viewport.Y - 1, 0, Settings.MaxViewportY));
+                Globals.Viewport = new Point(Globals.Viewport.X, MathHelper.Clamp(Globals.Viewport.Y - 1, 0, Settings.MaxViewportY));
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S)) {
-                Globals.Viewport = new Point(Globals.Viewport.X, Clamp(Globals.Viewport.Y + 1, 0, Settings.MaxViewportY));
+                Globals.Viewport = new Point(Globals.Viewport.X, MathHelper.Clamp(Globals.Viewport.Y + 1, 0, Settings.MaxViewportY));
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A)) {
-                Globals.Viewport = new Point(Clamp(Globals.Viewport.X - 1, 0, Settings.MaxViewportX), Globals.Viewport.Y);
+                Globals.Viewport = new Point(MathHelper.Clamp(Globals.Viewport.X - 1, 0, Settings.MaxViewportX), Globals.Viewport.Y);
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D)) {
-                Globals.Viewport = new Point(Clamp(Globals.Viewport.X + 1, 0, Settings.MaxViewportX), Globals.Viewport.Y);
+                Globals.Viewport = new Point(MathHelper.Clamp(Globals.Viewport.X + 1, 0, Settings.MaxViewportX), Globals.Viewport.Y);
             }
 
         }
@@ -441,8 +446,8 @@ namespace TowerDefense {
             int width = pendingTowerTemplate.Width;
             int height = pendingTowerTemplate.Height;
             Point cursorTilePos = PixelToClosestTile(mouseState.Position);
-            int x = Clamp(cursorTilePos.X - width / 2, 0, Settings.MapWidth - width);
-            int y = Clamp(cursorTilePos.Y - height / 2, 0, Settings.MapHeight - height);
+            int x = MathHelper.Clamp(cursorTilePos.X - width / 2, 0, Settings.MapWidth - width);
+            int y = MathHelper.Clamp(cursorTilePos.Y - height / 2, 0, Settings.MapHeight - height);
             return new Point(x, y);
         }
 
@@ -607,17 +612,6 @@ namespace TowerDefense {
                 projectedTower.DrawFiringRange(spriteBatch);
 
             }
-        }
-
-        /// <summary>
-        /// Restrict the given value to the boundaries.
-        /// </summary>
-        /// <param name="tar"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <returns>int i, i is between low and high (inclusive)</returns>
-        protected int Clamp(int tar, int low, int high) {
-            return Math.Max(Math.Min(tar, high), low);
         }
 
         /// <summary>
