@@ -14,32 +14,56 @@ namespace TowerDefense {
         /// <summary>
         /// The template used to build this tower.
         /// </summary>
-        private TowerTemplate template;
+        public TowerTemplate Template { get; set; }
+
+        public int Damage { get => Template.Damage; set => Template.Damage = value; }
+        public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
+        public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
+        public TowerType Type { get => Template.Type; set => Template.Type = value; }
+        public Texture2D Sprite { get => Template.Sprite; set => Template.Sprite = value; }
+
+        public int SpriteWidth { get => Sprite.Width; }
+        public int SpriteHeight { get => Sprite.Height; }
+
+        public Point PixelRadius { get => new Point((int)(FireRadius * Settings.TileWidth), (int)(FireRadius * Settings.TileHeight)); }
 
         /// <summary>
         /// The tile coordinates of the top-left corner of the base of this tower.
         /// </summary>
-        private Point pos;
+        public Point Pos { get; set; }
+
+        public int X { get => Pos.X; set => Pos = new Point(value, Y); }
+        public int Y { get => Pos.Y; set => Pos = new Point(X, value); }
+
+        public Point PixelPos { get => new Point(Pos.X * Settings.TileWidth, Pos.Y * Settings.TileHeight); }
+        
+        public int PxX { get => PixelPos.X; }
+        public int PxY { get => PixelPos.Y; }
 
         /// <summary>
         /// The current time until this tower fires its next shot.
         /// </summary>
-        private double coolDown;
+        public double CoolDown { get; set; }
 
         /// <summary>
         /// Boolean representing whether or not this tower has been selected.
         /// </summary>
-        private bool selected;
+        public bool Selected { get; set; }
 
         /// <summary>
         /// The width of the base of this tower, measured in units of tiles.
         /// </summary>
-        private int width;
+        public int Width { get; set; }
 
         /// <summary>
         /// The height of the base of this tower, measured in units of tiles.
         /// </summary>
-        private int height;
+        public int Height { get; set; }
+
+        public Point CenterPoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y + Height / 2)); }
+        public Point CenterTile { get => new Point(X + Width / 2, Y + Height / 2); }
+        public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y - 2 * (Height) / 3)); }
+        public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
 
         /// <summary>
         /// Constructor for a Tower, using a TowerTemplate
@@ -131,30 +155,5 @@ namespace TowerDefense {
         public bool ContainsTile(Point p) {
             return (X <= p.X && p.X < X + Width && Y <= p.Y && p.Y < Y + Height);
         }
-
-        /* Setters and Getters */
-        public Point Pos { get => pos; set => pos = value; }
-        public Point PixelPos { get => new Point(Pos.X * Settings.TileWidth, Pos.Y * Settings.TileHeight); }
-        public int X { get => Pos.X; set => pos.X = value; }
-        public int Y { get => Pos.Y; set => pos.Y = value; }
-        public int PxX { get => PixelPos.X; }
-        public int PxY { get => PixelPos.Y; }
-        public Point CenterPoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y + Height / 2)); }
-        public Point CenterTile { get => new Point(X + Width / 2, Y + Height / 2); }
-        public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight *  (Y - 2 * (Height) / 3)); }
-        public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
-        public int Width { get => width; set => width = value; }
-        public int Height { get => height; set => height = value; }
-        public TowerTemplate Template { get => template; set => template = value; }
-        public int Damage { get => Template.Damage; set => Template.Damage = value; }
-        public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
-        public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
-        public Point PixelRadius { get => new Point((int)(FireRadius * Settings.TileWidth), (int)(FireRadius * Settings.TileHeight)); }
-        public double CoolDown { get => coolDown; set => coolDown = value; }
-        public Texture2D Sprite { get => template.Sprite; set => template.Sprite = value; }
-        public TowerType Type { get => template.Type; set => template.Type = value; }
-        public int SpriteWidth { get => Sprite.Width; }
-        public int SpriteHeight { get => Sprite.Height; }
-        public bool Selected { get => selected; set => selected = value; }
     }
 }
