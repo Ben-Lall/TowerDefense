@@ -17,28 +17,33 @@ namespace TowerDefense {
         /// <summary>
         /// Rectangle representing the hit detection area of this button.
         /// </summary>
-        private Rectangle hitBox;
+        public Rectangle HitBox { get; set; }
+
+        public int X { get => HitBox.X; set => HitBox = new Rectangle(value, Y, Width, Height); }
+        public int Y { get => HitBox.Y; set => HitBox = new Rectangle(X, value, Width, Height); }
+        public int Width { get => HitBox.Width; set => HitBox = new Rectangle(X, Y, value, Height); }
+        public int Height { get => HitBox.Height; set => HitBox = new Rectangle(X, Y, Width, value); }
 
         /// <summary>
         /// Texture for the button background.
         /// </summary>
-        private Texture2D background;
+        public Texture2D Background { get; set; }
 
         /// <summary>
         /// Texture for contents of this button.  May be null.
         /// </summary>
-        private Texture2D contents;
+        public Texture2D Contents { get; set; }
 
         /// <summary>
         /// The action the button should perform upon being pressed.
         /// </summary>
-        private Action pressAction;
+        public Action PressAction { get; set; }
 
         private void createNewRep(Rectangle shape, Texture2D background, Texture2D contents, Action action) {
             HitBox = shape;
             Background = background;
             Contents = contents;
-            pressAction = action;
+            PressAction = action;
         }
 
         /// <summary>
@@ -79,17 +84,5 @@ namespace TowerDefense {
                 spriteBatch.Draw(Contents, new Rectangle(towerX, towerY, towerWidth, towerHeight), Color.White);
             }
         }
-
-
-        /* Setters and getters */
-
-        public Rectangle HitBox { get => hitBox; set => hitBox = value; }
-        public Texture2D Background { get => background; set => background = value; }
-        public Texture2D Contents { get => contents; set => contents = value; }
-        public Action PressAction { get => pressAction; set => pressAction = value; }
-        public int X { get => hitBox.X; set => hitBox.X = value; }
-        public int Y { get => hitBox.Y; set => hitBox.Y = value; }
-        public int Width { get => hitBox.Width; set => hitBox.Width = value; }
-        public int Height { get => hitBox.Height; set => hitBox.Height = value; }
     }
 }

@@ -22,7 +22,7 @@ namespace TowerDefense {
         /// <summary>
         /// Search node that serves as the head of the path to the target
         /// </summary>
-        private LinkedList<Tile> path;
+        public LinkedList<Tile> Path { get; set; }
 
         public Pathfinder(Point start, Point target, Tile[,] map) {
             // Initialize the priority queue
@@ -44,10 +44,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="tail">The current tail of a SearchNode trail.</param>
         private void GeneratePath(SearchNode tail) {
-            path = new LinkedList<Tile>();
+            Path = new LinkedList<Tile>();
             SearchNode current = tail;
             while(current.parent != null) {
-                path.AddFirst(current.tile);
+                Path.AddFirst(current.tile);
                 current = current.parent;
             }
         }
@@ -99,11 +99,6 @@ namespace TowerDefense {
                 }
             }
         }
-
-        /** Setters and Getters **/
-
-        public LinkedList<Tile> Path { get => path; }
-
     }
 
     /// <summary>

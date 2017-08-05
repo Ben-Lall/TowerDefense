@@ -15,7 +15,7 @@ namespace TowerDefense {
         /// <summary>
         /// Array containing every monster in the game, indexed by the MonsterType enumerator.
         /// </summary>
-        private static Monster[] monsterCatalog;
+        public static Monster[] MonsterCatalog { get; set; }
 
         /// <summary>
         /// List of effects currently playing on the screen.
@@ -109,9 +109,7 @@ namespace TowerDefense {
 
 
         }
-
-
-        internal static Monster[] MonsterCatalog { get => monsterCatalog; set => monsterCatalog = value; }
+        
         internal static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT, Art.Tower); }
         internal static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB, Art.Hub); }
 
@@ -119,4 +117,3 @@ namespace TowerDefense {
         public static double SQRT2 { get { return Math.Sqrt(2); } }
     }
 }
-

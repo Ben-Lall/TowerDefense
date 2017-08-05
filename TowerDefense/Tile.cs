@@ -26,17 +26,20 @@ namespace TowerDefense {
         /// <summary>
         /// A TileType value representing the traversability of this tile.
         /// </summary>
-        private TileType type;
+        public TileType Type { get; set; }
 
         /// <summary>
         /// Boolean representing whether or not this tile contains a tower or part of a tower.
         /// </summary>
-        private bool containsTower;
+        public bool ContainsTower { get; set; }
 
         /// <summary>
         /// Coordinate position of this tile in the world map.
         /// </summary>
-        private Point pos;
+        public Point Pos { get; set; }
+
+        public int X { get => Pos.X; }
+        public int Y { get => Pos.Y; }
 
         /// <summary>
         /// Constructor for a tile
@@ -55,7 +58,7 @@ namespace TowerDefense {
         /// </summary>
         /// <returns></returns>
         public bool IsEmpty() {
-            return Type == TileType.OPEN && !containsTower;
+            return Type == TileType.OPEN && !ContainsTower;
         }
 
         /// <summary>
@@ -65,13 +68,5 @@ namespace TowerDefense {
         public bool ObstructsTower() {
             return ContainsTower || Type == TileType.WALL || Type == TileType.OPEN;
         }
-
-        /* Setters and Getters */
-
-        public TileType Type { get => type; set => type = value; }
-        public bool ContainsTower { get => containsTower; set => containsTower = value; }
-        public Point Pos { get => pos; set => pos = value; }
-        public int X { get => Pos.X; }
-        public int Y { get => Pos.Y; }
     }
 }

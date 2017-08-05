@@ -19,32 +19,53 @@ namespace TowerDefense {
         /// <summary>
         /// The sprite of this monster.
         /// </summary>
-        private Texture2D sprite;
+        public Texture2D Sprite { get; set; }
+
+        public int SpriteWidth { get => Sprite.Width; }
+        public int SpriteHeight { get => Sprite.Height; }
+
+        /// <summary>
+        /// Offset used to convert Pos when constructing from a tile coordinate.
+        /// </summary>
+        private Point TileToPointOffset { get => new Point(Settings.TileWidth / 2 - SpriteWidth / 2, Settings.TileHeight / 2 - SpriteHeight / 2); }
 
         /// <summary>
         /// The type of monster that this is.
         /// </summary>
-        private MonsterType type;
+        public MonsterType Type { get; set; }
 
         /// <summary>
         /// Coordinate position of the top-left pixel of this monster's sprite.
         /// </summary>
-        private Point pos;
+        public Point Pos { get; set; }
+
+        public int X { get => Pos.X; set => Pos = new Point(value, Y); }
+        public int Y { get => Pos.Y; set => Pos = new Point(X, value); }
+
+        /// <summary>
+        /// Center pixel of this monster.
+        /// </summary>
+        public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
 
         /// <summary>
         /// This creature's maximum possible health.
         /// </summary>
-        private int maxHealth;
+        public int MaxHealth { get; set; }
 
         /// <summary>
         /// Integer representing this creature's current health.  Should always be > 0.
         /// </summary>
-        private int currentHealth;
+        public int CurrentHealth { get; set; }
+
+        /// <summary>
+        /// Whether or not this monster is alive.
+        /// </summary>
+        public bool IsAlive { get => CurrentHealth > 0; }
 
         /// <summary>
         /// This creature's speed, at a rate of tiles / second.
         /// </summary>
-        private double speed;
+        public double Speed { get; set; }
 
         /// <summary>
         /// Pathfinder for this monster.
@@ -67,7 +88,7 @@ namespace TowerDefense {
             MaxHealth = maxHealth;
             CurrentHealth = maxHealth;
             pf = new Pathfinder(pos, target, map);
-            speed = 10;
+            Speed = 10;
         }
         
         /// <summary>
@@ -119,30 +140,5 @@ namespace TowerDefense {
                 }
             }
         }
-
-        public Texture2D Sprite { get => sprite; set => sprite = value; }
-        public Point Pos { get => pos; set => pos = value; }
-        public int X { get => Pos.X; set => pos.X = value; }
-        public int Y { get => Pos.Y; set => pos.Y = value; }
-
-        /// <summary>
-        /// Offset used to convert Pos when constructing from a tile coordinate.
-        /// </summary>
-        private Point TileToPointOffset { get => new Point(Settings.TileWidth / 2 - SpriteWidth / 2,Settings.TileHeight / 2 - SpriteHeight / 2); }
-
-        /// <summary>
-        /// Center pixel of this monster.
-        /// </summary>
-        public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
-        public int SpriteWidth { get => Sprite.Width; }
-        public int SpriteHeight { get => Sprite.Height; }
-        public int MaxHealth { get => maxHealth; set => maxHealth = value; }
-        public int CurrentHealth { get => currentHealth; set => currentHealth = value; }
-        internal MonsterType Type { get => type; set => type = value; }
-        public double Speed { get => speed; set => speed = value; }
-        /// <summary>
-        /// Whether or not this monster is alive.
-        /// </summary>
-        public bool IsAlive { get => CurrentHealth > 0; }
     }
 }

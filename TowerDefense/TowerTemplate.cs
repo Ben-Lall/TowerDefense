@@ -21,37 +21,40 @@ namespace TowerDefense {
         /// <summary>
         /// The type of this tower.
         /// </summary>
-        private TowerType type;
+        public TowerType Type { get; set; }
 
         /// <summary>
         /// The sprite of this tower.
         /// </summary>
-        private Texture2D sprite;
+        public Texture2D Sprite { get; set; }
+
+        public int SpriteWidth { get => Sprite.Width; }
+        public int SpriteHeight { get => Sprite.Height; }
 
         /// <summary>
         /// The hitpoints of damage this tower deals.
         /// </summary>
-        private int damage;
+        public int Damage { get; set; }
 
         /// <summary>
         /// This tower's fire rate, at a rate of rounds per second (RPS).
         /// </summary>
-        private double fireRate;
+        public double FireRate { get; set; }
 
         /// <summary>
         /// This tower's firing range, measured in units of tileWidth.
         /// </summary>
-        private double fireRadius;
+        public double FireRadius { get; set; }
 
         /// <summary>
         /// The width of the base of this tower, measured in units of tiles.
         /// </summary>
-        private int width;
+        public int Width { get; set; }
 
         /// <summary>
         /// The height of the base of this tower, measured in units of tiles.
         /// </summary>
-        private int height;
+        public int Height { get; set; }
 
         /// <summary>
         /// Constructor for a new template of a tower.
@@ -80,18 +83,5 @@ namespace TowerDefense {
                     break;
             }
         }
-
-        /* Setters and Getters */
-
-        public Texture2D Sprite { get => sprite; set => sprite = value; }
-        internal TowerType Type { get => type; set => type = value; }
-        public int Damage { get => damage; set => damage = value; }
-        public double FireRate { get => fireRate; set => fireRate = value; }
-        public double FireRadius { get => fireRadius; set => fireRadius = value; }
-        public int Width { get => width; set => width = value; }
-        public int Height { get => height; set => height = value; }
-        public int SpriteWidth { get => Sprite.Width; }
-        public int SpriteHeight { get => Sprite.Height; }
-
     }
 }
