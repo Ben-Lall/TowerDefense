@@ -18,19 +18,39 @@ namespace TowerDefense {
         public TowerTemplate Template { get; set; }
 
         /// <summary>
-        /// The hitpoints of damage this tower deals.
+        /// The hitpoints of damage dealt by this tower's attacks.
         /// </summary>
-        public int Damage { get => Template.Damage; set => Template.Damage = value; }
+        public int AttackDamage { get => Template.AttackDamage; set => Template.AttackDamage = value; }
 
         /// <summary>
-        /// This tower's fire rate, at a rate of rounds per second (RPS).
+        /// Frequency of this tower's attacks, measured in hertz.
         /// </summary>
-        public double FireRate { get => Template.FireRate; set => Template.FireRate = value; }
+        public double AttackRate { get => Template.AttackRate; set => Template.AttackRate = value; }
 
         /// <summary>
-        /// This tower's firing range, measured in units of tileWidth.
+        /// This tower's attack range, measured in units of tileWidth.
         /// </summary>
-        public double FireRadius { get => Template.FireRadius; set => Template.FireRadius = value; }
+        public double AttackRange { get => Template.AttackRange; set => Template.AttackRange = value; }
+        
+        /// <summary>
+        /// The current time until this tower's next attack.
+        /// </summary>
+        public double Cooldown { get; set; }
+
+        /// <summary>
+        /// This tower's maximum possible health.
+        /// </summary>
+        public int MaxHealth { get => Template.MaxHealth; set => Template.MaxHealth = value; }
+
+        /// <summary>
+        /// Integer representing this tower's current health.  Should always be > 0.
+        /// </summary>
+        public int CurrentHealth { get; set; }
+
+        /// <summary>
+        /// Whether or not this tower is alive.
+        /// </summary>
+        public bool IsAlive { get => CurrentHealth > 0; }
 
         /// <summary>
         /// The type of this tower.
@@ -44,7 +64,7 @@ namespace TowerDefense {
         /// <summary>
         /// This tower's firing range, measured in units of pixels.
         /// </summary>
-        public Point PixelRadius { get => new Point((int)(FireRadius * TileWidth), (int)(FireRadius * TileHeight)); }
+        public Point PixelRadius { get => new Point((int)(AttackRange * TileWidth), (int)(AttackRange * TileHeight)); }
 
         /// <summary>
         /// The tile coordinates of the top-left corner of the base of this tower.
@@ -61,11 +81,6 @@ namespace TowerDefense {
         
         public int PxX { get => PixelPos.X; }
         public int PxY { get => PixelPos.Y; }
-
-        /// <summary>
-        /// The current time until this tower fires its next shot.
-        /// </summary>
-        public double CoolDown { get; set; }
 
         /// <summary>
         /// Boolean representing whether or not this tower has been selected.
@@ -101,6 +116,8 @@ namespace TowerDefense {
             Pos = pos;
             Width = template.Width;
             Height = template.Height;
+            MaxHealth = template.MaxHealth;
+            CurrentHealth = MaxHealth;
         }
 
         /// <summary>
@@ -124,7 +141,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spriteBatch"></param>
         public void DrawFiringRange(SpriteBatch spriteBatch) {
-            Graphics.DrawCircle(spriteBatch, CenterPoint - ViewportPx, (int)(FireRadius * TileWidth));
+            Graphics.DrawCircle(spriteBatch, CenterPoint - ViewportPx, (int)(AttackRange * TileWidth));
         }
 
 
@@ -134,34 +151,43 @@ namespace TowerDefense {
         /// <param name="gameTime"></param>
         /// <param name="monsters">List of monsters, in the event that it needs to fire.</param>
         public void Update(GameTime gameTime, List<Monster> monsters) {
-            CoolDown = Math.Max(0, CoolDown - gameTime.ElapsedGameTime.TotalSeconds);
-            if(CoolDown <= 0) {
-                Fire(monsters);
+            Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
+            if(Cooldown == 0) {
+                Attack(monsters);
             }
         }
 
         /// <summary>
-        /// Given a list of monsters, fire at one.  The monster fired at depends on this tower's AI.
+        /// Given a list of monsters, attack one.  The monster attacked depends on this tower's AI.
         /// </summary>
         /// <param name="monsters">List of monsters.</param>
-        public void Fire(List<Monster> monsters) {
+        public void Attack(List<Monster> monsters) {
             //TODO: come up with various AI packs to determine tower firing strategies.  For now, pick the monster closest to its goal.
             int lowestDistance = int.MaxValue;
             Monster target = null;
             foreach(Monster m in monsters) {
                 if (Intersects(this, m)) {
-                      if(m.DistanceToTarget() < lowestDistance) {
-                        lowestDistance = m.DistanceToTarget();
+                      if(m.DistanceToTarget < lowestDistance) {
+                        lowestDistance = m.DistanceToTarget;
                         target = m;
                     }
                 }
             }
 
             if(target != null) {
-                target.TakeDamage(Damage);
-                CoolDown += (1.0 / FireRate);
-                Effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / FireRate)));
+                target.TakeDamage(AttackDamage);
+                Cooldown += (1.0 / AttackRate);
+                Effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
             }
+        }
+
+        /// <summary>
+        /// Deals an amount of damage to the tower.
+        /// </summary>
+        /// <param name="damage"></param>
+        public void TakeDamage(int damage)
+        {
+            CurrentHealth = Math.Max(0, CurrentHealth - damage);
         }
 
         /// <summary>

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 /// <summary>
 /// A path made of 2D Vectors that used to illustrate a pathway between two points.  Typically used for monster pathfinding, and generated using the A* search algorithm.
-/// TODO: Take List of towers instead of Point target, and have each node recalculate its hueristic value to the new closest hub.  The current implementation works because there is only
+/// TODO: Take List of towers instead of Point target, and have each node recalculate its heuristic value to the new closest hub.  The current implementation works because there is only
 /// 1 hub on the map, if there are more then the initial target could potentially be sub-par.
 /// </summary>
 namespace TowerDefense {
@@ -23,6 +23,8 @@ namespace TowerDefense {
         /// Priority Queue
         /// </summary>
         private SortedSet<SearchNode>  pq;
+
+        public Tower Target;
 
         /// <summary>
         /// Search node that serves as the head of the path to the target
@@ -46,6 +48,7 @@ namespace TowerDefense {
             if (c < SearchCutoff) {
                 GeneratePath(pq.First());
             } else {
+                Target = null;
                 Path = new LinkedList<Tile>();
                 Path.AddFirst(MapAt(start.X, start.Y));
             }
@@ -56,6 +59,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="tail">The current tail of a SearchNode trail.</param>
         private void GeneratePath(SearchNode tail) {
+            Target = TowerAt(GetClosestTilePos(tail.Tile.Pos, TowerType.HUB));
             Path = new LinkedList<Tile>();
             SearchNode current = tail;
             while(current.Parent != null) {

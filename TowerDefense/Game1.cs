@@ -103,12 +103,12 @@ namespace TowerDefense {
         /// Update Monsters.  For now, this only entails movement.
         /// </summary>
         private void UpdateMonsters(GameTime gameTime) {
-            // Remove dead Monsters from the list.
+            // Remove dead monsters from the list.
             Monsters.RemoveAll(x => !x.IsAlive);
             DrawSet.RemoveAll(x => x.GetType() == typeof(Monster) && !((Monster)x).IsAlive);
-
+            
             foreach (Monster m in Monsters) {
-                m.Move(gameTime);
+                m.Update(gameTime);
             }
         }
 

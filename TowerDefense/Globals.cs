@@ -283,6 +283,20 @@ namespace Include {
             return true;
         }
 
+        /// <summary>
+        /// Get the tower at the given position.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns>The tower at the given position, or null if there isn't one.</returns>
+        public static Tower TowerAt(Point p) {
+            foreach(Tower t in Towers) {
+                if(t.ContainsTile(p)){
+                    return t;
+                }
+            }
+            return null;
+        }
+
         /** Update Helpers **/
 
         /// <summary>

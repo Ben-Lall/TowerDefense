@@ -32,19 +32,24 @@ namespace TowerDefense {
         public int SpriteHeight { get => Sprite.Height; }
 
         /// <summary>
-        /// The hitpoints of damage this tower deals.
+        /// The hitpoints of damage dealt by this tower's attacks.
         /// </summary>
-        public int Damage { get; set; }
+        public int AttackDamage { get; set; }
 
         /// <summary>
-        /// This tower's fire rate, at a rate of rounds per second (RPS).
+        /// Frequency of this tower's attacks, measured in hertz.
         /// </summary>
-        public double FireRate { get; set; }
+        public double AttackRate { get; set; }
 
         /// <summary>
-        /// This tower's firing range, measured in units of tileWidth.
+        /// This tower's attack range, measured in units of tileWidth.
         /// </summary>
-        public double FireRadius { get; set; }
+        public double AttackRange { get; set; }
+
+        /// <summary>
+        /// This tower's maximum possible health.
+        /// </summary>
+        public int MaxHealth { get; set; }
 
         /// <summary>
         /// The width of the base of this tower, measured in units of tiles.
@@ -69,13 +74,15 @@ namespace TowerDefense {
                 case TowerType.BOLT:
                     Width = 2;
                     Height = 2;
-                    Damage = 8;
-                    FireRate = 1.5;
-                    FireRadius = 6;
+                    AttackDamage = 8;
+                    AttackRate = 1.5;
+                    AttackRange = 6;
+                    MaxHealth = 100;
                     break;
                 case TowerType.HUB:
                     Width = 3;
                     Height = 3;
+                    MaxHealth = 100;
                     break;
                 default:
                     Width = 2;

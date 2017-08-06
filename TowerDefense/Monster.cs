@@ -49,6 +49,31 @@ namespace TowerDefense {
         public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
 
         /// <summary>
+        /// The target of the monster.
+        /// </summary>
+        public Tower Target { get; set; }
+
+        /// <summary>
+        /// The hitpoints of damage dealt by this monster's attacks.
+        /// </summary>
+        public int AttackDamage { get; set; }
+
+        /// <summary>
+        /// Frequency of this monster's attacks, measured in hertz.
+        /// </summary>
+        public double AttackRate { get; set; }
+
+        /// <summary>
+        /// This monster's attack range, measured in units of tileWidth.
+        /// </summary>
+        public double AttackRange { get; set; }
+
+        /// <summary>
+        /// The current time until this monster's next attack.
+        /// </summary>
+        public double Cooldown { get; set; }
+
+        /// <summary>
         /// This creature's maximum possible health.
         /// </summary>
         public int MaxHealth { get; set; }
@@ -74,6 +99,17 @@ namespace TowerDefense {
         private Pathfinder pf;
 
         /// <summary>
+        /// Get the distance between this monster and its target, measured in units of tiles.
+        /// </summary>
+        /// <returns></returns>
+        public int DistanceToTarget { get => pf.Path.Count; }
+
+        /// <summary>
+        /// Whether the monster has arrived at its target tile
+        /// </summary>
+        public Boolean HasArrived { get => DistanceToTarget == 0; }
+        
+        /// <summary>
         /// Constructor for a new Monster.
         /// </summary>
         /// <param name="sprite">Sprite for this monster.</param>
@@ -89,7 +125,11 @@ namespace TowerDefense {
             MaxHealth = maxHealth;
             CurrentHealth = maxHealth;
             pf = new Pathfinder(pos);
+            Target = pf.Target;
             Speed = 10;
+            AttackDamage = 3;
+            AttackRange = 2;
+            AttackRate = 1;
         }
         
         /// <summary>
@@ -100,14 +140,32 @@ namespace TowerDefense {
             spritebatch.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
+        public void Update(GameTime gameTime) {
+            Move(gameTime);
+
+            // TODO: create isTargetInRange boolean and use that instead
+            if (HasArrived && Target != null) {
+                Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
+                if (Cooldown == 0) {
+                    Attack();
+                }
+            }
+        }
+        
         /// <summary>
-        /// Get the distance between this monster and its target, measured in units of tiles.
+        /// Attacks the monster's target.
+        /// Assumes that this.Target != null
         /// </summary>
-        /// <returns></returns>
-        public int DistanceToTarget() {
-            return pf.Path.Count;
+        public void Attack() {
+            Target.TakeDamage(AttackDamage);
+            Cooldown += (1.0 / AttackRate);
+            Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
         }
 
+        /// <summary>
+        /// Deals an amount of damage to the monster.
+        /// </summary>
+        /// <param name="damage"></param>
         public void TakeDamage(int damage) {
             CurrentHealth = Math.Max(0, CurrentHealth - damage);
         }
