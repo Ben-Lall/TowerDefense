@@ -10,14 +10,18 @@ using static Include.Globals;
 
 namespace TowerDefense {
     public class Camera2d {
-        protected float _zoom; // Camera Zoom
+        public float _zoom; // Camera Zoom
         public Matrix _transform; // Matrix Transform
         public Vector2 _pos; // Camera Position
-        protected float _rotation; // Camera Rotation
+        protected float Rotation { get; set; } // Camera Rotation
 
+        /// <summary>
+        /// Create a new camera centered at the given position.
+        /// </summary>
+        /// <param name="pos">Centerpoint of this camera</param>
         public Camera2d(Vector2 pos) {
             _zoom = 1.0f;
-            _rotation = 0.0f;
+            Rotation = 0.0f;
             _pos = pos;
         }
 
@@ -27,15 +31,10 @@ namespace TowerDefense {
             set { _zoom = MathHelper.Clamp(value, 1.0f, 2.0f); }
         }
 
-        public float Rotation {
-            get { return _rotation; }
-            set { _rotation = value; }
-        }
-
         // Auxiliary function to move the camera
         public void Move(Vector2 amount) {
-            _pos.X = MathHelper.Clamp(_pos.X + amount.X, ScreenWidth / 2, (MapWidth * TileWidth) - ScreenWidth + ScreenWidth / 2);
-            _pos.Y = MathHelper.Clamp(_pos.Y + amount.Y, ScreenHeight / 2, (MapHeight * TileHeight) - ScreenHeight + ScreenHeight / 2);
+            _pos.X = (int)MathHelper.Clamp(_pos.X + amount.X, (ScreenWidth * 0.5f) / Zoom, (MapWidth * TileWidth) - (ScreenWidth * 0.5f / Zoom));
+            _pos.Y = (int)MathHelper.Clamp(_pos.Y + amount.Y, (ScreenHeight * 0.5f) / Zoom, (MapHeight * TileHeight) -( ScreenHeight * 0.5f / Zoom));
         }
 
         /// <summary>
@@ -44,8 +43,6 @@ namespace TowerDefense {
         public Vector2 Pos {
             get { return _pos - new Vector2(ScreenWidth / 2, ScreenHeight / 2 ); }
         }
-
-
 
         public Matrix get_transformation() {
             _transform =
