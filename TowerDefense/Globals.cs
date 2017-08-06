@@ -161,11 +161,6 @@ namespace Include {
         public static List<Tower> Towers { get; set; }
 
         /// <summary>
-        /// Array containing every monster in the game, indexed by the MonsterType enumerator.
-        /// </summary>
-        public static Monster[] MonsterCatalog { get; set; }
-
-        /// <summary>
         /// List of monsters currently on the game map.
         /// </summary>
         public static List<Monster> Monsters { get; set; }
@@ -214,8 +209,6 @@ namespace Include {
         public static double SQRT2 { get { return Math.Sqrt(2); } }
         
         public static void InitializeGlobals(GameWindow window) {
-            MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];
-
             // Set the screen resolution to be 16:9, as the game is largely balanced around this.
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 720;
@@ -448,7 +441,7 @@ namespace Include {
         public static Point GetClosestTilePos(Point start, TowerType targetType) {
             Point closestCoord = new Point();
             bool closestFound = false;
-            double distance = Distance(start, Towers.First().Pos);
+            double distance = int.MaxValue;
             foreach(Tower t in Towers) {
                 if(t.Type == targetType) {
                     for(int y = 0; y < t.Height; y++) {
