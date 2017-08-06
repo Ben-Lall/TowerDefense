@@ -156,7 +156,7 @@ namespace TowerDefense {
             WorldSpriteBatch.End();
 
             /* Draw effect elements */
-            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.get_transformation());
+            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.transform);
             foreach (Bolt e in Effects) {
                 e.Draw(BoltSpriteBatch);
             }
