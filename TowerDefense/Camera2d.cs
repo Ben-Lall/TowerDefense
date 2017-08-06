@@ -25,7 +25,10 @@ namespace TowerDefense {
             this.pos = pos;
         }
 
-        // Auxiliary function to move the camera
+        /// <summary>
+        /// Translates the camera by a vector, while respecting camera boundaries.
+        /// </summary>
+        /// <param name="amount">Direction and magnitude of camera position change.</param>
         public void Move(Vector2 amount) {
             pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (ScreenWidth * 0.5f) / Zoom, (MapWidth * TileWidth) - (ScreenWidth * 0.5f / Zoom));
             pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (ScreenHeight * 0.5f) / Zoom, (MapHeight * TileHeight) -( ScreenHeight * 0.5f / Zoom));
