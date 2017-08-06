@@ -123,25 +123,26 @@ namespace TowerDefense {
         /// <summary>
         /// Draw this tower to its current position on the screen.
         /// </summary>
-        /// <param name="spritebatch"></param>
-        public void Draw(SpriteBatch spriteBatch) {
+        public void Draw() {
             if (Selected) {
-                Graphics.DrawLine(spriteBatch, PxX - ViewportPx.X, PxY - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
-                Graphics.DrawLine(spriteBatch, PxX - ViewportPx.X, (Y + Height) * TileHeight - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
-                Graphics.DrawLine(spriteBatch, PxX - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
-                Graphics.DrawLine(spriteBatch, (X + Width) * TileWidth - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
+                Graphics.DrawLine(PxX - ViewportPx.X, PxY - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
+                Graphics.DrawLine(PxX - ViewportPx.X, (Y + Height) * TileHeight - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
+                Graphics.DrawLine(PxX - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
+                Graphics.DrawLine((X + Width) * TileWidth - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
 
                 //TODO: add aura
             }
-            spriteBatch.Draw(Sprite, new Rectangle(DrawPos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            Sprites.Draw(Sprite, new Rectangle(DrawPos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+
+            Rectangle healthBarBox = new Rectangle(DrawPos - ViewportPx + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
+            Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
         }
 
         /// <summary>
         /// Draw the firing range of this tower.
         /// </summary>
-        /// <param name="spriteBatch"></param>
-        public void DrawFiringRange(SpriteBatch spriteBatch) {
-            Graphics.DrawCircle(spriteBatch, CenterPoint - ViewportPx, (int)(AttackRange * TileWidth));
+        public void DrawFiringRange() {
+            Graphics.DrawCircle(CenterPoint - ViewportPx, (int)(AttackRange * TileWidth));
         }
 
 
@@ -150,10 +151,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         /// <param name="monsters">List of monsters, in the event that it needs to fire.</param>
-        public void Update(GameTime gameTime, List<Monster> monsters) {
+        public void Update(GameTime gameTime) {
             Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
             if(Cooldown == 0) {
-                Attack(monsters);
+                Attack(Monsters);
             }
         }
 

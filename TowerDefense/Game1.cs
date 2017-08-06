@@ -99,7 +99,7 @@ namespace TowerDefense {
             DrawSet.RemoveAll(x => x.GetType() == typeof(Tower) && !((Tower)x).IsAlive);
 
             foreach (Tower t in Towers) {
-                t.Update(gameTime, Monsters);
+                t.Update(gameTime);
             }
         }
 
@@ -219,9 +219,9 @@ namespace TowerDefense {
             foreach (object obj in DrawSet) {
                 if (IsOnScreen(obj)) {
                     if (obj.GetType() == typeof(Tower)) {
-                        ((Tower)obj).Draw(Sprites);
+                        ((Tower)obj).Draw();
                     } else if (obj.GetType() == typeof(Monster)) {
-                        ((Monster)obj).Draw(Sprites);
+                        ((Monster)obj).Draw();
                     }
                 }
             }
@@ -229,7 +229,7 @@ namespace TowerDefense {
             // Draw firing ranges of all selected towers
             foreach (Tower t in Towers) {
                 if (t.Selected) {
-                    t.DrawFiringRange(Sprites);
+                    t.DrawFiringRange();
                 }
             }
         }
@@ -244,12 +244,12 @@ namespace TowerDefense {
 
                 //Draw the tower to snap to the selected tiles
                 Tower projectedTower = new Tower(PendingTowerTemplate, placementPos);
-                projectedTower.Draw(Sprites);
+                projectedTower.Draw();
 
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
 
                 // Draw the firing range of this tower's projected position.
-                projectedTower.DrawFiringRange(Sprites);
+                projectedTower.DrawFiringRange();
 
             }
         }
@@ -292,12 +292,12 @@ namespace TowerDefense {
         protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
             for (int i = 0; i < ScreenHeight; i += TileHeight) {
-                Graphics.DrawLine(Sprites, 0, i, ScreenWidth, 1, Color.Black);
+                Graphics.DrawLine(0, i, ScreenWidth, 1, Color.Black);
             }
 
             // Draw vertical lines across the screen at each tile width
             for (int j = 0; j < ScreenWidth; j += TileWidth) {
-                Graphics.DrawLine(Sprites, j, 0, 1, ScreenHeight, Color.Black);
+                Graphics.DrawLine(j, 0, 1, ScreenHeight, Color.Black);
             }
         }
 

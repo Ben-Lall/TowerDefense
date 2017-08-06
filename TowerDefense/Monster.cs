@@ -138,8 +138,11 @@ namespace TowerDefense {
         /// Draw the monster at its current position.
         /// </summary>
         /// <param name="spritebatch"></param>
-        public void Draw(SpriteBatch spritebatch) {
-            spritebatch.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+        public void Draw() {
+            Sprites.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+
+            Rectangle healthBarBox = new Rectangle(Pos - ViewportPx + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
+            Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
         }
 
         public void Update(GameTime gameTime) {
@@ -191,10 +194,9 @@ namespace TowerDefense {
         /// <summary>
         /// Draw the path this monster is currently on.
         /// </summary>
-        /// <param name="spriteBatch"></param>
-        public void DrawPath(SpriteBatch spriteBatch) {
+        public void DrawPath() {
             foreach (Tile t in pf.Path) {
-                spriteBatch.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
+                Sprites.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
             }
         }
 
