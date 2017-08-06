@@ -143,14 +143,20 @@ namespace TowerDefense {
         }
 
         public void Update(GameTime gameTime) {
-            Move(gameTime);
+            if (!HasArrived) {
+                Move(gameTime);
+            }
 
             // TODO: create isTargetInRange boolean and use that instead
-            if (HasArrived && Target != null) {
+            if (HasArrived && Target != null && Target.IsAlive) {
                 Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
                 if (Cooldown == 0) {
                     Attack();
                 }
+            }
+
+            if (Target != null && !Target.IsAlive) {
+                FindNewTarget();
             }
         }
 
@@ -162,22 +168,14 @@ namespace TowerDefense {
             Target.TakeDamage(AttackDamage);
             Cooldown += (1.0 / AttackRate);
             Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
-
-            if(!Target.IsAlive) {
-                FindNewTarget();
-            }
         }
 
         /// <summary>
         /// Have this monster find a new target.
         /// </summary>
         public void FindNewTarget() {
-            if(TowerIsOnMap(TowerType.HUB)) {
-                pf = new Pathfinder(TilePos);
-                Target = pf.Target;
-            } else {
-                Target = null;
-            }
+            pf = new Pathfinder(TilePos);
+            Target = pf.Target;
         }
 
         /// <summary>
