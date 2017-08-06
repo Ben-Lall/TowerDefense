@@ -20,8 +20,33 @@ namespace TowerDefense {
         /// <param name="width">Δx from the start to the end of this line.</param>
         /// <param name="height">Δy from start to the end of this line.</param>
         /// <param name="color">The color of this line.</param>
-        public static void DrawLine(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color) {
-            spriteBatch.Draw(Art.Pixel, new Rectangle(x, y, width, height), color);
+        public static void DrawLine(int x, int y, int width, int height, Color color) {
+            Sprites.Draw(Art.Pixel, new Rectangle(x, y, width, height), color);
+        }
+
+        /// <summary>
+        /// Draws a health bar given the max and current health values as well as a bounding rectangle.
+        /// </summary>
+        /// <param name="healthFraction">Fraction of health that is remaining</param>
+        /// <param name="rectangle">A bounding rectangle in which the health bar will be rendered.</param>
+        public static void DrawHealthBar(double healthFraction, Rectangle rectangle) {
+            // Render black border around the health bar
+            Sprites.Draw(Art.Pixel, rectangle, Color.Black);
+
+            // Width of the health bar that will be filled
+            int filledWidth = (int)Math.Ceiling((rectangle.Width - 2) * healthFraction);
+            Rectangle filledBar = new Rectangle(rectangle.X + 1, rectangle.Y + 1, filledWidth, rectangle.Height - 2);
+
+            // Render filled section of health bar
+            Sprites.Draw(Art.Pixel, filledBar, Color.White);
+
+            // Width of the health bar that is missing
+            int missingWidth = rectangle.Width - filledWidth - 2;
+            if (missingWidth != 0) {
+                Rectangle missingBar = new Rectangle(rectangle.X + filledWidth + 1, rectangle.Y + 1, missingWidth, rectangle.Height - 2);
+                // Render missing section of health bar
+                Sprites.Draw(Art.Pixel, missingBar, Color.Red);
+            }
         }
 
         /// <summary>
@@ -30,13 +55,13 @@ namespace TowerDefense {
         /// <param name="x">Center x coordinate.</param>
         /// <param name="y">Center y coordinate.</param>
         /// <param name="r">Circle radius.</param>
-        public static void DrawCircle(SpriteBatch spriteBatch, int x, int y, int r) {
+        public static void DrawCircle(int x, int y, int r) {
             for (int i = x - r; i <= x + r; i++) {
                 int fx = (int)Math.Sqrt((r * r) - Math.Pow(i - x, 2));
                 int y1 = y + fx;
                 int y2 = y - fx;
-                spriteBatch.Draw(Art.Pixel, new Rectangle(i, y1, 1, 1), Color.Blue);
-                spriteBatch.Draw(Art.Pixel, new Rectangle(i, y2, 1, 1), Color.Blue);
+                Sprites.Draw(Art.Pixel, new Rectangle(i, y1, 1, 1), Color.Blue);
+                Sprites.Draw(Art.Pixel, new Rectangle(i, y2, 1, 1), Color.Blue);
             }
         }
 
@@ -45,8 +70,8 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="p">Center coordinate.</param>
         /// <param name="r">Circle radius.</param>
-        public static void DrawCircle(SpriteBatch spriteBatch, Point p, int r) {
-            DrawCircle(spriteBatch, p.X, p.Y, r);
+        public static void DrawCircle(Point p, int r) {
+            DrawCircle(p.X, p.Y, r);
         }
 
     }
@@ -62,7 +87,7 @@ namespace TowerDefense {
             Thickness = thickness;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Color color) {
+        public void Draw(Color color) {
             Vector2 tangent = B - A;
             float rotation = (float)Math.Atan2(tangent.Y, tangent.X);
 
@@ -73,9 +98,9 @@ namespace TowerDefense {
             Vector2 middleOrigin = new Vector2(0, Art.BoltLine.Height / 2f);
             Vector2 middleScale = new Vector2(tangent.Length(), thicknessScale);
 
-            spriteBatch.Draw(Art.BoltLine, A - ViewportPx.ToVector2(), null, color, rotation, middleOrigin, middleScale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(Art.BoltCap, A - ViewportPx.ToVector2(), null, color, rotation, capOrigin, thicknessScale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(Art.BoltCap, B - ViewportPx.ToVector2(), null, color, rotation + MathHelper.Pi, capOrigin, thicknessScale, SpriteEffects.None, 0f);
+            Sprites.Draw(Art.BoltLine, A - ViewportPx.ToVector2(), null, color, rotation, middleOrigin, middleScale, SpriteEffects.None, 0f);
+            Sprites.Draw(Art.BoltCap, A - ViewportPx.ToVector2(), null, color, rotation, capOrigin, thicknessScale, SpriteEffects.None, 0f);
+            Sprites.Draw(Art.BoltCap, B - ViewportPx.ToVector2(), null, color, rotation + MathHelper.Pi, capOrigin, thicknessScale, SpriteEffects.None, 0f);
         }
 
     }
@@ -106,7 +131,7 @@ namespace TowerDefense {
                 return;
 
             foreach (var segment in Segments)
-                segment.Draw(spriteBatch, Tint * (Alpha * 0.6f));
+                segment.Draw(Tint * (Alpha * 0.6f));
         }
 
         public virtual void Update(GameTime gameTime) {

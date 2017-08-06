@@ -16,98 +16,50 @@ namespace TowerDefense {
     /// <summary>
     /// A monster in the game world.
     /// </summary>
-    class Monster {
+    class Monster : Creature {
         /// <summary>
-        /// The sprite of this monster.
+        /// Center pixel of this monster.
         /// </summary>
-        public Texture2D Sprite { get; set; }
+        override public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
+        
+        /// <summary>
+        /// Type of the monster.
+        /// </summary>
+        public MonsterType Type { get; set; }
 
-        public int SpriteWidth { get => Sprite.Width; }
-        public int SpriteHeight { get => Sprite.Height; }
+        /// <summary>
+        /// Monster's speed, measured in tiles / second.
+        /// </summary>
+        public double Speed { get; set; }
+
+        /// <summary>
+        /// Pathfinder for the monster.
+        /// </summary>
+        private Pathfinder pf;
 
         /// <summary>
         /// Offset used to convert Pos when constructing from a tile coordinate.
         /// </summary>
         private Point TileToPointOffset { get => new Point(TileWidth / 2 - SpriteWidth / 2, TileHeight / 2 - SpriteHeight / 2); }
-
+        
         /// <summary>
-        /// The type of monster that this is.
-        /// </summary>
-        public MonsterType Type { get; set; }
-
-        /// <summary>
-        /// Coordinate position of the top-left pixel of this monster's sprite.
-        /// </summary>
-        public Point Pos { get; set; }
-
-        public int X { get => Pos.X; set => Pos = new Point(value, Y); }
-        public int Y { get => Pos.Y; set => Pos = new Point(X, value); }
-
-        public Point TilePos { get => new Point(X / TileWidth, Y / TileHeight); }
-
-        /// <summary>
-        /// Center pixel of this monster.
-        /// </summary>
-        public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
-
-        /// <summary>
-        /// The target of the monster.
+        /// Monster's target.
         /// </summary>
         public Tower Target { get; set; }
 
         /// <summary>
-        /// The hitpoints of damage dealt by this monster's attacks.
+        /// Whether the monster is in attack range of its target tower.
         /// </summary>
-        public int AttackDamage { get; set; }
-
+        public Boolean IsTargetInRange { get => Target != null && Distance(TilePos, Target.CenterTile) <= AttackRange; }
+        
         /// <summary>
-        /// Frequency of this monster's attacks, measured in hertz.
-        /// </summary>
-        public double AttackRate { get; set; }
-
-        /// <summary>
-        /// This monster's attack range, measured in units of tileWidth.
-        /// </summary>
-        public double AttackRange { get; set; }
-
-        /// <summary>
-        /// The current time until this monster's next attack.
-        /// </summary>
-        public double Cooldown { get; set; }
-
-        /// <summary>
-        /// This creature's maximum possible health.
-        /// </summary>
-        public int MaxHealth { get; set; }
-
-        /// <summary>
-        /// Integer representing this creature's current health.  Should always be > 0.
-        /// </summary>
-        public int CurrentHealth { get; set; }
-
-        /// <summary>
-        /// Whether or not this monster is alive.
-        /// </summary>
-        public bool IsAlive { get => CurrentHealth > 0; }
-
-        /// <summary>
-        /// This creature's speed, at a rate of tiles / second.
-        /// </summary>
-        public double Speed { get; set; }
-
-        /// <summary>
-        /// Pathfinder for this monster.
-        /// </summary>
-        private Pathfinder pf;
-
-        /// <summary>
-        /// Get the distance between this monster and its target, measured in units of tiles.
+        /// Get the distance between the monster and its target, measured in units of tiles.
         /// </summary>
         /// <returns></returns>
         public int DistanceToTarget { get => pf.Path.Count; }
 
         /// <summary>
-        /// Whether the monster has arrived at its target tile
+        /// Whether the monster has arrived at its target tile.
         /// </summary>
         public Boolean HasArrived { get => DistanceToTarget == 0; }
         
@@ -125,12 +77,12 @@ namespace TowerDefense {
             Type = type;
             Pos = new Point(pos.X * TileWidth, pos.Y * TileHeight) + TileToPointOffset;
             MaxHealth = maxHealth;
-            CurrentHealth = maxHealth;
+            CurrentHealth = MaxHealth;
             pf = new Pathfinder(pos);
             Target = pf.Target;
             Speed = 10;
             AttackDamage = 3;
-            AttackRange = 2;
+            AttackRange = 8;
             AttackRate = 1;
         }
         
@@ -138,17 +90,19 @@ namespace TowerDefense {
         /// Draw the monster at its current position.
         /// </summary>
         /// <param name="spritebatch"></param>
-        public void Draw(SpriteBatch spritebatch) {
-            spritebatch.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+        public void Draw() {
+            Sprites.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+
+            Rectangle healthBarBox = new Rectangle(Pos - ViewportPx + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
+            Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
         }
 
         public void Update(GameTime gameTime) {
             if (!HasArrived) {
                 Move(gameTime);
             }
-
-            // TODO: create isTargetInRange boolean and use that instead
-            if (HasArrived && Target != null && Target.IsAlive) {
+            
+            if (IsTargetInRange && Target != null && Target.IsAlive) {
                 Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
                 if (Cooldown == 0) {
                     Attack();
@@ -189,10 +143,9 @@ namespace TowerDefense {
         /// <summary>
         /// Draw the path this monster is currently on.
         /// </summary>
-        /// <param name="spriteBatch"></param>
-        public void DrawPath(SpriteBatch spriteBatch) {
+        public void DrawPath() {
             foreach (Tile t in pf.Path) {
-                spriteBatch.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
+                Sprites.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
             }
         }
 

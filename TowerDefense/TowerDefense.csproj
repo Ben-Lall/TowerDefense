@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Art.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="Creature.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Monster.cs" />
