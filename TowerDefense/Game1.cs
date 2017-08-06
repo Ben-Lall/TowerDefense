@@ -276,7 +276,7 @@ namespace TowerDefense {
             drawSet.RemoveAll(x => x.GetType() == typeof(Monster) && !((Monster)x).IsAlive);
 
             foreach (Monster m in monsters) {
-                m.Move(gameTime);
+                m.Update(gameTime);
             }
         }
 
@@ -811,12 +811,12 @@ namespace TowerDefense {
             // Spawn each enemy at a random tile.
             for(int i = 0; i < spawnAmt; i++) {
                 Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
-                AddMonster(new Monster(Art.Imp, MonsterType.IMP, spawnTile.Pos, Globals.GetClosestTilePos(spawnTile.Pos, TowerType.HUB, towers), 10, map));
+                AddMonster(new Monster(Art.Imp, MonsterType.IMP, spawnTile.Pos, Globals.GetClosestTilePos(spawnTile.Pos, TowerType.HUB, towers), 10, map, towers[0]));
             }
         }
 
         /// <summary>
-        /// Returns the tile at the given coordianates.
+        /// Returns the tile at the given coordinates.
         /// </summary>
         /// <param name="x">The x coordinate.</param>
         /// <param name="y">The y coordinate.</param>
