@@ -82,13 +82,13 @@ namespace TowerDefense {
         /// <param name="target">The target for this monster to reach.</param>
         /// <param name="maxHealth">The maximum health of this monster.</param>
         /// <param name="map">The world map.</param>
-        public Monster(Texture2D sprite, MonsterType type, Point pos, Point target, int maxHealth) {
+        public Monster(Texture2D sprite, MonsterType type, Point pos, int maxHealth) {
             Sprite = sprite;
             Type = type;
             Pos = new Point(pos.X * TileWidth, pos.Y * TileHeight) + TileToPointOffset;
             MaxHealth = maxHealth;
             CurrentHealth = maxHealth;
-            pf = new Pathfinder(pos, target);
+            pf = new Pathfinder(pos);
             Speed = 10;
         }
         

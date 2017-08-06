@@ -417,10 +417,10 @@ namespace Include {
         /// <param name="start"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static Point GetClosestTilePos(Point start, TowerType targetType, List<Tower> towers) {
+        public static Point GetClosestTilePos(Point start, TowerType targetType) {
             Point closestCoord = new Point();
-            double distance = Distance(start, towers.First().Pos);
-            foreach(Tower t in towers) {
+            double distance = Distance(start, Towers.First().Pos);
+            foreach(Tower t in Towers) {
                 if(t.Type == targetType) {
                     for(int y = 0; y < t.Height; y++) {
                         for(int x = 0; x < t.Width; x++) {

@@ -14,6 +14,10 @@ using System.Threading.Tasks;
 namespace TowerDefense {
 
     class Pathfinder {
+        /// <summary>
+        /// Amount of iterations before giving up on this monster.
+        /// </summary>
+        private int SearchCutoff = 20000;
 
         /// <summary>
         /// Priority Queue
@@ -25,19 +29,26 @@ namespace TowerDefense {
         /// </summary>
         public LinkedList<Tile> Path { get; set; }
 
-        public Pathfinder(Point start, Point target) {
+        public Pathfinder(Point start) {
             // Initialize the priority queue
             pq = new SortedSet<SearchNode>(new AStarComparer());
-            pq.Add(new SearchNode(MapAt(start.X, start.Y), null, Distance(start, target)));
+            pq.Add(new SearchNode(MapAt(start.X, start.Y), null));
 
             // A* search
-            while (!GoalTest(pq.First(), target)) {
+            int c = 0;
+            while (c < SearchCutoff && !GoalTest(pq.First())) {
+                c++;
                 SearchNode s = pq.First();
                 pq.Remove(s);
-                AddAdjacencies(s, target);
+                AddAdjacencies(s);
             }
 
-            GeneratePath(pq.First());
+            if (c < SearchCutoff) {
+                GeneratePath(pq.First());
+            } else {
+                Path = new LinkedList<Tile>();
+                Path.AddFirst(MapAt(start.X, start.Y));
+            }
         }
 
         /// <summary>
@@ -59,8 +70,8 @@ namespace TowerDefense {
         /// <param name="s">The search node to be tested.</param>
         /// <param name="target">The coordinates of the goal tile.</param>
         /// <returns></returns>
-        private bool GoalTest(SearchNode s, Point target) {
-            return Distance(s.Tile.Pos, target) <= SQRT2;
+        private bool GoalTest(SearchNode s) {
+            return Distance(s.Tile.Pos, GetClosestTilePos(s.Tile.Pos, TowerType.HUB)) <= SQRT2;
         }
 
         /// <summary>
@@ -69,36 +80,91 @@ namespace TowerDefense {
         /// <param name="s">The "source" search node that all entered search nodes will be adjacent to.</param>
         /// <param name="target">The coordinates of the goal tile.</param>
         /// <param name="map">Game map.</param>
-        private void AddAdjacencies(SearchNode s, Point target) {
-            // Check and add the 6 tiles above and below the given tile
-            for(int i = s.Tile.X == 0 ? 0 : -1; i < (s.Tile.X == MapWidth - 1 ? 1 : 2); i++) {
-                if(s.Tile.Y > 0) {
-                    Tile t = MapAt(s.Tile.X + i, s.Tile.Y - 1);
-                    if (t.IsEmpty()) {
-                        pq.Add(new SearchNode(t, s, Distance(t.Pos, target)));
-                    }
-                }
-                if(s.Tile.Y < MapHeight - 1) {
-                    Tile t = MapAt(s.Tile.X + i, s.Tile.Y + 1);
-                    if (t.IsEmpty()) {
-                        pq.Add(new SearchNode(t, s, Distance(t.Pos, target)));
-                    }
-                }
-            }
-
-            // Check and add the two tiles on either side of the given tile
-            if(s.Tile.X > 0) {
+        private void AddAdjacencies(SearchNode s) {
+            bool tr = false, tl = false, bl = false, br = false;
+            // Check and add the four tiles adjacent to this search node, while adding diagonals if properly linked.
+            if (s.Tile.X > 0) {
                 Tile t = MapAt(s.Tile.X - 1, s.Tile.Y);
                 if(t.IsEmpty()) {
-                    pq.Add(new SearchNode(t, s, Distance(t.Pos, target)));
+                    pq.Add(new SearchNode(t, s));
+                    // Check and add bottom left and top left
+                    if (s.Tile.Y > 0) {
+                        tl = true;
+                        t = MapAt(s.Tile.X - 1, s.Tile.Y - 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
+                    if (s.Tile.Y < MapHeight - 1) {
+                        bl = true;
+                        t = MapAt(s.Tile.X - 1, s.Tile.Y + 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
                 }
             }
             if (s.Tile.X < MapWidth - 1) {
                 Tile t = MapAt(s.Tile.X + 1, s.Tile.Y);
                 if (t.IsEmpty()) {
-                    pq.Add(new SearchNode(t, s, Distance(t.Pos, target)));
+                    pq.Add(new SearchNode(t, s));
+                    // Check and add bottom right and top right
+                    if (s.Tile.Y > 0) {
+                        tr = true;
+                        t = MapAt(s.Tile.X + 1, s.Tile.Y - 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
+                    if (s.Tile.Y < MapHeight - 1) {
+                        br = true;
+                        t = MapAt(s.Tile.X + 1, s.Tile.Y + 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
                 }
             }
+            if (s.Tile.Y > 0) {
+                Tile t = MapAt(s.Tile.X, s.Tile.Y - 1);
+                if (t.IsEmpty()) {
+                    pq.Add(new SearchNode(t, s));
+                    // Check and add top left and top right
+                    if (s.Tile.X > 0 && !tl) {
+                        t = MapAt(s.Tile.X - 1, s.Tile.Y - 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
+                    if (s.Tile.X < MapWidth - 1 && !tr) {
+                        t = MapAt(s.Tile.X + 1, s.Tile.Y - 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
+                }
+            }
+            if (s.Tile.Y < MapHeight - 1) {
+                Tile t = MapAt(s.Tile.X, s.Tile.Y + 1);
+                if (t.IsEmpty()) {
+                    pq.Add(new SearchNode(t, s));
+                    // Check and add bottom left and bottom right
+                    if (s.Tile.X > 0 && !bl) {
+                        t = MapAt(s.Tile.X - 1, s.Tile.Y + 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
+                    if (s.Tile.X < MapWidth - 1 && !br) {
+                        t = MapAt(s.Tile.X + 1, s.Tile.Y + 1);
+                        if (t.IsEmpty()) {
+                            pq.Add(new SearchNode(t, s));
+                        }
+                    }
+                }
+            }
+
+            
         }
     }
 
@@ -133,8 +199,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="tile">The Tile this node represents</param>
         /// <param name="parent">The node preceding this one</param>
-        /// <param name="h">The result of the heuristic function for this search</param>
-        internal SearchNode(Tile tile, SearchNode parent, double h) {
+        internal SearchNode(Tile tile, SearchNode parent) {
             Tile = tile;
             Parent = parent;
             if (parent != null) {
@@ -142,7 +207,7 @@ namespace TowerDefense {
             } else {
                 Cost = 0;
             }
-            Priority = Cost + h;
+            Priority = Cost + Distance(Tile.Pos, GetClosestTilePos(Tile.Pos, TowerType.HUB));
         }
     }
 

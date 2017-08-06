@@ -197,7 +197,7 @@ namespace TowerDefense {
             // Draw hover information
             if (CursorIsOnMap()) {
                 // Draw currently hovered tile coordinates
-                hoverTileText = "Hover: (" + PixelToClosestTile(Include.Globals.MouseState.Position).X + ", " + PixelToClosestTile(Include.Globals.MouseState.Position).Y + ")";
+                hoverTileText = "Hover: (" + PixelToTile(Include.Globals.MouseState.Position).X + ", " + PixelToTile(Include.Globals.MouseState.Position).Y + ")";
                 hoverTextSize = Art.Font.MeasureString(hoverTileText);
                 Sprites.DrawString(Art.Font, hoverTileText, new Vector2(ScreenWidth - 5, ScreenHeight - 5) - hoverTextSize, Color.Black);
             }
@@ -379,6 +379,13 @@ namespace TowerDefense {
             // Place hub in the center
             AddTower(new Tower(HubTemplate, new Point(MapWidth / 2 - 1, MapHeight / 2 - 1)));
 
+            for (int y = -2; y <= 2; y++) {
+                for (int x = -2; x <= 2; x++) {
+                    MapAt(MapWidth / 2 + x + 4, MapHeight / 2 + y - 9).Type = TileType.OPEN;
+                }
+            }
+            AddTower(new Tower(HubTemplate, new Point(53, 40)));
+
             CurrentWave = 0;
 
             SpawnWave();
@@ -414,7 +421,7 @@ namespace TowerDefense {
             // Spawn each enemy at a random tile.
             for (int i = 0; i < spawnAmt; i++) {
                 Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
-                AddMonster(new Monster(Art.Imp, MonsterType.IMP, spawnTile.Pos, GetClosestTilePos(spawnTile.Pos, TowerType.HUB, Towers), 10));
+                AddMonster(new Monster(Art.Imp, MonsterType.IMP, spawnTile.Pos, 10));
             }
         }
     }
