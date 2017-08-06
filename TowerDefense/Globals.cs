@@ -20,6 +20,11 @@ namespace Include {
         /// </summary>
         public static GraphicsDeviceManager Graphics { get; set; }
 
+        /// <summary>
+        /// The game window.
+        /// </summary>
+        public static GameWindow Window { get; set; }
+
         /* SpriteBatches */
 
         /// <summary>
@@ -44,17 +49,21 @@ namespace Include {
         /// </summary>
         public static MouseState MouseState { get; set; }
 
+        public static Vector2 WorldMousePos { get => Vector2.Transform(
+   new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.get_transformation()));
+        }
+
         /* Graphics */
 
         /// <summary>
         /// Integer representing the width of the window, in pixels.
         /// </summary>
-        public static int ScreenWidth { get; set; }
+        public static int ScreenWidth { get => Window.ClientBounds.Width; }
 
         /// <summary>
         /// Integer representing the height of the window, in pixels.
         /// </summary>
-        public static int ScreenHeight { get; set; }
+        public static int ScreenHeight { get => Window.ClientBounds.Height; }
 
         /// <summary>
         /// Integer representing the width of all tiles.
@@ -214,13 +223,13 @@ namespace Include {
         public static double SQRT2 { get { return Math.Sqrt(2); } }
         
         public static void InitializeGlobals(GameWindow window) {
+
             // Set the screen resolution to be 16:9, as the game is largely balanced around this.
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 720;
             Graphics.ApplyChanges();
 
-            ScreenWidth = window.ClientBounds.Width;
-            ScreenHeight = window.ClientBounds.Height;
+            Window = window;
 
             // Set the menu panel's height and width.
             MenuPanelWidth = ScreenWidth / 8;
@@ -252,6 +261,9 @@ namespace Include {
             Effects = new List<Bolt>();
             UlTowers = new List<TowerTemplate>();
             UlTowers.Add(BoltTowerTemplate);
+
+            // Initialize Input
+            Input.PreviousMouseWheel = MouseState.ScrollWheelValue;
         }
 
         /** General Helper Methods **/
@@ -379,7 +391,7 @@ namespace Include {
         public static Point GetAreaStartPoint() {
             int width = PendingTowerTemplate.Width;
             int height = PendingTowerTemplate.Height;
-            Point cursorTilePos = PixelToClosestTile(MouseState.Position);
+            Point cursorTilePos = PixelToClosestTile(WorldMousePos.ToPoint());
             int x = MathHelper.Clamp(cursorTilePos.X - width / 2, 0, MapWidth - width);
             int y = MathHelper.Clamp(cursorTilePos.Y - height / 2, 0, MapHeight - height);
             return new Point(x, y);
@@ -402,7 +414,7 @@ namespace Include {
         /// <param name="pixel">Point containing the coordinates of the pixel.</param>
         /// <returns></returns>
         public static Point PixelToTile(Point pixel) {
-            return new Point(((int)Camera.Pos.X + pixel.X) / TileWidth, ((int)Camera.Pos.Y + pixel.Y) / TileHeight);
+            return new Point(pixel.X / TileWidth, pixel.Y / TileHeight);
         }
 
         /// <summary>
@@ -411,8 +423,8 @@ namespace Include {
         /// <param name="pixel">Point containing the coordinates of the pixel.</param>
         /// <returns></returns>
         public static Point PixelToClosestTile(Point pixel) {
-            int x = ((int)Camera.Pos.X + pixel.X) % TileWidth;
-            int y = ((int)Camera.Pos.Y + pixel.Y) % TileHeight;
+            int x = pixel.X % TileWidth;
+            int y = pixel.Y % TileHeight;
 
             return PixelToTile(pixel + new Point(x, y));
         }

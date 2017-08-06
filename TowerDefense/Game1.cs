@@ -146,7 +146,7 @@ namespace TowerDefense {
             /* Draw world elements */
 
             WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
-                    null, null, null, null, null, Camera.get_transformation(GraphicsDevice));
+                    null, null, null, null, null, Camera.get_transformation());
             DrawMap();
             DrawGameplayObjects();
 
@@ -156,7 +156,7 @@ namespace TowerDefense {
             WorldSpriteBatch.End();
 
             /* Draw effect elements */
-            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.get_transformation(GraphicsDevice));
+            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.get_transformation());
             foreach (Bolt e in Effects) {
                 e.Draw(BoltSpriteBatch);
             }
@@ -295,13 +295,13 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
-            for (int i = 0; i < MapHeight * TileHeight; i += TileHeight) {
-                Graphics.DrawLine(0, i, MapWidth * TileHeight, 1, Color.Black, WorldSpriteBatch);
+            for (int i = 0; i < MapHeight; i += 1) {
+                Graphics.DrawLine(0, i * TileHeight, MapWidth * TileHeight, 1, Color.Black, WorldSpriteBatch);
             }
 
             // Draw vertical lines across the screen at each tile width
-            for (int j = 0; j < MapWidth * TileWidth; j += TileWidth) {
-                Graphics.DrawLine(j, 0, 1, MapHeight * TileHeight, Color.Black, WorldSpriteBatch);
+            for (int j = 0; j < MapWidth; j += 1) {
+                Graphics.DrawLine(j * TileWidth, 0, 1, MapHeight * TileHeight, Color.Black, WorldSpriteBatch);
             }
         }
 

@@ -24,7 +24,7 @@ namespace TowerDefense {
         // Sets and gets zoom
         public float Zoom {
             get { return _zoom; }
-            set { _zoom = value; if (_zoom < 0.1f) _zoom = 0.1f; } // Negative zoom will flip image
+            set { _zoom = MathHelper.Clamp(value, 1.0f, 2.0f); }
         }
 
         public float Rotation {
@@ -47,7 +47,7 @@ namespace TowerDefense {
 
 
 
-        public Matrix get_transformation(GraphicsDevice graphicsDevice) {
+        public Matrix get_transformation() {
             _transform =
               Matrix.CreateTranslation(new Vector3(-_pos.X, -_pos.Y, 0)) *
                                          Matrix.CreateRotationZ(Rotation) *

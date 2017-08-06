@@ -12,17 +12,22 @@ namespace TowerDefense {
         /// <summary>
         /// Toggle boolean for the Pause button.
         /// </summary>
-        public static bool PausePressed { get; set; }
+        private static bool PausePressed { get; set; }
 
         /// <summary>
         /// Toggle boolean for the mouse button.
         /// </summary>
-        public static bool MousePressed { get; set; }
+        private static bool MousePressed { get; set; }
 
         /// <summary>
         /// Toggle boolean for back button.
         /// </summary>
-        public static bool BackPressed { get; set; }
+        private static bool BackPressed { get; set; }
+
+        /// <summary>
+        /// Previously recorded mouse wheel scroll.
+        /// </summary>
+        public static int PreviousMouseWheel { get; set; }
 
         /// <summary>
         /// Handle user input.
@@ -38,6 +43,16 @@ namespace TowerDefense {
             } else if (mouseState.LeftButton == ButtonState.Released) {
                 MousePressed = false;
             }
+            // Scroll Wheel
+            if(mouseState.ScrollWheelValue < PreviousMouseWheel) {
+                Camera.Zoom -= 0.1f;
+            }
+            if (mouseState.ScrollWheelValue > PreviousMouseWheel) {
+                Camera.Zoom += 0.1f;
+            }
+            PreviousMouseWheel = mouseState.ScrollWheelValue;
+
+
 
             /** Keyboard Handling **/
             // Back/cancel
