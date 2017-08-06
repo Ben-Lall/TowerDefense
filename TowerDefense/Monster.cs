@@ -43,6 +43,8 @@ namespace TowerDefense {
         public int X { get => Pos.X; set => Pos = new Point(value, Y); }
         public int Y { get => Pos.Y; set => Pos = new Point(X, value); }
 
+        public Point TilePos { get => new Point(X / TileWidth, Y / TileHeight); }
+
         /// <summary>
         /// Center pixel of this monster.
         /// </summary>
@@ -151,15 +153,31 @@ namespace TowerDefense {
                 }
             }
         }
-        
+
         /// <summary>
-        /// Attacks the monster's target.
+        /// Attacks this monster's target.
         /// Assumes that this.Target != null
         /// </summary>
         public void Attack() {
             Target.TakeDamage(AttackDamage);
             Cooldown += (1.0 / AttackRate);
             Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
+
+            if(!Target.IsAlive) {
+                FindNewTarget();
+            }
+        }
+
+        /// <summary>
+        /// Have this monster find a new target.
+        /// </summary>
+        public void FindNewTarget() {
+            if(TowerIsOnMap(TowerType.HUB)) {
+                pf = new Pathfinder(TilePos);
+                Target = pf.Target;
+            } else {
+                Target = null;
+            }
         }
 
         /// <summary>

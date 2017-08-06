@@ -94,6 +94,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         private void UpdateTowers(GameTime gameTime) {
+            // Remove dead towers from the list.
+            Towers.RemoveAll(x => !x.IsAlive);
+            DrawSet.RemoveAll(x => x.GetType() == typeof(Tower) && !((Tower)x).IsAlive);
+
             foreach (Tower t in Towers) {
                 t.Update(gameTime, Monsters);
             }

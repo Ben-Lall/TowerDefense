@@ -297,6 +297,20 @@ namespace Include {
             return null;
         }
 
+        /// <summary>
+        /// Check if a tower of the given type is on the map.
+        /// </summary>
+        /// <param name="tt"></param>
+        /// <returns></returns>
+        public static bool TowerIsOnMap(TowerType tt) {
+            foreach(Tower t in Towers) {
+                if(t.Type == tt) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /** Update Helpers **/
 
         /// <summary>
@@ -430,9 +444,10 @@ namespace Include {
         /// </summary>
         /// <param name="start"></param>
         /// <param name="target"></param>
-        /// <returns></returns>
+        /// <returns>The closest tile position of the target type, if any exist.  Returns start otherwise.</returns>
         public static Point GetClosestTilePos(Point start, TowerType targetType) {
             Point closestCoord = new Point();
+            bool closestFound = false;
             double distance = Distance(start, Towers.First().Pos);
             foreach(Tower t in Towers) {
                 if(t.Type == targetType) {
@@ -441,6 +456,7 @@ namespace Include {
                             Point p = t.Pos + new Point(x, y);
                             double currentDistance = Distance(start, p);
                             if (currentDistance <= distance) {
+                                closestFound = true;
                                 distance = currentDistance;
                                 closestCoord = p;
                             }
@@ -449,7 +465,12 @@ namespace Include {
                 }
             }
 
-            return closestCoord;
+            if(closestFound) {
+                return closestCoord;
+            } else {
+                return start;
+            }
+            
         }
 
         /** Collision **/
