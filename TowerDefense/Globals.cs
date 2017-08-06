@@ -50,7 +50,7 @@ namespace Include {
         public static MouseState MouseState { get; set; }
 
         public static Vector2 WorldMousePos { get => Vector2.Transform(
-   new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.get_transformation()));
+   new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.Transform));
         }
 
         /* Graphics */

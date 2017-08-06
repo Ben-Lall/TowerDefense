@@ -11,7 +11,7 @@ using static Include.Globals;
 namespace TowerDefense {
     public class Camera2d {
         public float zoom; // Camera Zoom
-        public Matrix transform; // Matrix Transform
+        public Matrix Transform; // Matrix Transform
         public Vector2 pos; // Camera Position
         protected float Rotation { get; set; } // Camera Rotation
 
@@ -38,13 +38,13 @@ namespace TowerDefense {
         /// Generate and return a new transformation for this camera.
         /// </summary>
         /// <returns>The 3x3 Matrix representing the this camera's transform.</returns>
-        public Matrix get_transformation() {
-            transform =
+        public Matrix GetTransformation() {
+            Transform =
               Matrix.CreateTranslation(new Vector3(-pos.X, -pos.Y, 0)) *
                                          Matrix.CreateRotationZ(Rotation) *
                                          Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
                                          Matrix.CreateTranslation(new Vector3(ScreenWidth * 0.5f, ScreenHeight * 0.5f, 0));
-            return transform;
+            return Transform;
         }
 
         /// <summary>

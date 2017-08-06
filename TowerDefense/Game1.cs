@@ -146,7 +146,7 @@ namespace TowerDefense {
             /* Draw world elements */
 
             WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
-                    null, null, null, null, null, Camera.get_transformation());
+                    null, null, null, null, null, Camera.GetTransformation());
             DrawMap();
             DrawGameplayObjects();
 
@@ -156,7 +156,7 @@ namespace TowerDefense {
             WorldSpriteBatch.End();
 
             /* Draw effect elements */
-            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.transform);
+            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.Transform);
             foreach (Bolt e in Effects) {
                 e.Draw(BoltSpriteBatch);
             }
