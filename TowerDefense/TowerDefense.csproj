@@ -45,6 +45,7 @@
     <Compile Include="Art.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Graphics.cs" />
+    <Compile Include="Input.cs" />
     <Compile Include="Monster.cs" />
     <Compile Include="DrawComparer.cs" />
     <Compile Include="Globals.cs" />

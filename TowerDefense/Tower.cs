@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.Globals;
 
 namespace TowerDefense {
     /// <summary>
@@ -43,7 +44,7 @@ namespace TowerDefense {
         /// <summary>
         /// This tower's firing range, measured in units of pixels.
         /// </summary>
-        public Point PixelRadius { get => new Point((int)(FireRadius * Settings.TileWidth), (int)(FireRadius * Settings.TileHeight)); }
+        public Point PixelRadius { get => new Point((int)(FireRadius * TileWidth), (int)(FireRadius * TileHeight)); }
 
         /// <summary>
         /// The tile coordinates of the top-left corner of the base of this tower.
@@ -56,7 +57,7 @@ namespace TowerDefense {
         /// <summary>
         /// The pixel coordinates of the top-left corner of the base of this tower.
         /// </summary>
-        public Point PixelPos { get => new Point(Pos.X * Settings.TileWidth, Pos.Y * Settings.TileHeight); }
+        public Point PixelPos { get => new Point(Pos.X * TileWidth, Pos.Y * TileHeight); }
         
         public int PxX { get => PixelPos.X; }
         public int PxY { get => PixelPos.Y; }
@@ -81,14 +82,14 @@ namespace TowerDefense {
         /// </summary>
         public int Height { get; set; }
 
-        public Point CenterPoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y + Height / 2)); }
+        public Point CenterPoint { get => new Point(TileWidth * (X + Width / 2), TileHeight * (Y + Height / 2)); }
         public Point CenterTile { get => new Point(X + Width / 2, Y + Height / 2); }
-        public Point FirePoint { get => new Point(Settings.TileWidth * (X + Width / 2), Settings.TileHeight * (Y - 2 * (Height) / 3)); }
+        public Point FirePoint { get => new Point(TileWidth * (X + Width / 2), TileHeight * (Y - 2 * (Height) / 3)); }
 
         /// <summary>
         /// The pixel coordinate to where this tower should be drawn.
         /// </summary>
-        public Point DrawPos { get => new Point(Pos.X * Settings.TileWidth - (SpriteWidth - Width * Settings.TileWidth) / 2, (Pos.Y * Settings.TileHeight) - SpriteHeight + Settings.TileHeight * Height); }
+        public Point DrawPos { get => new Point(Pos.X * TileWidth - (SpriteWidth - Width * TileWidth) / 2, (Pos.Y * TileHeight) - SpriteHeight + TileHeight * Height); }
 
         /// <summary>
         /// Constructor for a Tower, using a TowerTemplate
@@ -108,14 +109,14 @@ namespace TowerDefense {
         /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spriteBatch) {
             if (Selected) {
-                Graphics.DrawLine(spriteBatch, PxX - Globals.ViewportPx.X, PxY - Globals.ViewportPx.Y, Width * Settings.TileWidth, 1, Color.Green);
-                Graphics.DrawLine(spriteBatch, PxX - Globals.ViewportPx.X, (Y + Height) * Settings.TileHeight - Globals.ViewportPx.Y, Width * Settings.TileWidth, 1, Color.Green);
-                Graphics.DrawLine(spriteBatch, PxX - Globals.ViewportPx.X, PxY - Globals.ViewportPx.Y, 1, Height * Settings.TileHeight, Color.Green);
-                Graphics.DrawLine(spriteBatch, (X + Width) * Settings.TileWidth - Globals.ViewportPx.X, PxY - Globals.ViewportPx.Y, 1, Height * Settings.TileHeight, Color.Green);
+                Graphics.DrawLine(spriteBatch, PxX - ViewportPx.X, PxY - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
+                Graphics.DrawLine(spriteBatch, PxX - ViewportPx.X, (Y + Height) * TileHeight - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
+                Graphics.DrawLine(spriteBatch, PxX - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
+                Graphics.DrawLine(spriteBatch, (X + Width) * TileWidth - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
 
                 //TODO: add aura
             }
-            spriteBatch.Draw(Sprite, new Rectangle(DrawPos - Globals.ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            spriteBatch.Draw(Sprite, new Rectangle(DrawPos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spriteBatch"></param>
         public void DrawFiringRange(SpriteBatch spriteBatch) {
-            Graphics.DrawCircle(spriteBatch, CenterPoint - Globals.ViewportPx, (int)(FireRadius * Settings.TileWidth));
+            Graphics.DrawCircle(spriteBatch, CenterPoint - ViewportPx, (int)(FireRadius * TileWidth));
         }
 
 
@@ -148,7 +149,7 @@ namespace TowerDefense {
             int lowestDistance = int.MaxValue;
             Monster target = null;
             foreach(Monster m in monsters) {
-                if (Globals.Intersects(this, m)) {
+                if (Intersects(this, m)) {
                       if(m.DistanceToTarget() < lowestDistance) {
                         lowestDistance = m.DistanceToTarget();
                         target = m;
@@ -159,7 +160,7 @@ namespace TowerDefense {
             if(target != null) {
                 target.TakeDamage(Damage);
                 CoolDown += (1.0 / FireRate);
-                Globals.Effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / FireRate)));
+                Effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / FireRate)));
             }
         }
 

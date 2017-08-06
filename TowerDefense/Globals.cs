@@ -1,12 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TowerDefense;
 
-namespace TowerDefense {
+namespace Include {
     /// <summary>
     /// A class containing global variables and helper methods.
     /// </summary>
@@ -16,127 +18,189 @@ namespace TowerDefense {
         /// <summary>
         /// Graphics device.
         /// </summary>
-        GraphicsDeviceManager graphics;
+        public static GraphicsDeviceManager Graphics { get; set; }
 
         /// <summary>
         /// SpriteBatch.
         /// </summary>
-        SpriteBatch spriteBatch;
-
-        /// <summary>
-        /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
-        /// </summary>
-        List<Object> drawSet;
+        public static SpriteBatch Sprites{ get; set; }
 
         /* Input */
 
         /// <summary>
         /// The mouse's current state.
         /// </summary>
-        MouseState mouseState;
-
-        /// <summary>
-        /// Toggle boolean for the pause button.
-        /// </summary>
-        bool pausePressed;
-
-        /// <summary>
-        /// Toggle boolean for the mouse button.
-        /// </summary>
-        bool mousePressed;
-
-        /// <summary>
-        /// Toggle boolean for back button.
-        /// </summary>
-        bool backPressed;
+        public static MouseState MouseState { get; set; }
 
         /* Graphics */
 
         /// <summary>
         /// Integer representing the width of the window, in pixels.
         /// </summary>
-        int screenWidth;
+        public static int ScreenWidth { get; set; }
 
         /// <summary>
         /// Integer representing the height of the window, in pixels.
         /// </summary>
-        int screenHeight;
+        public static int ScreenHeight { get; set; }
+
+        /// <summary>
+        /// Integer representing the width of all tiles.
+        /// </summary>
+        public static int TileWidth { get; set; }
+
+        /// <summary>
+        /// Integer representing the height of all tiles.
+        /// </summary>
+        public static int TileHeight { get; set; }
+
+        /// <summary>
+        /// Integer representing the width of the game map, measured in units of tiles.
+        /// </summary>
+        public static int MapWidth { get; set; }
+
+        /// <summary>
+        /// Integer representing the height of the game map, measured in units of tiles.
+        /// </summary>
+        public static int MapHeight { get; set; }
+
+        /// <summary>
+        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of tiles.
+        /// </summary>
+        public static Point Viewport { get; set; }
+        public static int ViewportX { get => Viewport.X; set => Viewport = new Point(value, ViewportY); }
+        public static int ViewportY { get => Viewport.Y; set => Viewport = new Point(ViewportX, value); }
+
+        /// <summary>
+        /// Integer representing the width of the viewport, measured in units of tiles.
+        /// </summary>
+        public static int ViewRows { get; set; }
+
+        /// <summary>
+        /// Integer representing the height of the viewport, measured in units of tiles.
+        /// </summary>
+        public static int ViewCols { get; set; }
+
+        /// <summary>
+        /// Integer representing the width of the viewport, measured in units of pixels.
+        /// </summary>
+        public static int ViewRowsPx { get => ViewRows * TileWidth; }
+
+        /// <summary>
+        /// Integer representing the height of the viewport, measured in units of pixels.
+        /// </summary>
+        public static int ViewColsPx { get => ViewCols * TileHeight; }
+
+        /// <summary>
+        /// The maximum possible Y value for the viewport.
+        /// </summary>
+        public static int MaxViewportY { get => MapHeight - ViewCols; }
+
+        /// <summary>
+        /// The maximum possible X value for the viewport.
+        /// </summary>
+        public static int MaxViewportX { get => MapWidth - ViewRows; }
+
+        /// <summary>
+        /// The dimensions of the viewport, measured in units of tiles.
+        /// </summary>
+        public static Point ViewPortDimensions { get => new Point(ViewRows, ViewCols); }
+
+        /// <summary>
+        /// The dimensions of the viewport, measured in units of pixels.
+        /// </summary>
+        public static Point ViewPortDimensionsPx { get => new Point(ViewRowsPx, ViewColsPx); }
 
         /// <summary>
         /// Width in pixels of the menu panel.
         /// </summary>
-        int menuPanelWidth;
+        public static int MenuPanelWidth { get; set; }
 
         /// <summary>
         /// Height in pixels of the menu panel.
         /// </summary>
-        int menuPanelHeight;
+        public static int MenuPanelHeight { get; set; }
+
+        /// <summary>
+        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of pixels.
+        /// </summary>
+        public static Point ViewportPx { get => new Point(Viewport.X * TileWidth, Viewport.Y * TileHeight); }
+
+        /// <summary>
+        /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
+        /// </summary>
+        public static List<Object> DrawSet { get; set; }
+
+        /// <summary>
+        /// List of effects currently playing on the screen.
+        /// </summary>
+        public static List<Bolt> Effects { get; set; }
 
         /* Game World */
 
         /// <summary>
         /// 2D array representing the game map.  Read by map[i.j], where i refers to the row, and j refers to the column.
         /// </summary>
-        Tile[,] map;
+        public static Tile[,] Map { get; set; }
 
         /* Gameplay */
 
         /// <summary>
-        /// Boolean representing if the game is currently paused.
+        /// Boolean representing if the game is currently Paused.
         /// </summary>
-        bool paused;
+        public static bool Paused { get; set; }
 
         /// <summary>
         /// List of templates of towers unlocked by the player
         /// </summary>
-        List<TowerTemplate> ulTowers;
+        public static List <TowerTemplate> UlTowers { get; set; }
 
         /// <summary>
         /// List of Towers currently on the game map.
         /// </summary>
-        List<Tower> towers;
+        public static List<Tower> Towers { get; set; }
 
         /// <summary>
-        /// The hub.
+        /// Array containing every monster in the game, indexed by the MonsterType enumerator.
         /// </summary>
-        Tower hub;
+        public static Monster[] MonsterCatalog { get; set; }
 
         /// <summary>
         /// List of monsters currently on the game map.
         /// </summary>
-        List<Monster> monsters;
+        public static List<Monster> Monsters { get; set; }
 
         /// <summary>
         /// Integer representing the current wave.  Always > 0.
         /// </summary>
-        int currentWave;
+        public static int CurrentWave { get; set; }
 
         /* UI */
 
         /// <summary>
-        /// List of rectangles, where each rectangle represents the hit area of a menu button.
+        /// List of Buttons.
         /// </summary>
-        List<Button> buttons;
+        public static List<Button> Buttons { get; set; }
 
         /// <summary>
         /// Boolean representing whether or not the player has selected a tower and is working on placing it.
         /// </summary>
-        bool isPlacingTower;
+        public static bool IsPlacingTower { get; set; }
 
         /// <summary>
         /// A Template of the tower whose placement is currently being deliberated, if any.
         /// </summary>
-        TowerTemplate pendingTowerTemplate;
+        public static TowerTemplate PendingTowerTemplate { get; set; }
 
         /// <summary>
         /// Comparer used to sort objects by drawing order.
         /// </summary>
-        DrawComparer drawComparer = new DrawComparer();
+        public static readonly EnglishSort DrawComparer = new EnglishSort();
 
         /// <summary>
         /// Blendstate used to reduce additive blending on joints of lightning bolts.
         /// </summary>
-        private static readonly BlendState maxBlend = new BlendState()
+        public static readonly BlendState MaxBlend = new BlendState()
         {
             AlphaBlendFunction = BlendFunction.Max,
             ColorBlendFunction = BlendFunction.Max,
@@ -146,35 +210,185 @@ namespace TowerDefense {
             ColorSourceBlend = Blend.One
         };
 
+        /** Constants **/
+        public static double SQRT2 { get { return Math.Sqrt(2); } }
         
-
-
-
-        /// <summary>
-        /// Array containing every monster in the game, indexed by the MonsterType enumerator.
-        /// </summary>
-        public static Monster[] MonsterCatalog { get; set; }
-
-        /// <summary>
-        /// List of effects currently playing on the screen.
-        /// </summary>
-        public static List<Bolt> Effects { get; set; }
-
-        /// <summary>
-        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of tiles.
-        /// </summary>
-        public static Point Viewport { get; set; }
-
-        /// <summary>
-        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of pixels.
-        /// </summary>
-        public static Point ViewportPx { get => new Point(Viewport.X * Settings.TileWidth, Viewport.Y * Settings.TileHeight); }
-
-        public static void InitializeGlobals() {
+        public static void InitializeGlobals(GameWindow window) {
             MonsterCatalog = new Monster[(int)MonsterType.NUMBER_OF_MONSTERS];
-            Effects = new List<Bolt>();
 
+            // Set the screen resolution to be 16:9, as the game is largely balanced around this.
+            Graphics.PreferredBackBufferWidth = 1280;
+            Graphics.PreferredBackBufferHeight = 720;
+            Graphics.ApplyChanges();
+
+            ScreenWidth = window.ClientBounds.Width;
+            ScreenHeight = window.ClientBounds.Height;
+
+            // Set the menu panel's height and width.
+            MenuPanelWidth = ScreenWidth / 8;
+            MenuPanelHeight = ScreenHeight;
+
+            // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120: 1120 = 1280 * (7/8).
+            TileWidth = 16;
+            TileHeight = 16;
+
+            // Set the number of tiles viewable on the screen
+            ViewRows = ScreenWidth / TileWidth;
+            ViewCols = ScreenHeight / TileHeight;
+
+            // Set the map dimensions
+            MapWidth = Math.Max(ViewRows, 100);
+            MapHeight = Math.Max(ViewCols, 100);
+
+            // Initialize the gameplay objects.
+            Map = new Tile[MapWidth, MapHeight];
+
+            //Initialize collections
+            Towers = new List<Tower>();
+            Monsters = new List<Monster>();
+            DrawSet = new List<Object>();
+            Buttons = new List<Button>();
+            Effects = new List<Bolt>();
+            UlTowers = new List<TowerTemplate>();
+            UlTowers.Add(BoltTowerTemplate);
         }
+
+        /** General Helper Methods **/
+
+        /// <summary>
+        /// Returns the tile at the given coordianates.
+        /// </summary>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <returns>map[y, x]</returns>
+        public static Tile MapAt(int x, int y) {
+            return Map[y, x];
+        }
+
+        /// <summary>
+        /// Assumes isPlacingTower = true, and CursorIsOnMap() = true.  Return true if the area the cursor is hovering over allows
+        /// for enough space to place the currently selected tower. Returns false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        public static bool ValidTowerLocation() {
+            //Return false if any of the tiles in the pending tower's selection area are obstructed, and true otherwise.
+            Point pos = GetAreaStartPoint();
+            for (int y = pos.Y; y < pos.Y + PendingTowerTemplate.Height; y++) {
+                for (int x = pos.X; x < pos.X + PendingTowerTemplate.Width; x++) {
+                    if (MapAt(x, y).ObstructsTower()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /** Update Helpers **/
+
+        /// <summary>
+        /// Begin tower placement.
+        /// </summary>
+        /// <param name="template">The template of the tower whose placement has begun.</param>
+        public static void BeginTowerPlacement(TowerTemplate template) {
+            IsPlacingTower = true;
+            PendingTowerTemplate = template;
+        }
+
+        /// <summary>
+        /// Place the currently pending tower.
+        /// </summary>
+        public static void PlacePendingTower() {
+            // TODO: Check for proper resources.
+            Point pos = GetAreaStartPoint();
+            // Place Tower
+            Tower newTower = new Tower(PendingTowerTemplate, pos);
+            AddTower(newTower);
+        }
+
+        /// <summary>
+        /// Adds the given tower to the game world.
+        /// </summary>
+        /// <param name="tower">The tower to be added.</param>
+        public static void AddTower(Tower tower) {
+            Towers.Add(tower);
+            DrawSet.Add(tower);
+
+            // Mark each of its tiles as TOWER
+            for (int y = 0; y < tower.Height; y++) {
+                for (int x = 0; x < tower.Width; x++) {
+                    MapAt(tower.Pos.X + x, tower.Pos.Y + y).ContainsTower = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the given monster to the game world.
+        /// </summary>
+        /// <param name="monster">The monster to be added.</param>
+        public static void AddMonster(Monster monster) {
+            Monsters.Add(monster);
+            DrawSet.Add(monster);
+        }
+
+        /// <summary>
+        /// Clears all tower illumination.
+        /// </summary>
+        public static void ClearTowerIllumination() {
+            foreach (Tower t in Towers) {
+                t.Selected = false;
+            }
+        }
+
+        /** Drawing Helpers **/
+
+        /// <summary>
+        /// Returns a Point representing the coordinates of the top-left tile of the area highlighted by the cursor, where the dimensions are
+        /// the dimensions of the pending tower.
+        /// Assumes isPlacingTower = true, and CursorIsOnMap() = true.
+        /// </summary>
+        /// <returns></returns>
+        public static Point GetAreaStartPoint() {
+            int width = PendingTowerTemplate.Width;
+            int height = PendingTowerTemplate.Height;
+            Point cursorTilePos = PixelToClosestTile(MouseState.Position);
+            int x = MathHelper.Clamp(cursorTilePos.X - width / 2, 0, MapWidth - width);
+            int y = MathHelper.Clamp(cursorTilePos.Y - height / 2, 0, MapHeight - height);
+            return new Point(x, y);
+        }
+
+        /// <summary>
+        /// Return true if the cursor is on the map, false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CursorIsOnMap() {
+            if (IsPlacingTower) {
+                return 0 < MouseState.X && MouseState.X < ScreenWidth && MouseState.Y > 0 && MouseState.Y < ViewColsPx;
+            }
+            return 0 < MouseState.X && MouseState.X < (ScreenWidth - MenuPanelWidth) && MouseState.Y > 0 && MouseState.Y < ViewColsPx;
+        }
+
+        /// <summary>
+        /// Return the map coordinates of the given pixel.
+        /// </summary>
+        /// <param name="pixel">Point containing the coordiantes of the pixel.</param>
+        /// <returns></returns>
+        public static Point PixelToTile(Point pixel) {
+            return new Point(Viewport.X + pixel.X / TileWidth, Viewport.Y + pixel.Y / TileHeight);
+        }
+
+        /// <summary>
+        /// Return the map coordinates of the tile the given pixel is nearest to, rounded up.
+        /// </summary>
+        /// <param name="pixel">Point containing the coordiantes of the pixel.</param>
+        /// <returns></returns>
+        public static Point PixelToClosestTile(Point pixel) {
+            int x = pixel.X % TileWidth;
+            int y = pixel.Y % TileHeight;
+
+            return PixelToTile(pixel + new Point(x, y));
+        }
+
+        /** Pathing Helpers **/
 
         /// <summary>
         /// Returns the Manhattan Distance between two points.
@@ -251,7 +465,5 @@ namespace TowerDefense {
         internal static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT, Art.Tower); }
         internal static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB, Art.Hub); }
 
-        /** Constants **/
-        public static double SQRT2 { get { return Math.Sqrt(2); } }
     }
 }

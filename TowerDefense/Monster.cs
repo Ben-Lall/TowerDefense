@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using static Include.Globals;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace TowerDefense {
         /// <summary>
         /// Offset used to convert Pos when constructing from a tile coordinate.
         /// </summary>
-        private Point TileToPointOffset { get => new Point(Settings.TileWidth / 2 - SpriteWidth / 2, Settings.TileHeight / 2 - SpriteHeight / 2); }
+        private Point TileToPointOffset { get => new Point(TileWidth / 2 - SpriteWidth / 2, TileHeight / 2 - SpriteHeight / 2); }
 
         /// <summary>
         /// The type of monster that this is.
@@ -81,13 +82,13 @@ namespace TowerDefense {
         /// <param name="target">The target for this monster to reach.</param>
         /// <param name="maxHealth">The maximum health of this monster.</param>
         /// <param name="map">The world map.</param>
-        public Monster(Texture2D sprite, MonsterType type, Point pos, Point target, int maxHealth, Tile[,] map) {
+        public Monster(Texture2D sprite, MonsterType type, Point pos, Point target, int maxHealth) {
             Sprite = sprite;
             Type = type;
-            Pos = new Point(pos.X * Settings.TileWidth, pos.Y * Settings.TileHeight) + TileToPointOffset;
+            Pos = new Point(pos.X * TileWidth, pos.Y * TileHeight) + TileToPointOffset;
             MaxHealth = maxHealth;
             CurrentHealth = maxHealth;
-            pf = new Pathfinder(pos, target, map);
+            pf = new Pathfinder(pos, target);
             Speed = 10;
         }
         
@@ -96,7 +97,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spritebatch"></param>
         public void Draw(SpriteBatch spritebatch) {
-            spritebatch.Draw(Sprite, new Rectangle(Pos - Globals.ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            spritebatch.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
         }
 
         /// <summary>
@@ -117,7 +118,7 @@ namespace TowerDefense {
         /// <param name="spriteBatch"></param>
         public void DrawPath(SpriteBatch spriteBatch) {
             foreach (Tile t in pf.Path) {
-                spriteBatch.Draw(Art.Pixel, new Rectangle(t.X * Settings.TileWidth, t.Y * Settings.TileHeight, Settings.TileWidth, Settings.TileHeight), Color.Crimson * 0.5f);
+                spriteBatch.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
             }
         }
 
@@ -128,11 +129,11 @@ namespace TowerDefense {
         public void Move(GameTime gameTime) {
             if (pf.Path.Count > 0) {
                 Point nextTileCoord = pf.Path.First().Pos;
-                Point nextTilePos = new Point(nextTileCoord.X * Settings.TileWidth, nextTileCoord.Y * Settings.TileHeight) + TileToPointOffset;
+                Point nextTilePos = new Point(nextTileCoord.X * TileWidth, nextTileCoord.Y * TileHeight) + TileToPointOffset;
                 Vector2 dirVector = Vector2.Normalize((nextTilePos - Pos).ToVector2());
                 Pos += new Point(
-                    (int)(dirVector.X * gameTime.ElapsedGameTime.TotalSeconds * Speed * Settings.TileWidth),
-                    (int)(dirVector.Y * gameTime.ElapsedGameTime.TotalSeconds * Speed * Settings.TileHeight));
+                    (int)(dirVector.X * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileWidth),
+                    (int)(dirVector.Y * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileHeight));
 
                 // Remove this tile from the path if it has been reached
                 if (nextTilePos - Pos == new Point(0, 0)) {
