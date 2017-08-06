@@ -229,7 +229,7 @@ namespace TowerDefense {
             // Draw firing ranges of all selected towers
             foreach (Tower t in Towers) {
                 if (t.Selected) {
-                    t.DrawFiringRange();
+                    t.DrawAttackRange();
                 }
             }
         }
@@ -249,7 +249,7 @@ namespace TowerDefense {
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
 
                 // Draw the firing range of this tower's projected position.
-                projectedTower.DrawFiringRange();
+                projectedTower.DrawAttackRange();
 
             }
         }
@@ -263,7 +263,7 @@ namespace TowerDefense {
             Point a = new Point();
             Point b = new Point();
             if (o.GetType() == typeof(Tower)) {
-                a = ((Tower)o).PixelPos;
+                a = ((Tower)o).Pos;
                 b = new Point(((Tower)o).SpriteWidth, ((Tower)o).SpriteHeight);
             } else if (o.GetType() == typeof(Monster)) {
                 a = ((Monster)o).Pos;

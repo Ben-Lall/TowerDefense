@@ -337,7 +337,7 @@ namespace Include {
             // Mark each of its tiles as TOWER
             for (int y = 0; y < tower.Height; y++) {
                 for (int x = 0; x < tower.Width; x++) {
-                    MapAt(tower.Pos.X + x, tower.Pos.Y + y).ContainsTower = true;
+                    MapAt(tower.TilePos.X + x, tower.TilePos.Y + y).ContainsTower = true;
                 }
             }
         }
@@ -446,7 +446,7 @@ namespace Include {
                 if(t.Type == targetType) {
                     for(int y = 0; y < t.Height; y++) {
                         for(int x = 0; x < t.Width; x++) {
-                            Point p = t.Pos + new Point(x, y);
+                            Point p = t.TilePos + new Point(x, y);
                             double currentDistance = Distance(start, p);
                             if (currentDistance <= distance) {
                                 closestFound = true;
@@ -476,16 +476,16 @@ namespace Include {
         /// <returns>true if they intersect, false otherwise.</returns>
         public static bool Intersects(Tower t, Monster m) {
             // Tower range is interpreted as the ellipse ((x - t.CenterPoint.x)^2)/a^2 + ((y - t.CenterPoint.y)^2)/b^2 = 1
-            // Where a = (t.PixelRadius.X)^2 and b = (t.PixelRadius.Y)^2
+            // Where a = (t.PixelRange.X)^2 and b = (t.PixelRange.Y)^2
             // Check the 8 relevant points on a rectangle to see if it intersects.
-            return (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRadius.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRadius.Y, 2)) <= 1;
+            return (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1;
 
 
         }
