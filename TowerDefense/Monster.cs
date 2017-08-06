@@ -91,10 +91,11 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spritebatch"></param>
         public void Draw() {
-            Sprites.Draw(Sprite, new Rectangle(Pos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
-
-            Rectangle healthBarBox = new Rectangle(Pos - ViewportPx + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
-            Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
+            WorldSpriteBatch.Draw(Sprite, new Rectangle(Pos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            if (CurrentHealth < MaxHealth) {
+                Rectangle healthBarBox = new Rectangle(Pos + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
+                Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
+            }
         }
 
         public void Update(GameTime gameTime) {
@@ -145,7 +146,7 @@ namespace TowerDefense {
         /// </summary>
         public void DrawPath() {
             foreach (Tile t in pf.Path) {
-                Sprites.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
+                WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(t.X * TileWidth, t.Y * TileHeight, TileWidth, TileHeight), Color.Crimson * 0.5f);
             }
         }
 

@@ -110,24 +110,25 @@ namespace TowerDefense {
         /// </summary>
         public void Draw() {
             if (Selected) {
-                Graphics.DrawLine(PxX - ViewportPx.X, PxY - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
-                Graphics.DrawLine(PxX - ViewportPx.X, (TileY + Height) * TileHeight - ViewportPx.Y, Width * TileWidth, 1, Color.Green);
-                Graphics.DrawLine(PxX - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
-                Graphics.DrawLine((TileX + Width) * TileWidth - ViewportPx.X, PxY - ViewportPx.Y, 1, Height * TileHeight, Color.Green);
+                Graphics.DrawLine(PxX, PxY, Width * TileWidth, 1, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine(PxX, (TileY + Height) * TileHeight, Width * TileWidth, 1, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine(PxX, PxY, 1, Height * TileHeight, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine((TileX + Width) * TileWidth, PxY, 1, Height * TileHeight, Color.Green, WorldSpriteBatch);
 
                 //TODO: add aura
             }
-            Sprites.Draw(Sprite, new Rectangle(DrawPos - ViewportPx, new Point(SpriteWidth, SpriteHeight)), Color.White);
-
-            Rectangle healthBarBox = new Rectangle(DrawPos - ViewportPx + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
-            Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
+            WorldSpriteBatch.Draw(Sprite, new Rectangle(DrawPos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+            if (CurrentHealth < MaxHealth) {
+                Rectangle healthBarBox = new Rectangle(DrawPos + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
+                Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
+            }
         }
 
         /// <summary>
         /// Draw the firing range of the tower.
         /// </summary>
         public void DrawAttackRange() {
-            Graphics.DrawCircle(CenterPoint - ViewportPx, (int)(AttackRange * TileWidth));
+            Graphics.DrawCircle(CenterPoint, (int)(AttackRange * TileWidth), WorldSpriteBatch);
         }
 
 

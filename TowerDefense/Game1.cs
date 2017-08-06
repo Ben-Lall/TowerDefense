@@ -38,8 +38,11 @@ namespace TowerDefense {
         /// all of your content.
         /// </summary>
         protected override void LoadContent() {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            Sprites = new SpriteBatch(GraphicsDevice);
+            /// Initialize SpriteBatches
+            WorldSpriteBatch = new SpriteBatch(GraphicsDevice);
+            UISpriteBatch = new SpriteBatch(GraphicsDevice);
+            BoltSpriteBatch = new SpriteBatch(GraphicsDevice);
+
             Art.LoadContent(Content, GraphicsDevice);
 
         }
@@ -73,7 +76,9 @@ namespace TowerDefense {
                 UpdateEffects(gameTime);
             }
 
-            Input.HandleInput();
+            if (IsActive) {
+                Input.HandleInput();
+            }
 
             base.Update(gameTime);
         }
@@ -137,31 +142,32 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Blue);
-            Sprites.Begin();
 
-            /* Draw gameplay elements */
+            /* Draw world elements */
 
+            WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
+                    null, null, null, null, null, Camera.get_transformation(GraphicsDevice));
             DrawMap();
             DrawGameplayObjects();
-
-            /* Draw UI elements */
-
-            DrawUI();
 
             if (IsPlacingTower) {
                 DrawPendingTower();
             }
+            WorldSpriteBatch.End();
 
-            DrawDebug();
-
-            // Change spriteBatch into the mode for drawing effects.
-            Sprites.End();
-            Sprites.Begin(SpriteSortMode.Texture, MaxBlend);
-            foreach (Bolt e in Effects) { // TODO: replace with usage of DrawSet in DrawGameplayObjects()
-                e.Draw(Sprites);
+            /* Draw effect elements */
+            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.get_transformation(GraphicsDevice));
+            foreach (Bolt e in Effects) {
+                e.Draw(BoltSpriteBatch);
             }
+            BoltSpriteBatch.End();
 
-            Sprites.End();
+            /* Draw UI elements */
+            UISpriteBatch.Begin();
+            DrawUI();
+            DrawDebug();
+            UISpriteBatch.End();
+
             base.Draw(gameTime);
         }
 
@@ -183,13 +189,13 @@ namespace TowerDefense {
             Vector2 PauseTextSize = Art.Font.MeasureString(PauseText);
             Vector2 PausePosition = new Vector2(ScreenWidth - 5, ScreenHeight - 45) - PauseTextSize;
             if (Paused) {
-                Sprites.DrawString(Art.Font, PauseText, PausePosition, Color.Black);
+                UISpriteBatch.DrawString(Art.Font, PauseText, PausePosition, Color.Black);
             }
 
             String monsterText = "Monsters: " + Monsters.Count;
             Vector2 monsterTextSize = Art.Font.MeasureString(monsterText);
             Vector2 monsterTextPosition = new Vector2(ScreenWidth - 5, PausePosition.Y) - monsterTextSize;
-            Sprites.DrawString(Art.Font, monsterText, monsterTextPosition, Color.Black);
+            UISpriteBatch.DrawString(Art.Font, monsterText, monsterTextPosition, Color.Black);
         }
 
         /// <summary>
@@ -203,12 +209,12 @@ namespace TowerDefense {
                 // Draw currently hovered tile coordinates
                 hoverTileText = "Hover: (" + PixelToTile(Include.Globals.MouseState.Position).X + ", " + PixelToTile(Include.Globals.MouseState.Position).Y + ")";
                 hoverTextSize = Art.Font.MeasureString(hoverTileText);
-                Sprites.DrawString(Art.Font, hoverTileText, new Vector2(ScreenWidth - 5, ScreenHeight - 5) - hoverTextSize, Color.Black);
+                UISpriteBatch.DrawString(Art.Font, hoverTileText, new Vector2(ScreenWidth - 5, ScreenHeight - 5) - hoverTextSize, Color.Black);
             }
 
-            String viewportText = "Viewport: " + ViewportX + ", " + ViewportY + ")";
+            String viewportText = "Viewport: " + Camera.Pos.X + ", " + Camera.Pos.Y + ")";
             Vector2 viewportTextSize = Art.Font.MeasureString(viewportText);
-            Sprites.DrawString(Art.Font, viewportText, new Vector2(ScreenWidth - 5, hoverTileText.Length == 0 ? ScreenHeight - 5 : ScreenHeight - 5 - hoverTextSize.Y) - viewportTextSize, Color.Black);
+            UISpriteBatch.DrawString(Art.Font, viewportText, new Vector2(ScreenWidth - 5, hoverTileText.Length == 0 ? ScreenHeight - 5 : ScreenHeight - 5 - hoverTextSize.Y) - viewportTextSize, Color.Black);
         }
 
         /// <summary>
@@ -217,12 +223,10 @@ namespace TowerDefense {
         private void DrawGameplayObjects() {
             // Draw towers / creatures in the proper order.
             foreach (object obj in DrawSet) {
-                if (IsOnScreen(obj)) {
-                    if (obj.GetType() == typeof(Tower)) {
-                        ((Tower)obj).Draw();
-                    } else if (obj.GetType() == typeof(Monster)) {
-                        ((Monster)obj).Draw();
-                    }
+                if (obj.GetType() == typeof(Tower)) {
+                    ((Tower)obj).Draw();
+                } else if (obj.GetType() == typeof(Monster)) {
+                    ((Monster)obj).Draw();
                 }
             }
 
@@ -269,7 +273,7 @@ namespace TowerDefense {
                 a = ((Monster)o).Pos;
                 b = new Point(((Monster)o).SpriteWidth, ((Monster)o).SpriteHeight);
             }
-            return new Rectangle(ViewportPx, ViewPortDimensionsPx).Intersects(new Rectangle(a, b));
+            return new Rectangle(Camera.Pos.ToPoint(), ViewPortDimensionsPx).Intersects(new Rectangle(a, b));
         }
 
         /// <summary>
@@ -277,11 +281,11 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMenuPanel() {
             int menuPanelX = ScreenWidth - MenuPanelWidth;
-            Sprites.Draw(Art.MenuPanel, new Rectangle(menuPanelX, 0, MenuPanelWidth, MenuPanelHeight), Color.White);
+            UISpriteBatch.Draw(Art.MenuPanel, new Rectangle(menuPanelX, 0, MenuPanelWidth, MenuPanelHeight), Color.White);
 
             /* Draw buttons for the panel. */
             foreach (Button b in Include.Globals.Buttons) {
-                b.Draw(Sprites);
+                b.Draw(UISpriteBatch);
             }
 
         }
@@ -291,13 +295,13 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawGrid() {
             // Draw horizontal lines across the screen at each tile height
-            for (int i = 0; i < ScreenHeight; i += TileHeight) {
-                Graphics.DrawLine(0, i, ScreenWidth, 1, Color.Black);
+            for (int i = 0; i < MapHeight * TileHeight; i += TileHeight) {
+                Graphics.DrawLine(0, i, MapWidth * TileHeight, 1, Color.Black, WorldSpriteBatch);
             }
 
             // Draw vertical lines across the screen at each tile width
-            for (int j = 0; j < ScreenWidth; j += TileWidth) {
-                Graphics.DrawLine(j, 0, 1, ScreenHeight, Color.Black);
+            for (int j = 0; j < MapWidth * TileWidth; j += TileWidth) {
+                Graphics.DrawLine(j, 0, 1, MapHeight * TileHeight, Color.Black, WorldSpriteBatch);
             }
         }
 
@@ -306,8 +310,8 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMap() {
             // Shade in the tiles based on their type.
-            for (int y = ViewportY; y < ViewCols + ViewportY; y++) {
-                for (int x = ViewportX; x < ViewRows + ViewportX; x++) {
+            for (int y = 0; y < MapHeight; y++) {
+                for (int x = 0; x < MapWidth; x++) {
                     if (MapAt(x, y).Type == TileType.LIMITED) {
                         DrawTile(x, y, Color.DarkOliveGreen);
                     } else if (MapAt(x, y).Type == TileType.OPEN) {
@@ -340,7 +344,7 @@ namespace TowerDefense {
         /// <param name="y">y position.</param>
         /// <param name="color">The color</param>
         protected void DrawTile(int x, int y, Color color) {
-            Sprites.Draw(Art.Pixel, new Rectangle((x * TileWidth) - ViewportPx.X, (y * TileHeight) - ViewportPx.Y, TileWidth, TileHeight), color);
+            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle((x * TileWidth), (y * TileHeight), TileWidth, TileHeight), color);
         }
 
         /// <summary>

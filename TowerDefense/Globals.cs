@@ -20,10 +20,22 @@ namespace Include {
         /// </summary>
         public static GraphicsDeviceManager Graphics { get; set; }
 
+        /* SpriteBatches */
+
         /// <summary>
-        /// SpriteBatch.
+        /// SpriteBatch containing details of drawing creatures and map features.
         /// </summary>
-        public static SpriteBatch Sprites{ get; set; }
+        public static SpriteBatch WorldSpriteBatch{ get; set; }
+
+        /// <summary>
+        /// SpriteBatch containing details of drawing UI elements.
+        /// </summary>
+        public static SpriteBatch UISpriteBatch { get; set; }
+
+        /// <summary>
+        /// SpriteBatch containing details of Bolt Effects.
+        /// </summary>
+        public static SpriteBatch BoltSpriteBatch { get; set; }
 
         /* Input */
 
@@ -67,9 +79,7 @@ namespace Include {
         /// <summary>
         /// Point representing the coordinates of the top-left corner of the viewport, measured in units of tiles.
         /// </summary>
-        public static Point Viewport { get; set; }
-        public static int ViewportX { get => Viewport.X; set => Viewport = new Point(value, ViewportY); }
-        public static int ViewportY { get => Viewport.Y; set => Viewport = new Point(ViewportX, value); }
+        public static Camera2d Camera { get; set; }
 
         /// <summary>
         /// Integer representing the width of the viewport, measured in units of tiles.
@@ -120,11 +130,6 @@ namespace Include {
         /// Height in pixels of the menu panel.
         /// </summary>
         public static int MenuPanelHeight { get; set; }
-
-        /// <summary>
-        /// Point representing the coordinates of the top-left corner of the viewport, measured in units of pixels.
-        /// </summary>
-        public static Point ViewportPx { get => new Point(Viewport.X * TileWidth, Viewport.Y * TileHeight); }
 
         /// <summary>
         /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
@@ -232,6 +237,9 @@ namespace Include {
             // Set the map dimensions
             MapWidth = Math.Max(ViewRows, 100);
             MapHeight = Math.Max(ViewCols, 100);
+
+            // Set up camera
+            Camera = new Camera2d(new Vector2(ScreenWidth / 2, ScreenHeight / 2));
 
             // Initialize the gameplay objects.
             Map = new Tile[MapWidth, MapHeight];
@@ -394,7 +402,7 @@ namespace Include {
         /// <param name="pixel">Point containing the coordinates of the pixel.</param>
         /// <returns></returns>
         public static Point PixelToTile(Point pixel) {
-            return new Point(Viewport.X + pixel.X / TileWidth, Viewport.Y + pixel.Y / TileHeight);
+            return new Point(((int)Camera.Pos.X + pixel.X) / TileWidth, ((int)Camera.Pos.Y + pixel.Y) / TileHeight);
         }
 
         /// <summary>
@@ -403,8 +411,8 @@ namespace Include {
         /// <param name="pixel">Point containing the coordinates of the pixel.</param>
         /// <returns></returns>
         public static Point PixelToClosestTile(Point pixel) {
-            int x = pixel.X % TileWidth;
-            int y = pixel.Y % TileHeight;
+            int x = ((int)Camera.Pos.X + pixel.X) % TileWidth;
+            int y = ((int)Camera.Pos.Y + pixel.Y) % TileHeight;
 
             return PixelToTile(pixel + new Point(x, y));
         }

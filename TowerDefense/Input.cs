@@ -65,18 +65,20 @@ namespace TowerDefense {
             }
 
             // Movement keys
+            Vector2 movement = Vector2.Zero;
             if (Keyboard.GetState().IsKeyDown(Keys.W)) {
-                ViewportY = MathHelper.Clamp(ViewportY - 1, 0, MaxViewportY);
+                movement.Y--;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S)) {
-                ViewportY = MathHelper.Clamp(ViewportY + 1, 0, MaxViewportY);
+                movement.Y++;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A)) {
-                ViewportX = MathHelper.Clamp(ViewportX - 1, 0, MaxViewportX);
+                movement.X--;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D)) {
-                ViewportX = MathHelper.Clamp(ViewportX + 1, 0, MaxViewportX);
+                movement.X++;
             }
+            Camera.Move(movement * 20);
 
         }
         /// <summary>

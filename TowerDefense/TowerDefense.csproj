@@ -44,11 +44,12 @@
   <ItemGroup>
     <Compile Include="Art.cs" />
     <Compile Include="Button.cs" />
+    <Compile Include="Camera2d.cs" />
     <Compile Include="Creature.cs" />
+    <Compile Include="EnglishSort.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Monster.cs" />
-    <Compile Include="DrawComparer.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Pathfinder.cs" />
     <Compile Include="Tower.cs" />
