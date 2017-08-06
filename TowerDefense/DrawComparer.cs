@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace TowerDefense {
-    public class DrawComparer : IComparer<object> {
+    /// <summary>
+    /// Sorting comparer that sorts objects first by lowest Y, then by lowest X.  By using this comparer, objects will be drawn
+    /// top to bottom, left to right, like reading English.
+    /// </summary>
+    public class EnglishSort : IComparer<object> {
         public int Compare(object a, object b) {
             // Assertions and type identification
             Debug.Assert(a != null, "Violation of : a is not null.");

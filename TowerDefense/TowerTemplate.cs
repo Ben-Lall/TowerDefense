@@ -82,7 +82,7 @@ namespace TowerDefense {
                 case TowerType.HUB:
                     Width = 3;
                     Height = 3;
-                    MaxHealth = 500;
+                    MaxHealth = 100;
                     break;
                 default:
                     Width = 2;
