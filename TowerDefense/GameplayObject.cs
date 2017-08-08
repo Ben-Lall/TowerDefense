@@ -44,7 +44,7 @@ namespace TowerDefense
         /// <summary>
         /// Tile coordinates of the center of this GameplayObject.
         /// </summary>
-        public Point CenterTile { get => new Point((X + Width) / TileWidth, (Y + Height) / TileHeight); }
+        public Point CenterTile { get => new Point(CenterPoint.X / TileWidth, CenterPoint.Y / TileHeight); }
 
         /// <summary>
         /// Hitpoints of damage dealt by this GameplayObject's attacks.

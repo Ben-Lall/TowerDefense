@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 /// </summary>
 enum MonsterType { IMP, NUMBER_OF_MONSTERS }
 
+enum CombatType { MELEE, RANGED, NUMBER_OF_COMBAT_TYPES }
+
 namespace TowerDefense {
     /// <summary>
     /// A monster in the game world.
@@ -22,6 +24,11 @@ namespace TowerDefense {
         /// Type of this monster.
         /// </summary>
         public MonsterType Type { get; set; }
+
+        /// <summary>
+        /// The type of fighter this monster is.
+        /// </summary>
+        public CombatType CombatType;
 
         /// <summary>
         /// Monster's speed, measured in tiles / second.
@@ -37,6 +44,11 @@ namespace TowerDefense {
         /// Offset used to convert Pos when constructing from a tile coordinate.
         /// </summary>
         private Point TileToPointOffset { get => new Point(TileWidth / 2 - Width / 2, TileHeight / 2 - Height / 2); }
+
+        /// <summary>
+        /// Displacement for drawing this sprite, used when drawing melee attacks.
+        /// </summary>
+        private Point MeleeDisplacement { get; set; }
         
         /// <summary>
         /// Monster's target.
@@ -46,7 +58,7 @@ namespace TowerDefense {
         /// <summary>
         /// Whether this monster is in attack range of its target tower.
         /// </summary>
-        public Boolean IsTargetInRange { get => Target != null && Distance(TilePos, Target.CenterTile) <= AttackRange; }
+        public Boolean IsTargetInRange { get => Target != null && Distance(CenterTile, pf.TargetPos) <= AttackRange; }
 
         /// <summary>
         /// Get the distance between this monster and its target, measured in units of tiles.
@@ -71,10 +83,11 @@ namespace TowerDefense {
             Type = type;
             switch(Type) {
                 case MonsterType.IMP:
+                    CombatType = CombatType.MELEE;
                     Speed = 10;
                     MaxHealth = 10;
                     AttackDamage = 3;
-                    AttackRange = 8;
+                    AttackRange = SQRT2;
                     AttackRate = 1;
                     Width = 35;
                     Height = 35;
@@ -82,18 +95,24 @@ namespace TowerDefense {
             }
 
             CurrentHealth = MaxHealth;
-            pf = new Pathfinder(pos);
+            pf = new Pathfinder(pos, AttackRange);
             Target = pf.Target;
 
         }
         
+        /// <summary>
+        /// Draw this monster to its place on the screen.
+        /// </summary>
         public override void Draw() {
-            Sprite.Draw(CenterPoint, WorldSpriteBatch);
+
+            Sprite.Draw(CenterPoint + MeleeDisplacement, WorldSpriteBatch);
 
             if (CurrentHealth < MaxHealth) {
                 Rectangle healthBarBox = new Rectangle(Pos + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
                 Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
             }
+            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(CenterPoint, new Point(1, 1)), Color.Blue);
+
         }
 
         /// <summary>
@@ -103,14 +122,27 @@ namespace TowerDefense {
         public override void Update(GameTime gameTime) {
             if (!HasArrived) {
                 Move(gameTime);
+                MeleeDisplacement = new Point(0, 0);
             } else {
                 ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
             }
             
-            if (IsTargetInRange && Target != null && Target.IsAlive) {
+            if (HasArrived && IsTargetInRange && Target != null && Target.IsAlive) {
                 Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
+
                 if (Cooldown == 0) {
                     Attack();
+                }
+
+                if (CombatType == CombatType.MELEE) {
+                    Point nextTilePos = new Point(pf.TargetPos.X * TileWidth, pf.TargetPos.Y * TileHeight) + new Point(TileWidth / 2, TileHeight / 2);
+                    Vector2 dirVector = Vector2.Normalize((nextTilePos - CenterPoint).ToVector2());
+                    if (Double.IsNaN(dirVector.X) || Double.IsNaN(dirVector.Y)) {
+                        dirVector = Vector2.Zero;
+                    }
+
+                    ((CreatureSprite)Sprite).Update(gameTime, dirVector);
+                    MeleeDisplacement = (new Vector2(dirVector.X * TileWidth, dirVector.Y * TileHeight) * (float)Cooldown * (float)AttackRate).ToPoint();
                 }
             }
 
@@ -125,15 +157,17 @@ namespace TowerDefense {
         /// </summary>
         public override void Attack() {
             Target.TakeDamage(AttackDamage);
-            Cooldown += (1.0 / AttackRate);
-            Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
+            Cooldown = (1.0 / AttackRate);
+            if (CombatType == CombatType.RANGED) {
+                Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
+            }
         }
 
         /// <summary>
         /// Have this monster find a new target.
         /// </summary>
         public void FindNewTarget() {
-            pf = new Pathfinder(TilePos);
+            pf = new Pathfinder(TilePos, AttackRange);
             Target = pf.Target;
         }
 
@@ -161,8 +195,8 @@ namespace TowerDefense {
         public void Move(GameTime gameTime) {
             if (pf.Path.Count > 0) {
                 Point nextTileCoord = pf.Path.First().Pos;
-                Point nextTilePos = new Point(nextTileCoord.X * TileWidth, nextTileCoord.Y * TileHeight) + TileToPointOffset;
-                Vector2 dirVector = Vector2.Normalize((nextTilePos - Pos).ToVector2());
+                Point nextTilePos = new Point(nextTileCoord.X * TileWidth, nextTileCoord.Y * TileHeight) + new Point(TileWidth / 2, TileHeight / 2);
+                Vector2 dirVector = Vector2.Normalize((nextTilePos - CenterPoint).ToVector2());
                 if(Double.IsNaN(dirVector.X) || Double.IsNaN(dirVector.Y)) {
                     dirVector = Vector2.Zero;
                 }
@@ -172,7 +206,7 @@ namespace TowerDefense {
                     (int)(dirVector.Y * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileHeight));
 
                 // Remove this tile from the path if it has been reached
-                if (nextTilePos - Pos == new Point(0, 0)) {
+                if (nextTilePos - CenterPoint == new Point(0, 0)) {
                     pf.Path.RemoveFirst();
                 }
 

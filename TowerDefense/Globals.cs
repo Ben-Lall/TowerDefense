@@ -269,6 +269,15 @@ namespace Include {
         /** General Helper Methods **/
 
         /// <summary>
+        /// Returns the ceiling of a given vector2
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static Vector2 Ceil(Vector2 v) {
+            return new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
+        }
+
+        /// <summary>
         /// Returns the tile at the given coordianates.
         /// </summary>
         /// <param name="x">The x coordinate.</param>

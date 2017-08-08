@@ -22,21 +22,34 @@ namespace TowerDefense {
         /// </summary>
         private SortedSet<SearchNode>  pq;
 
+        /// <summary>
+        /// The tower targeted by this monster.
+        /// </summary>
         public Tower Target;
+
+        /// <summary>
+        /// The coordinates of the specific tile of the target that this monster is going for.
+        /// </summary>
+        public Point TargetPos;
 
         /// <summary>
         /// Search node that serves as the head of the path to the target
         /// </summary>
         public LinkedList<Tile> Path { get; set; }
 
-        public Pathfinder(Point start) {
+        /// <summary>
+        /// Gets a path to the nearest valid target.
+        /// </summary>
+        /// <param name="start">The start point.  A tile position.</param>
+        /// <param name="firingRange">The firing range of this monster.  The monster will stop moving once it is within this radius.</param>
+        public Pathfinder(Point start, double firingRange) {
             // Initialize the priority queue
             pq = new SortedSet<SearchNode>(new AStarComparer());
             pq.Add(new SearchNode(MapAt(start.X, start.Y), null));
 
             // A* search
             int c = 0;
-            while (c < SearchCutoff && !GoalTest(pq.First())) {
+            while (c < SearchCutoff && !GoalTest(pq.First(), firingRange)) {
                 c++;
                 SearchNode s = pq.First();
                 pq.Remove(s);
@@ -70,10 +83,14 @@ namespace TowerDefense {
         /// Goal test for the A* search.  Returns true if the tile is adjacent or diagonal to the target tile.
         /// </summary>
         /// <param name="s">The search node to be tested.</param>
-        /// <param name="target">The coordinates of the goal tile.</param>
+        /// <param name="firingRange">The firing range of this monster.  The monster will stop moving once it is within this radius.</param>
         /// <returns></returns>
-        private bool GoalTest(SearchNode s) {
-            return Distance(s.Tile.Pos, GetClosestTilePos(s.Tile.Pos, TowerType.HUB)) <= SQRT2;
+        private bool GoalTest(SearchNode s, double firingRange) {
+            if (Distance(s.Tile.Pos, GetClosestTilePos(s.Tile.Pos, TowerType.HUB)) <= firingRange) {
+                TargetPos = GetClosestTilePos(s.Tile.Pos, TowerType.HUB);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
