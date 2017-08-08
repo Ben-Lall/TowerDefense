@@ -46,7 +46,7 @@ namespace TowerDefense {
         private Point TileToPointOffset { get => new Point(TileWidth / 2 - Width / 2, TileHeight / 2 - Height / 2); }
 
         /// <summary>
-        /// Displacement for drawing this sprite, used when drawing melee attacks.
+        /// Displacement for drawing this sprite, used when drawing melee attacks. Units of pixels.
         /// </summary>
         private Point MeleeDisplacement { get; set; }
         
@@ -120,21 +120,9 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime) {
-            if (!HasArrived) {
-                Move(gameTime);
-                MeleeDisplacement = new Point(0, 0);
-            } else {
-                ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
-            }
-            
-            if (HasArrived && IsTargetInRange && Target != null && Target.IsAlive) {
+            if (Cooldown > 0) { // Handle cooldown before this monster can take any other actions.
                 Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
-
-                if (Cooldown == 0) {
-                    Attack();
-                }
-
-                if (CombatType == CombatType.MELEE) {
+                if (CombatType == CombatType.MELEE) { // Give displacement for drawing "bash" attack animation
                     Point nextTilePos = new Point(pf.TargetPos.X * TileWidth, pf.TargetPos.Y * TileHeight) + new Point(TileWidth / 2, TileHeight / 2);
                     Vector2 dirVector = Vector2.Normalize((nextTilePos - CenterPoint).ToVector2());
                     if (Double.IsNaN(dirVector.X) || Double.IsNaN(dirVector.Y)) {
@@ -144,10 +132,21 @@ namespace TowerDefense {
                     ((CreatureSprite)Sprite).Update(gameTime, dirVector);
                     MeleeDisplacement = (new Vector2(dirVector.X * TileWidth, dirVector.Y * TileHeight) * (float)Cooldown * (float)AttackRate).ToPoint();
                 }
-            }
+            } else {
+                if (!HasArrived) {
+                    Move(gameTime);
+                    MeleeDisplacement = new Point(0, 0);
+                } else {
+                    ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
+                }
 
-            if (Target != null && !Target.IsAlive) {
-                FindNewTarget();
+                if (HasArrived && IsTargetInRange && Target != null && Target.IsAlive) {
+                    Attack();
+                }
+
+                if (Target != null && !Target.IsAlive) {
+                    FindNewTarget();
+                }
             }
         }
 

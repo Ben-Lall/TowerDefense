@@ -180,9 +180,14 @@ namespace Include {
         public static List<Monster> Monsters { get; set; }
 
         /// <summary>
-        /// Integer representing the current wave.  Always > 0.
+        /// The amount of time between monster spawns.  Measured in units of seconds.
         /// </summary>
-        public static int CurrentWave { get; set; }
+        public static double SpawnRate { get; set; }
+
+        /// <summary>
+        /// The amount of time remaining before a new monster spawning.  Measured in units of seconds.
+        /// </summary>
+        public static double SpawnCooldown { get; set; }
 
         /* UI */
 
@@ -264,9 +269,23 @@ namespace Include {
 
             // Initialize Input
             Input.PreviousMouseWheel = MouseState.ScrollWheelValue;
+
+            // Initialize gameplay stuff.
+            SpawnRate = 6.0;
+            SpawnCooldown = 0.0;
+            Paused = true;
         }
 
         /** General Helper Methods **/
+
+        public static bool TileContainsMonster(Tile t) {
+            foreach(Monster m in Monsters) {
+                if (m.CenterTile.Equals(t.Pos)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Returns the ceiling of a given vector2

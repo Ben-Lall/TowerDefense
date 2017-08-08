@@ -115,6 +115,14 @@ namespace TowerDefense {
             // Remove dead monsters from the list.
             Monsters.RemoveAll(x => !x.IsAlive);
             DrawSet.RemoveAll(x => x.GetType() == typeof(Monster) && !((Monster)x).IsAlive);
+
+            // Spawn new monsters based off of the spawn rate.
+            if(SpawnCooldown == 0) {
+                SpawnWave();
+                SpawnCooldown = SpawnRate;
+            } else {
+                SpawnCooldown = Math.Max(0, SpawnCooldown - gameTime.ElapsedGameTime.TotalSeconds);
+            }
             
             foreach (Monster m in Monsters) {
                 m.Update(gameTime);
@@ -394,15 +402,12 @@ namespace TowerDefense {
             }
             AddTower(new Tower(HubTemplate, new Point(53, 40)));
 
-            CurrentWave = 0;
-
             SpawnWave();
         }
 
         public void SpawnWave() {
-            CurrentWave++;
             Random r = new Random();
-            int spawnAmt = (CurrentWave - 1) * 5 + 10 + r.Next(0, 5);
+            int spawnAmt = 3 + r.Next(0, 5);
 
             // Get the set of valid tiles -- OPEN tiles on the boundary of the screen.
             List<Tile> spawnTiles = new List<Tile>();
@@ -429,7 +434,9 @@ namespace TowerDefense {
             // Spawn each enemy at a random tile.
             for (int i = 0; i < spawnAmt; i++) {
                 Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
-                AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, spawnTile.Pos));
+                if (!TileContainsMonster(spawnTile)) {
+                    AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, spawnTile.Pos));
+                }
             }
         }
     }
