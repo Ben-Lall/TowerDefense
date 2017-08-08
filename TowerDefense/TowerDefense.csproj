@@ -42,10 +42,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CreatureSprite.cs" />
+    <Compile Include="AnimatedSprite.cs" />
     <Compile Include="Art.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Camera2d.cs" />
-    <Compile Include="Creature.cs" />
+    <Compile Include="GameplayObject.cs" />
     <Compile Include="EnglishSort.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Input.cs" />
@@ -58,6 +60,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TowerSprite.cs" />
     <Compile Include="TowerTemplate.cs" />
   </ItemGroup>
   <ItemGroup>

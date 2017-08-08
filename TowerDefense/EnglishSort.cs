@@ -13,16 +13,16 @@ namespace TowerDefense {
             Debug.Assert(a != null, "Violation of : a is not null.");
             Debug.Assert(b != null, "Violation of : b is not null.");
 
-            Type[] types = { typeof(Tower), typeof(Monster) };
+            Type[] types = { typeof(GameplayObject) };
             Type typeOfA = null;
             Type typeOfB = null;
 
             foreach (Type t in types) {
-                if (a.GetType() == t) {
+                if (a.GetType().IsSubclassOf(t)) {
                     typeOfA = t;
                 }
 
-                if (b.GetType() == t) {
+                if (b.GetType().IsSubclassOf(t)) {
                     typeOfB = t;
                 }
             }
@@ -33,25 +33,17 @@ namespace TowerDefense {
             int aX = 0, aY = 0, bX = 0, bY = 0;
 
             // Get coordinates of a.
-            if (typeOfA == typeof(Tower)) {
-                Tower temp = (Tower)a;
+            if (typeOfA == typeof(GameplayObject)) {
+                GameplayObject temp = (GameplayObject)a;
                 aX = temp.Pos.X;
                 aY = temp.Pos.Y;
-            } else if(typeOfA == typeof(Monster)) {
-                Monster temp = (Monster)a;
-                aX = temp.Pos.X - temp.SpriteWidth / 2;
-                aY = temp.Pos.Y - temp.SpriteWidth / 2;
             }
 
             // Get coordinates of b.
-            if (typeOfB == typeof(Tower)) {
-                Tower temp = (Tower)b;
+            if (typeOfB == typeof(GameplayObject)) {
+                GameplayObject temp = (GameplayObject)b;
                 bX = temp.Pos.X;
                 bY = temp.Pos.Y;
-            } else if (typeOfB == typeof(Monster)) {
-                Monster temp = (Monster)b;
-                bX = temp.Pos.X - temp.SpriteWidth / 2;
-                bY = temp.Pos.Y - temp.SpriteWidth / 2;
             }
 
             // Compare.

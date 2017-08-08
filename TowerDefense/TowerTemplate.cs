@@ -26,7 +26,7 @@ namespace TowerDefense {
         /// <summary>
         /// The sprite of this tower.
         /// </summary>
-        public Texture2D Sprite { get; set; }
+        public TowerSprite Sprite { get; set; }
 
         public int SpriteWidth { get => Sprite.Width; }
         public int SpriteHeight { get => Sprite.Height; }
@@ -66,12 +66,12 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="type">The type of tower this tower is.</param>
         /// <param name="sprite">A sprite representing this tower.</param>
-        public TowerTemplate(TowerType type, Texture2D sprite) {
+        public TowerTemplate(TowerType type) {
             Type = type;
-            Sprite = sprite;
             
             switch(type) {
                 case TowerType.BOLT:
+                    Sprite = new TowerSprite(Art.Tower);
                     Width = 2;
                     Height = 2;
                     AttackDamage = 8;
@@ -80,6 +80,7 @@ namespace TowerDefense {
                     MaxHealth = 100;
                     break;
                 case TowerType.HUB:
+                    Sprite = new TowerSprite(Art.Hub);
                     Width = 3;
                     Height = 3;
                     MaxHealth = 100;

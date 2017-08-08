@@ -11,59 +11,37 @@ namespace TowerDefense {
     /// <summary>
     /// A tower gameplay object.
     /// </summary>
-    class Tower : Creature {
-        /// <summary>
-        /// Tile coordinates of the top-left corner of the base of the tower.
-        /// </summary>
-        override public Point TilePos { get; set; }
-
-        /// <summary>
-        /// Tile coordinates of the center of the tower.
-        /// </summary>
-        override public Point CenterTile { get => new Point(TileX + Width / 2, TileY + Height / 2); }
-
-        /// <summary>
-        /// Pixel coordinates of the top-left corner of the base of this tower.
-        /// </summary>
-        override public Point Pos { get => new Point(TilePos.X * TileWidth, TilePos.Y * TileHeight); }
-
-        public int PxX { get => Pos.X; }
-        public int PxY { get => Pos.Y; }
-
-        /// <summary>
-        /// Pixel coordinates of the center of the tower.
-        /// </summary>
-        override public Point CenterPoint { get => new Point(TileWidth * (TileX + Width / 2), TileHeight * (TileY + Height / 2)); }
+    class Tower : GameplayObject {
 
         /// <summary>
         /// Pixel coordinates from which attack visual effects originate.
         /// </summary>
-        override public Point FirePoint { get => new Point(TileWidth * (TileX + Width / 2), TileHeight * (TileY - 2 * (Height) / 3)); }
+        public override Point FirePoint { get => new Point(X + Width / 2, Y - 2 * Height / 3); }
 
         /// <summary>
-        /// Hitpoints of damage dealt by the tower's attacks.
+        /// Template used to build this tower.
         /// </summary>
-        override public int AttackDamage { get => Template.AttackDamage; set => Template.AttackDamage = value; }
+        public TowerTemplate Template { get; set; }
+
+        /// <summary>
+        /// Hitpoints of damage dealt by this tower's attacks.
+        /// </summary>
+        public override int AttackDamage { get => Template.AttackDamage; set => Template.AttackDamage = value; }
 
         /// <summary>
         /// Tower's attack range, measured in units of tileWidth.
         /// </summary>
-        override public double AttackRange { get => Template.AttackRange; set => Template.AttackRange = value; }
+        public override double AttackRange { get => Template.AttackRange; set => Template.AttackRange = value; }
 
         /// <summary>
         /// Frequency of this tower's attacks, measured in hertz.
         /// </summary>
-        override public double AttackRate { get => Template.AttackRate; set => Template.AttackRate = value; }
+        public override double AttackRate { get => Template.AttackRate; set => Template.AttackRate = value; }
 
         /// <summary>
         /// Tower's maximum possible health.
         /// </summary>
-        override public int MaxHealth { get => Template.MaxHealth; set => Template.MaxHealth = value; }
-
-        /// <summary>
-        /// Template used to build the tower.
-        /// </summary>
-        public TowerTemplate Template { get; set; }
+        public override int MaxHealth { get => Template.MaxHealth; set => Template.MaxHealth = value; }
         
         /// <summary>
         /// Type of the tower.
@@ -71,24 +49,14 @@ namespace TowerDefense {
         public TowerType Type { get => Template.Type; set => Template.Type = value; }
 
         /// <summary>
-        /// Sprite used for the tower.
+        /// The width of this tower measured in units of tiles.
         /// </summary>
-        override public Texture2D Sprite { get => Template.Sprite; set => Template.Sprite = value; }
-        
-        /// <summary>
-        /// Width of the base of the tower, measured in units of tiles.
-        /// </summary>
-        public int Width { get; set; }
+        public int WidthTiles { get => Template.Width; }
 
         /// <summary>
-        /// Height of the base of the tower, measured in units of tiles.
+        /// The height of this tower measured in units of tiles.
         /// </summary>
-        public int Height { get; set; }
-        
-        /// <summary>
-        /// Pixel coordinate to where the tower should be drawn.
-        /// </summary>
-        public Point DrawPos { get => new Point(TilePos.X * TileWidth - (SpriteWidth - Width * TileWidth) / 2, (TilePos.Y * TileHeight) - SpriteHeight + TileHeight * Height); }
+        public int HeightTiles { get => Template.Height; }
 
         /// <summary>
         /// Constructor for a Tower, using a TowerTemplate
@@ -96,63 +64,73 @@ namespace TowerDefense {
         /// <param name="template">Template used to construct this tower.</param>
         /// <param name="pos">Coordinate position of the top-left corner of this tower, in units of tiles.</param>
         public Tower(TowerTemplate template, Point pos) {
-            
             Template = template;
+            Sprite = Template.Sprite;
             TilePos = pos;
-            Width = template.Width;
-            Height = template.Height;
+            Width = template.Width * TileWidth;
+            Height = template.Height * TileHeight;
             MaxHealth = template.MaxHealth;
             CurrentHealth = MaxHealth;
         }
 
         /// <summary>
-        /// Draw the tower to its current position on the screen.
+        /// Draw this tower to its position on the screen.
         /// </summary>
-        public void Draw() {
+        public override void Draw() {
             if (Selected) {
-                Graphics.DrawLine(PxX, PxY, Width * TileWidth, 1, Color.Green, WorldSpriteBatch);
-                Graphics.DrawLine(PxX, (TileY + Height) * TileHeight, Width * TileWidth, 1, Color.Green, WorldSpriteBatch);
-                Graphics.DrawLine(PxX, PxY, 1, Height * TileHeight, Color.Green, WorldSpriteBatch);
-                Graphics.DrawLine((TileX + Width) * TileWidth, PxY, 1, Height * TileHeight, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine(X, Y, Width, 1, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine(X, Y + Height, Width, 1, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine(X, Y, 1, Height, Color.Green, WorldSpriteBatch);
+                Graphics.DrawLine(X + Width, Y, 1, Height, Color.Green, WorldSpriteBatch);
 
                 //TODO: add aura
             }
-            WorldSpriteBatch.Draw(Sprite, new Rectangle(DrawPos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+
+            // Draw this tower, with sprite positioning dependent on tower type.
+            switch(Template.Type) {
+                case TowerType.BOLT:
+                    Sprite.Draw(new Point(CenterPoint.X, CenterPoint.Y - Height / 2), WorldSpriteBatch);
+                    break;
+                case TowerType.HUB:
+                    Sprite.Draw(CenterPoint, WorldSpriteBatch);
+                    break;
+            }
+            
+
             if (CurrentHealth < MaxHealth) {
-                Rectangle healthBarBox = new Rectangle(DrawPos + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
+                Rectangle healthBarBox = new Rectangle(CenterPoint + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
                 Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
             }
         }
 
         /// <summary>
-        /// Draw the firing range of the tower.
+        /// Have this tower take an action.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public override void Update(GameTime gameTime) {
+            ((TowerSprite)Sprite).Update(gameTime, TowerAnimationType.IDLE);
+
+            Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
+            if (Cooldown == 0) {
+                Attack();
+            }
+        }
+
+        /// <summary>
+        /// Draw the firing range of this tower.
         /// </summary>
         public void DrawAttackRange() {
             Graphics.DrawCircle(CenterPoint, (int)(AttackRange * TileWidth), WorldSpriteBatch);
         }
 
-
         /// <summary>
-        /// Have the tower take an action.
+        /// Have this tower attack a monster. The monster attacked depends on this tower's AI.
         /// </summary>
-        /// <param name="gameTime"></param>
-        /// <param name="monsters">List of monsters, in the event that it needs to fire.</param>
-        public void Update(GameTime gameTime) {
-            Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
-            if(Cooldown == 0) {
-                Attack(Monsters);
-            }
-        }
-
-        /// <summary>
-        /// Given a list of monsters, attack one.  The monster attacked depends on the tower's AI.
-        /// </summary>
-        /// <param name="monsters">List of monsters.</param>
-        public void Attack(List<Monster> monsters) {
+        public override void Attack() {
             //TODO: come up with various AI packs to determine tower firing strategies.  For now, pick the monster closest to its goal.
             int lowestDistance = int.MaxValue;
             Monster target = null;
-            foreach(Monster m in monsters) {
+            foreach(Monster m in Monsters) {
                 if (Intersects(this, m)) {
                       if(m.DistanceToTarget < lowestDistance) {
                         lowestDistance = m.DistanceToTarget;
@@ -169,10 +147,10 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Deals an amount of damage to the tower.
+        /// Deals an amount of damage to this tower.
         /// </summary>
         /// <param name="damage"></param>
-        public void TakeDamage(int damage)
+        public override void TakeDamage(int damage)
         {
             CurrentHealth = Math.Max(0, CurrentHealth - damage);
         }
@@ -183,7 +161,7 @@ namespace TowerDefense {
         /// <param name="tile"></param>
         /// <returns>Return true if this tower overlaps the given tile. False otherwise.</returns>
         public bool ContainsTile(Tile tile) {
-            return (TileX <= tile.X && tile.X <= TileX + Width && TileY <= tile.Y && tile.Y <= TileY + Height);
+            return ContainsTile(tile.Pos);
         }
 
         /// <summary>
@@ -192,7 +170,7 @@ namespace TowerDefense {
         /// <param name="p"></param>
         /// <returns>Return true if this tower overlaps the given point. False otherwise.</returns>
         public bool ContainsTile(Point p) {
-            return (TileX <= p.X && p.X < TileX + Width && TileY <= p.Y && p.Y < TileY + Height);
+            return (TileX <= p.X && p.X < TileX + WidthTiles && TileY <= p.Y && p.Y < TileY + HeightTiles);
         }
     }
 }

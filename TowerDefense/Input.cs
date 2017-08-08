@@ -139,7 +139,7 @@ namespace TowerDefense {
 
             // Next, check if a tower was selected
             else if (CursorIsOnMap()) {
-                Point clickedTile = PixelToTile(mouseState.Position);
+                Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
                 foreach (Tower t in Towers) {
                     if (t.ContainsTile(clickedTile)) {
                         return t;

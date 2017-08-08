@@ -50,7 +50,7 @@ namespace Include {
         public static MouseState MouseState { get; set; }
 
         public static Vector2 WorldMousePos { get => Vector2.Transform(
-   new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.Transform));
+        new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.Transform));
         }
 
         /* Graphics */
@@ -355,8 +355,8 @@ namespace Include {
             DrawSet.Add(tower);
 
             // Mark each of its tiles as TOWER
-            for (int y = 0; y < tower.Height; y++) {
-                for (int x = 0; x < tower.Width; x++) {
+            for (int y = 0; y < tower.HeightTiles; y++) {
+                for (int x = 0; x < tower.WidthTiles; x++) {
                     MapAt(tower.TilePos.X + x, tower.TilePos.Y + y).ContainsTower = true;
                 }
             }
@@ -464,8 +464,8 @@ namespace Include {
             double distance = int.MaxValue;
             foreach(Tower t in Towers) {
                 if(t.Type == targetType) {
-                    for(int y = 0; y < t.Height; y++) {
-                        for(int x = 0; x < t.Width; x++) {
+                    for(int y = 0; y < t.HeightTiles; y++) {
+                        for(int x = 0; x < t.WidthTiles; x++) {
                             Point p = t.TilePos + new Point(x, y);
                             double currentDistance = Distance(start, p);
                             if (currentDistance <= distance) {
@@ -499,19 +499,19 @@ namespace Include {
             // Where a = (t.PixelRange.X)^2 and b = (t.PixelRange.Y)^2
             // Check the 8 relevant points on a rectangle to see if it intersects.
             return (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.SpriteWidth - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.SpriteHeight / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1;
+                   (Math.Pow(m.X + m.Width / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.Width - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.Width / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.Width - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
+                   (Math.Pow(m.X + m.Width - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1;
 
 
         }
         
-        internal static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT, Art.Tower); }
-        internal static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB, Art.Hub); }
+        public static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT); }
+        public static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB); }
 
     }
 }

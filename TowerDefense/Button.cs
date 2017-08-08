@@ -32,14 +32,14 @@ namespace TowerDefense {
         /// <summary>
         /// Texture for contents of this button.  May be null.
         /// </summary>
-        public Texture2D Contents { get; set; }
+        public AnimatedSprite Contents { get; set; }
 
         /// <summary>
         /// The action the button should perform upon being pressed.
         /// </summary>
         public Action PressAction { get; set; }
 
-        private void createNewRep(Rectangle shape, Texture2D background, Texture2D contents, Action action) {
+        private void createNewRep(Rectangle shape, Texture2D background, AnimatedSprite contents, Action action) {
             HitBox = shape;
             Background = background;
             Contents = contents;
@@ -65,23 +65,22 @@ namespace TowerDefense {
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="contents">Texture representing the interior content of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
-        public Button(Rectangle shape, Texture2D background, Texture2D contents, Action action) {
+        public Button(Rectangle shape, Texture2D background, AnimatedSprite contents, Action action) {
             createNewRep(shape, background, contents, action);
         }
 
         public void Draw(SpriteBatch spriteBatch) {
-
             // Draw the background of the button
             spriteBatch.Draw(Background, HitBox, Color.White);
 
             // Draw the contents of the button, if any
             if (Contents != null) {
-                int towerWidth = HitBox.Width / 3;
-                int towerHeight = (HitBox.Height * 2) / 3;
-                int towerY = HitBox.Y + ((HitBox.Height - towerHeight) / 2);
-                int towerX = HitBox.X + ((HitBox.Width - towerWidth) / 2);
+                int contentsWidth = HitBox.Width / 3;
+                int contentsHeight = (HitBox.Height * 2) / 3;
+                int towerY = HitBox.Y + HitBox.Height  / 2;
+                int towerX = HitBox.X + HitBox.Width  / 2;
 
-                spriteBatch.Draw(Contents, new Rectangle(towerX, towerY, towerWidth, towerHeight), Color.White);
+                Contents.Draw(towerX, towerY, spriteBatch, contentsWidth, contentsHeight);
             }
         }
     }

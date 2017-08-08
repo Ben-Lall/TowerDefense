@@ -16,14 +16,10 @@ namespace TowerDefense {
     /// <summary>
     /// A monster in the game world.
     /// </summary>
-    class Monster : Creature {
-        /// <summary>
-        /// Center pixel of this monster.
-        /// </summary>
-        override public Point CenterPoint { get => (Pos + new Point(SpriteWidth / 2, SpriteHeight / 2)); }
+    class Monster : GameplayObject {
         
         /// <summary>
-        /// Type of the monster.
+        /// Type of this monster.
         /// </summary>
         public MonsterType Type { get; set; }
 
@@ -33,14 +29,14 @@ namespace TowerDefense {
         public double Speed { get; set; }
 
         /// <summary>
-        /// Pathfinder for the monster.
+        /// Pathfinder for this monster.
         /// </summary>
         private Pathfinder pf;
 
         /// <summary>
         /// Offset used to convert Pos when constructing from a tile coordinate.
         /// </summary>
-        private Point TileToPointOffset { get => new Point(TileWidth / 2 - SpriteWidth / 2, TileHeight / 2 - SpriteHeight / 2); }
+        private Point TileToPointOffset { get => new Point(TileWidth / 2 - Width / 2, TileHeight / 2 - Height / 2); }
         
         /// <summary>
         /// Monster's target.
@@ -48,18 +44,18 @@ namespace TowerDefense {
         public Tower Target { get; set; }
 
         /// <summary>
-        /// Whether the monster is in attack range of its target tower.
+        /// Whether this monster is in attack range of its target tower.
         /// </summary>
         public Boolean IsTargetInRange { get => Target != null && Distance(TilePos, Target.CenterTile) <= AttackRange; }
-        
+
         /// <summary>
-        /// Get the distance between the monster and its target, measured in units of tiles.
+        /// Get the distance between this monster and its target, measured in units of tiles.
         /// </summary>
         /// <returns></returns>
         public int DistanceToTarget { get => pf.Path.Count; }
 
         /// <summary>
-        /// Whether the monster has arrived at its target tile.
+        /// Whether this monster has arrived at its target tile.
         /// </summary>
         public Boolean HasArrived { get => DistanceToTarget == 0; }
         
@@ -69,38 +65,46 @@ namespace TowerDefense {
         /// <param name="sprite">Sprite for this monster.</param>
         /// <param name="type">Type of monster.</param>
         /// <param name="pos">The tile position of this monster.</param>
-        /// <param name="target">The target for this monster to reach.</param>
-        /// <param name="maxHealth">The maximum health of this monster.</param>
-        /// <param name="map">The world map.</param>
-        public Monster(Texture2D sprite, MonsterType type, Point pos, int maxHealth) {
+        public Monster(CreatureSprite sprite, MonsterType type, Point pos) {
             Sprite = sprite;
-            Type = type;
             Pos = new Point(pos.X * TileWidth, pos.Y * TileHeight) + TileToPointOffset;
-            MaxHealth = maxHealth;
+            Type = type;
+            switch(Type) {
+                case MonsterType.IMP:
+                    Speed = 10;
+                    MaxHealth = 10;
+                    AttackDamage = 3;
+                    AttackRange = 8;
+                    AttackRate = 1;
+                    Width = 35;
+                    Height = 35;
+                    break;
+            }
+
             CurrentHealth = MaxHealth;
             pf = new Pathfinder(pos);
             Target = pf.Target;
-            Speed = 10;
-            AttackDamage = 3;
-            AttackRange = 8;
-            AttackRate = 1;
+
         }
         
-        /// <summary>
-        /// Draw the monster at its current position.
-        /// </summary>
-        /// <param name="spritebatch"></param>
-        public void Draw() {
-            WorldSpriteBatch.Draw(Sprite, new Rectangle(Pos, new Point(SpriteWidth, SpriteHeight)), Color.White);
+        public override void Draw() {
+            Sprite.Draw(CenterPoint, WorldSpriteBatch);
+
             if (CurrentHealth < MaxHealth) {
                 Rectangle healthBarBox = new Rectangle(Pos + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
                 Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
             }
         }
 
-        public void Update(GameTime gameTime) {
+        /// <summary>
+        /// Update this monster.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public override void Update(GameTime gameTime) {
             if (!HasArrived) {
                 Move(gameTime);
+            } else {
+                ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
             }
             
             if (IsTargetInRange && Target != null && Target.IsAlive) {
@@ -119,7 +123,7 @@ namespace TowerDefense {
         /// Attacks this monster's target.
         /// Assumes that this.Target != null
         /// </summary>
-        public void Attack() {
+        public override void Attack() {
             Target.TakeDamage(AttackDamage);
             Cooldown += (1.0 / AttackRate);
             Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
@@ -134,10 +138,10 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Deals an amount of damage to the monster.
+        /// Deals an amount of damage to this monster.
         /// </summary>
         /// <param name="damage"></param>
-        public void TakeDamage(int damage) {
+        public override void TakeDamage(int damage) {
             CurrentHealth = Math.Max(0, CurrentHealth - damage);
         }
 
@@ -159,6 +163,10 @@ namespace TowerDefense {
                 Point nextTileCoord = pf.Path.First().Pos;
                 Point nextTilePos = new Point(nextTileCoord.X * TileWidth, nextTileCoord.Y * TileHeight) + TileToPointOffset;
                 Vector2 dirVector = Vector2.Normalize((nextTilePos - Pos).ToVector2());
+                if(Double.IsNaN(dirVector.X) || Double.IsNaN(dirVector.Y)) {
+                    dirVector = Vector2.Zero;
+                }
+
                 Pos += new Point(
                     (int)(dirVector.X * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileWidth),
                     (int)(dirVector.Y * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileHeight));
@@ -167,6 +175,9 @@ namespace TowerDefense {
                 if (nextTilePos - Pos == new Point(0, 0)) {
                     pf.Path.RemoveFirst();
                 }
+
+                // Update sprite with new position data.
+                ((CreatureSprite)Sprite).Update(gameTime, dirVector);
             }
         }
     }

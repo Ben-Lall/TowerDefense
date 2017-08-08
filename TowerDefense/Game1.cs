@@ -207,7 +207,7 @@ namespace TowerDefense {
             // Draw hover information
             if (CursorIsOnMap()) {
                 // Draw currently hovered tile coordinates
-                hoverTileText = "Hover: (" + PixelToTile(Include.Globals.MouseState.Position).X + ", " + PixelToTile(Include.Globals.MouseState.Position).Y + ")";
+                hoverTileText = "Hover: (" + PixelToTile(WorldMousePos.ToPoint()).X + ", " + PixelToTile(WorldMousePos.ToPoint()).Y + ")";
                 hoverTextSize = Art.Font.MeasureString(hoverTileText);
                 UISpriteBatch.DrawString(Art.Font, hoverTileText, new Vector2(ScreenWidth - 5, ScreenHeight - 5) - hoverTextSize, Color.Black);
             }
@@ -429,7 +429,7 @@ namespace TowerDefense {
             // Spawn each enemy at a random tile.
             for (int i = 0; i < spawnAmt; i++) {
                 Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
-                AddMonster(new Monster(Art.Imp, MonsterType.IMP, spawnTile.Pos, 10));
+                AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, spawnTile.Pos));
             }
         }
     }
