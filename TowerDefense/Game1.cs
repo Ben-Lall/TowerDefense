@@ -74,6 +74,7 @@ namespace TowerDefense {
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
                 UpdateEffects(gameTime);
+                HeatMap.Update(gameTime);
             }
 
             if (IsActive) {
@@ -99,13 +100,18 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         private void UpdateTowers(GameTime gameTime) {
-            // Remove dead towers from the list.
+            // Remove dead towers and update living ones.
+            foreach (Tower t in Towers) {
+                if (t.IsAlive) {
+                    t.Update(gameTime);
+                } else {
+                    t.Remove();
+                }
+            }
+
+            // Remove dead towers from the lists.
             Towers.RemoveAll(x => !x.IsAlive);
             DrawSet.RemoveAll(x => x.GetType() == typeof(Tower) && !((Tower)x).IsAlive);
-
-            foreach (Tower t in Towers) {
-                t.Update(gameTime);
-            }
         }
 
         /// <summary>
@@ -281,7 +287,7 @@ namespace TowerDefense {
                 a = ((Monster)o).Pos;
                 b = new Point(((Monster)o).SpriteWidth, ((Monster)o).SpriteHeight);
             }
-            return new Rectangle(Camera.Pos.ToPoint(), ViewPortDimensionsPx).Intersects(new Rectangle(a, b));
+            return new Rectangle(Camera.Pos.ToPoint(), new Point(ScreenWidth, ScreenHeight)).Intersects(new Rectangle(a, b));
         }
 
         /// <summary>
@@ -317,15 +323,19 @@ namespace TowerDefense {
         /// Draw the grid of tiles and their colorations.
         /// </summary>
         protected void DrawMap() {
-            // Shade in the tiles based on their type.
-            for (int y = 0; y < MapHeight; y++) {
-                for (int x = 0; x < MapWidth; x++) {
-                    if (MapAt(x, y).Type == TileType.LIMITED) {
-                        DrawTile(x, y, Color.DarkOliveGreen);
-                    } else if (MapAt(x, y).Type == TileType.OPEN) {
-                        DrawTile(x, y, Color.SandyBrown);
+            // Shade in the tiles based on tile draw mode.
+            if (TileMode == Include.TileDrawMode.DEFAULT) {
+                for (int y = 0; y < MapHeight; y++) {
+                    for (int x = 0; x < MapWidth; x++) {
+                        if (MapAt(x, y).Type == TileType.LIMITED) {
+                            DrawTile(x, y, Color.DarkOliveGreen);
+                        } else if (MapAt(x, y).Type == TileType.OPEN) {
+                            DrawTile(x, y, Color.SandyBrown);
+                        }
                     }
                 }
+            } else if (TileMode == Include.TileDrawMode.HEATMAP) {
+                HeatMap.Draw((int)MonsterType.IMP);
             }
 
             // If the player is currently in placement mode, highlight the selected tiles.

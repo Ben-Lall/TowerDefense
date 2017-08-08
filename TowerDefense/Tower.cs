@@ -156,6 +156,17 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Remove this tower's data from the game world.
+        /// </summary>
+        public void Remove() {
+            for(int y = TilePos.Y; y < TilePos.Y + HeightTiles; y++) {
+                for (int x = TilePos.X; x < TilePos.X + WidthTiles; x++) {
+                    MapAt(x, y).ContainsTower = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Determine if this tower is placed on top of the given tile.
         /// </summary>
         /// <param name="tile"></param>

@@ -25,6 +25,11 @@ namespace TowerDefense {
         private static bool BackPressed { get; set; }
 
         /// <summary>
+        /// Toggle boolean for the tile mode button.
+        /// </summary>
+        private static bool TileModePressed { get; set; }
+
+        /// <summary>
         /// Previously recorded mouse wheel scroll.
         /// </summary>
         public static int PreviousMouseWheel { get; set; }
@@ -77,6 +82,15 @@ namespace TowerDefense {
                 PausePressed = true;
             } else if (Keyboard.GetState().IsKeyUp(Keys.Space) && PausePressed) {
                 PausePressed = false;
+            }
+
+            // Map draw mode
+            if (Keyboard.GetState().IsKeyDown(Keys.H) && !TileModePressed) {
+                TileModePressed = true;
+                TileMode = (Include.TileDrawMode)(((int)(TileMode) + 1) % (int)(Include.TileDrawMode.TOTAL_DRAW_MODES));
+            }
+            if (Keyboard.GetState().IsKeyUp(Keys.H) && TileModePressed) {
+                TileModePressed = false;
             }
 
             // Movement keys

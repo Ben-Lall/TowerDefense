@@ -10,6 +10,11 @@ using TowerDefense;
 
 namespace Include {
     /// <summary>
+    /// Create a new map class for this along with a new map class!
+    /// </summary>
+    enum TileDrawMode { DEFAULT, HEATMAP, TOTAL_DRAW_MODES }
+
+    /// <summary>
     /// A class containing global variables and helper methods.
     /// </summary>
     static class Globals {
@@ -49,6 +54,9 @@ namespace Include {
         /// </summary>
         public static MouseState MouseState { get; set; }
 
+        /// <summary>
+        /// The world position of the mouse.
+        /// </summary>
         public static Vector2 WorldMousePos { get => Vector2.Transform(
         new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.Transform));
         }
@@ -91,46 +99,6 @@ namespace Include {
         public static Camera2d Camera { get; set; }
 
         /// <summary>
-        /// Integer representing the width of the viewport, measured in units of tiles.
-        /// </summary>
-        public static int ViewRows { get; set; }
-
-        /// <summary>
-        /// Integer representing the height of the viewport, measured in units of tiles.
-        /// </summary>
-        public static int ViewCols { get; set; }
-
-        /// <summary>
-        /// Integer representing the width of the viewport, measured in units of pixels.
-        /// </summary>
-        public static int ViewRowsPx { get => ViewRows * TileWidth; }
-
-        /// <summary>
-        /// Integer representing the height of the viewport, measured in units of pixels.
-        /// </summary>
-        public static int ViewColsPx { get => ViewCols * TileHeight; }
-
-        /// <summary>
-        /// The maximum possible Y value for the viewport.
-        /// </summary>
-        public static int MaxViewportY { get => MapHeight - ViewCols; }
-
-        /// <summary>
-        /// The maximum possible X value for the viewport.
-        /// </summary>
-        public static int MaxViewportX { get => MapWidth - ViewRows; }
-
-        /// <summary>
-        /// The dimensions of the viewport, measured in units of tiles.
-        /// </summary>
-        public static Point ViewPortDimensions { get => new Point(ViewRows, ViewCols); }
-
-        /// <summary>
-        /// The dimensions of the viewport, measured in units of pixels.
-        /// </summary>
-        public static Point ViewPortDimensionsPx { get => new Point(ViewRowsPx, ViewColsPx); }
-
-        /// <summary>
         /// Width in pixels of the menu panel.
         /// </summary>
         public static int MenuPanelWidth { get; set; }
@@ -149,6 +117,11 @@ namespace Include {
         /// List of effects currently playing on the screen.
         /// </summary>
         public static List<Bolt> Effects { get; set; }
+
+        /// <summary>
+        /// The current tile drawing mode.
+        /// </summary>
+        public static TileDrawMode TileMode { get; set; }
 
         /* Game World */
 
@@ -244,13 +217,9 @@ namespace Include {
             TileWidth = 16;
             TileHeight = 16;
 
-            // Set the number of tiles viewable on the screen
-            ViewRows = ScreenWidth / TileWidth;
-            ViewCols = ScreenHeight / TileHeight;
-
             // Set the map dimensions
-            MapWidth = Math.Max(ViewRows, 100);
-            MapHeight = Math.Max(ViewCols, 100);
+            MapWidth = 100;
+            MapHeight = 100;
 
             // Set up camera
             Camera = new Camera2d(new Vector2(ScreenWidth / 2, ScreenHeight / 2));
@@ -272,7 +241,9 @@ namespace Include {
 
             // Initialize gameplay stuff.
             SpawnRate = 6.0;
-            SpawnCooldown = 0.0;
+            SpawnCooldown = SpawnRate;
+            HeatMap.InitializeHeatMaps();
+            TileMode = TileDrawMode.DEFAULT;
             Paused = true;
         }
 
@@ -431,9 +402,9 @@ namespace Include {
         /// <returns></returns>
         public static bool CursorIsOnMap() {
             if (IsPlacingTower) {
-                return 0 < MouseState.X && MouseState.X < ScreenWidth && MouseState.Y > 0 && MouseState.Y < ViewColsPx;
+                return 0 < MouseState.X && MouseState.X < ScreenWidth && MouseState.Y > 0 && MouseState.Y < ScreenHeight;
             }
-            return 0 < MouseState.X && MouseState.X < (ScreenWidth - MenuPanelWidth) && MouseState.Y > 0 && MouseState.Y < ViewColsPx;
+            return 0 < MouseState.X && MouseState.X < (ScreenWidth - MenuPanelWidth) && MouseState.Y > 0 && MouseState.Y < ScreenWidth;
         }
 
         /// <summary>
@@ -512,6 +483,34 @@ namespace Include {
                 return start;
             }
             
+        }
+
+        /// <summary>
+        /// Starting from the start point, find the closest tower of the matching type, and return the distance from its closest tile.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="target"></param>
+        /// <returns>The closest tile position of the target type, if any exist.  Returns 0 otherwise.</returns>
+        public static double GetClosestTileDistance(Point start, TowerType targetType) {
+            if (Towers.Count > 0 && Towers.Exists(t => t.Type == TowerType.HUB)) { 
+                double distance = int.MaxValue;
+                foreach (Tower t in Towers) {
+                    if (t.Type == targetType) {
+                        for (int y = 0; y < t.HeightTiles; y++) {
+                            for (int x = 0; x < t.WidthTiles; x++) {
+                                Point p = t.TilePos + new Point(x, y);
+                                double currentDistance = Distance(start, p);
+                                if (currentDistance <= distance) {
+                                    distance = currentDistance;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return distance;
+            }
+            return 0;
         }
 
         /** Collision **/

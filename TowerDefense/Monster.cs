@@ -49,6 +49,11 @@ namespace TowerDefense {
         /// Displacement for drawing this sprite, used when drawing melee attacks. Units of pixels.
         /// </summary>
         private Point MeleeDisplacement { get; set; }
+
+        /// <summary>
+        /// The box bounding the hitbox of this monster.
+        /// </summary>
+        public Rectangle BoundingBox { get => new Rectangle(CenterPoint.X - Width / 2, CenterPoint.Y - Height / 2, Width, Height); }
         
         /// <summary>
         /// Monster's target.
@@ -89,8 +94,8 @@ namespace TowerDefense {
                     AttackDamage = 3;
                     AttackRange = SQRT2;
                     AttackRate = 1;
-                    Width = 35;
-                    Height = 35;
+                    Width = 8;
+                    Height = 18;
                     break;
             }
 
@@ -104,6 +109,11 @@ namespace TowerDefense {
         /// Draw this monster to its place on the screen.
         /// </summary>
         public override void Draw() {
+
+            Graphics.DrawLine(BoundingBox.X, BoundingBox.Y, BoundingBox.Width, 1, Color.Green, WorldSpriteBatch);
+            Graphics.DrawLine(BoundingBox.X, BoundingBox.Y + BoundingBox.Height, BoundingBox.Width, 1, Color.Green, WorldSpriteBatch);
+            Graphics.DrawLine(BoundingBox.X, BoundingBox.Y, 1, BoundingBox.Height, Color.Green, WorldSpriteBatch);
+            Graphics.DrawLine(BoundingBox.X + BoundingBox.Width, BoundingBox.Y, 1, BoundingBox.Height, Color.Green, WorldSpriteBatch);
 
             Sprite.Draw(CenterPoint + MeleeDisplacement, WorldSpriteBatch);
 
@@ -188,30 +198,26 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Move this monster towards its next tile.
+        /// Move this monster towards its next tile.  Assumes pf.Count > 0
         /// </summary>
         /// <param name="gameTime"></param>
         public void Move(GameTime gameTime) {
-            if (pf.Path.Count > 0) {
-                Point nextTileCoord = pf.Path.First().Pos;
-                Point nextTilePos = new Point(nextTileCoord.X * TileWidth, nextTileCoord.Y * TileHeight) + new Point(TileWidth / 2, TileHeight / 2);
-                Vector2 dirVector = Vector2.Normalize((nextTilePos - CenterPoint).ToVector2());
-                if(Double.IsNaN(dirVector.X) || Double.IsNaN(dirVector.Y)) {
-                    dirVector = Vector2.Zero;
-                }
-
-                Pos += new Point(
-                    (int)(dirVector.X * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileWidth),
-                    (int)(dirVector.Y * gameTime.ElapsedGameTime.TotalSeconds * Speed * TileHeight));
-
-                // Remove this tile from the path if it has been reached
-                if (nextTilePos - CenterPoint == new Point(0, 0)) {
-                    pf.Path.RemoveFirst();
-                }
-
-                // Update sprite with new position data.
-                ((CreatureSprite)Sprite).Update(gameTime, dirVector);
+            Point nextTileCoord = pf.Path.First().Pos;
+            Point nextTilePos = new Point(nextTileCoord.X * TileWidth, nextTileCoord.Y * TileHeight) + new Point(TileWidth / 2, TileHeight / 2);
+            Vector2 dirVector = Vector2.Normalize((nextTilePos - CenterPoint).ToVector2());
+            if (Double.IsNaN(dirVector.X) || Double.IsNaN(dirVector.Y)) {
+                dirVector = Vector2.Zero;
             }
+
+            Pos += (new Vector2(dirVector.X * TileWidth, dirVector.Y * TileHeight) * (float)Speed * (float)gameTime.ElapsedGameTime.TotalSeconds).ToPoint();
+
+            // Remove this tile from the path if it has been reached
+            if (nextTilePos - CenterPoint == new Point(0, 0)) {
+                pf.Path.RemoveFirst();
+            }
+
+            // Update sprite with new position data.
+            ((CreatureSprite)Sprite).Update(gameTime, dirVector);
         }
     }
 }
