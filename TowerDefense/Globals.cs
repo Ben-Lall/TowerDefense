@@ -242,7 +242,7 @@ namespace Include {
             // Initialize gameplay stuff.
             SpawnRate = 6.0;
             SpawnCooldown = SpawnRate;
-            HeatMap.InitializeHeatMaps();
+            HeatMap.Initialize();
             TileMode = TileDrawMode.DEFAULT;
             Paused = true;
         }

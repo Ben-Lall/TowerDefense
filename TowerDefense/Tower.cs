@@ -164,6 +164,7 @@ namespace TowerDefense {
                     MapAt(x, y).ContainsTower = false;
                 }
             }
+            HeatMap.Update();
         }
 
         /// <summary>

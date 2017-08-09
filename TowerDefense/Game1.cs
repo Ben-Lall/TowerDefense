@@ -74,7 +74,6 @@ namespace TowerDefense {
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
                 UpdateEffects(gameTime);
-                HeatMap.Update(gameTime);
             }
 
             if (IsActive) {
@@ -101,17 +100,22 @@ namespace TowerDefense {
         /// <param name="gameTime"></param>
         private void UpdateTowers(GameTime gameTime) {
             // Remove dead towers and update living ones.
+            bool removed = false;
             foreach (Tower t in Towers) {
                 if (t.IsAlive) {
                     t.Update(gameTime);
                 } else {
                     t.Remove();
+                    removed = true;
                 }
             }
 
             // Remove dead towers from the lists.
             Towers.RemoveAll(x => !x.IsAlive);
             DrawSet.RemoveAll(x => x.GetType() == typeof(Tower) && !((Tower)x).IsAlive);
+            if(removed) {
+                HeatMap.Update();
+            }
         }
 
         /// <summary>
@@ -226,7 +230,7 @@ namespace TowerDefense {
                 UISpriteBatch.DrawString(Art.Font, hoverTileText, new Vector2(ScreenWidth - 5, ScreenHeight - 5) - hoverTextSize, Color.Black);
             }
 
-            String viewportText = "Viewport: " + Camera.Pos.X + ", " + Camera.Pos.Y + ")";
+            String viewportText = "Camera: " + Camera.Pos.X + ", " + Camera.Pos.Y + ")";
             Vector2 viewportTextSize = Art.Font.MeasureString(viewportText);
             UISpriteBatch.DrawString(Art.Font, viewportText, new Vector2(ScreenWidth - 5, hoverTileText.Length == 0 ? ScreenHeight - 5 : ScreenHeight - 5 - hoverTextSize.Y) - viewportTextSize, Color.Black);
         }
@@ -335,7 +339,7 @@ namespace TowerDefense {
                     }
                 }
             } else if (TileMode == Include.TileDrawMode.HEATMAP) {
-                HeatMap.Draw((int)MonsterType.IMP);
+                HeatMap.Draw();
             }
 
             // If the player is currently in placement mode, highlight the selected tiles.
@@ -411,6 +415,7 @@ namespace TowerDefense {
                 }
             }
             AddTower(new Tower(HubTemplate, new Point(53, 40)));
+            HeatMap.Update();
 
             SpawnWave();
         }
