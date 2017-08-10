@@ -78,10 +78,7 @@ namespace TowerDefense {
         /// </summary>
         public override void Draw() {
             if (Selected) {
-                Graphics.DrawLine(X, Y, Width, 1, Color.Green, WorldSpriteBatch);
-                Graphics.DrawLine(X, Y + Height, Width, 1, Color.Green, WorldSpriteBatch);
-                Graphics.DrawLine(X, Y, 1, Height, Color.Green, WorldSpriteBatch);
-                Graphics.DrawLine(X + Width, Y, 1, Height, Color.Green, WorldSpriteBatch);
+                DrawBoundingBox();
 
                 //TODO: add aura
             }
@@ -128,10 +125,10 @@ namespace TowerDefense {
         /// </summary>
         public override void Attack() {
             //TODO: come up with various AI packs to determine tower firing strategies.  For now, pick the monster closest to its goal.
-            int lowestDistance = int.MaxValue;
+            float lowestDistance = MapWidth;
             Monster target = null;
             foreach(Monster m in Monsters) {
-                if (Intersects(this, m)) {
+                if (Intersects(m.BoundingBox)) {
                       if(m.DistanceToTarget < lowestDistance) {
                         lowestDistance = m.DistanceToTarget;
                         target = m;

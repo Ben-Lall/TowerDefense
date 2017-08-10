@@ -54,7 +54,6 @@
     <Compile Include="Input.cs" />
     <Compile Include="Monster.cs" />
     <Compile Include="Globals.cs" />
-    <Compile Include="Pathfinder.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Tower.cs" />
     <Compile Include="Settings.cs" />

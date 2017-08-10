@@ -158,7 +158,7 @@ namespace Include {
         public static double SpawnRate { get; set; }
 
         /// <summary>
-        /// The amount of time remaining before a new monster spawning.  Measured in units of seconds.
+        /// The amount of time remaining before a new monster spawnin  Measured in units of seconds.
         /// </summary>
         public static double SpawnCooldown { get; set; }
 
@@ -514,28 +514,6 @@ namespace Include {
         }
 
         /** Collision **/
-
-        /// <summary>
-        /// Check if the given monster intersects with the given tower's firing range.
-        /// </summary>
-        /// <param name="t">The tower.</param>
-        /// <param name="m">The monster.</param>
-        /// <returns>true if they intersect, false otherwise.</returns>
-        public static bool Intersects(Tower t, Monster m) {
-            // Tower range is interpreted as the ellipse ((x - t.CenterPoint.x)^2)/a^2 + ((y - t.CenterPoint.y)^2)/b^2 = 1
-            // Where a = (t.PixelRange.X)^2 and b = (t.PixelRange.Y)^2
-            // Check the 8 relevant points on a rectangle to see if it intersects.
-            return (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.Width / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.Width - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.Width / 2 - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.Width - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1 ||
-                   (Math.Pow(m.X + m.Width - t.CenterPoint.X, 2) / Math.Pow(t.PixelRange.X, 2)) + (Math.Pow(m.Y + m.Height / 2 - t.CenterPoint.Y, 2) / Math.Pow(t.PixelRange.Y, 2)) <= 1;
-
-
-        }
         
         public static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT); }
         public static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB); }

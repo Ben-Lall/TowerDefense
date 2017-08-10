@@ -29,6 +29,11 @@ namespace TowerDefense
         public Point CenterPoint { get => (Pos + new Point(Width / 2, Height / 2)); }
 
         /// <summary>
+        /// The box bounding the hitbox of this GameplayObject.
+        /// </summary>
+        public Rectangle BoundingBox { get => new Rectangle(X, Y, Width, Height); }
+
+        /// <summary>
         /// Pixel coordinates from which attack visual effects originate.
         /// </summary>
         public virtual Point FirePoint { get => CenterPoint; }
@@ -59,7 +64,7 @@ namespace TowerDefense
         /// <summary>
         /// GameplayObject's attack range, measured in units of pixels.
         /// </summary>
-        public Point PixelRange { get => new Point((int)(AttackRange * TileWidth), (int)(AttackRange * TileHeight)); }
+        public double PixelRange { get => AttackRange * TileWidth; }
 
         /// <summary>
         /// Frequency of this GameplayObject's attacks, measured in hertz.
@@ -120,6 +125,31 @@ namespace TowerDefense
         /// </summary>
         /// <param name="damage"></param>
         public abstract void TakeDamage(int damage);
+
+        /// <summary>
+        /// Draw the hitbox of this GameplayObject
+        /// </summary>
+        public virtual void DrawBoundingBox() {
+            Graphics.DrawLine(BoundingBox.X, BoundingBox.Y, BoundingBox.Width, 1, Color.Green, WorldSpriteBatch);
+            Graphics.DrawLine(BoundingBox.X, BoundingBox.Y + BoundingBox.Height, BoundingBox.Width, 1, Color.Green, WorldSpriteBatch);
+            Graphics.DrawLine(BoundingBox.X, BoundingBox.Y, 1, BoundingBox.Height, Color.Green, WorldSpriteBatch);
+            Graphics.DrawLine(BoundingBox.X + BoundingBox.Width, BoundingBox.Y, 1, BoundingBox.Height, Color.Green, WorldSpriteBatch);
+        }
+
+        /// <summary>
+        /// Check if the given rectangle intersects with this GameplayObject's firing range.
+        /// </summary>
+        /// <param name="m">The bounding box of the target</param>
+        /// <returns>true if they intersect, false otherwise.</returns>
+        public virtual bool Intersects(Rectangle r) {
+            // Range is interpreted as a circle centered on this, with a radius of AttackRange
+
+            // Find the closest corner of the rectangle, and see if it's within the range.
+            int dx = CenterPoint.X - MathHelper.Clamp(CenterPoint.X, r.X, r.X + r.Width);
+            int dy = CenterPoint.Y - MathHelper.Clamp(CenterPoint.Y, r.Y, r.Y + r.Height);
+
+            return (dx * dx) + (dy * dy) <= PixelRange * PixelRange;
+        }
 
     }
 }

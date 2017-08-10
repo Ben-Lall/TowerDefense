@@ -32,7 +32,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="spriteSheet">2D Array of sprites, built following the structure of AnimationType.</param>
         /// <param name="timePerFrame">The amount of time for each frame to remain visible (measured in seconds).</param>
-        public CreatureSprite(Texture2D[][] spriteSheet, double timePerFrame = 0.5) {
+        public CreatureSprite(Texture2D[][] spriteSheet, double timePerFrame = 0.2) {
             FrameType = CreatureAnimationType.IDLE;
             SpriteSheet = spriteSheet;
             Frame = 0;
@@ -44,7 +44,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="template">The AnimatedSprite whose sprite data is to be copied.</param>
         /// <param name="timePerFrame">The amount of time for each frame to remain visible (measured in seconds).</param>
-        public CreatureSprite(AnimatedSprite template, double timePerFrame = 0.5) {
+        public CreatureSprite(AnimatedSprite template, double timePerFrame = 0.2) {
             FrameType = CreatureAnimationType.IDLE;
             SpriteSheet = (Texture2D[][])template.SpriteSheet.Clone();
             Frame = 0;

@@ -12,12 +12,12 @@ namespace TowerDefense {
         /// <summary>
         /// The Field
         /// </summary>
-        static int[,] Field;
+        static float[,] Field;
 
         /// <summary>
         /// The maximum heat differential.
         /// </summary>
-        static int FieldMax;
+        static float FieldMax;
 
         /// <summary>
         /// The color for a goal tile.
@@ -51,12 +51,12 @@ namespace TowerDefense {
         public static void Initialize() {
             FieldPxWidth = MapWidth * TileWidth;
             FieldPxHeight = MapHeight * TileHeight;
-            HeatTileWidth = TileWidth;
-            HeatTileHeight = TileHeight;
+            HeatTileWidth = 8;
+            HeatTileHeight = 8;
             FieldWidth = MapWidth * TileWidth / HeatTileWidth;
             FieldHeight = MapHeight * TileHeight / HeatTileHeight;
 
-            Field = new int[FieldHeight, FieldWidth];
+            Field = new float[FieldHeight, FieldWidth];
             FieldMax = 0;
         }
 
@@ -88,8 +88,8 @@ namespace TowerDefense {
                 if(t.Type == TowerType.HUB) {
                     for(int y = t.TileY; y < t.TileY + t.HeightTiles; y++) {
                         for(int x = t.TileX; x < t.TileX + t.WidthTiles; x++) {
-                            for (int hy = 0; hy < TileHeight; hy += HeatTileHeight) {
-                                for (int hx = 0; hx < TileWidth; hx += HeatTileWidth) {
+                            for (int hy = 0; hy < DivY; hy += 1) {
+                                for (int hx = 0; hx < DivX; hx += 1) {
                                     Field[y * DivY + hy, x * DivX + hx] = 0;
                                     q.Enqueue(new Point(x * DivX + hx, y * DivY + hy));
                                 }
@@ -107,10 +107,10 @@ namespace TowerDefense {
         /// <param name="q">A queue initialized with the goal points.</param>
         private static void GenerateField(Queue<Point> q) {
             // Begin a BFS initialized with all the goal points.
-            int heat = 0;
+            float heat = 0;
             while(q.Count > 0) {
                 Point current = q.Dequeue();
-                heat = Field[current.Y, current.X] + 1;
+                heat = Field[current.Y, current.X] + (1.0f / DivX);
 
                 // Apply heat to adjacent, unmarked tiles.
                 if(current.Y > 0 && Field[current.Y - 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
@@ -138,7 +138,7 @@ namespace TowerDefense {
         /// Overlay the heatmap to the screen.
         /// </summary>
         public static void Draw() {
-            int max = FieldMax;
+            float max = FieldMax;
             if (max > 0) {
                 for (int y = 0; y < FieldHeight; y += 1) {
                     for (int x = 0; x < FieldWidth; x += 1) {
@@ -146,9 +146,9 @@ namespace TowerDefense {
                         if (Field[y, x] == -1) {
                             color = Color.Red;
                         } else {
-                            int R = MaxColor.R - Field[y, x] * MaxColor.R / max;
-                            int G = MaxColor.G - Field[y, x] * MaxColor.G / max;
-                            int B = MaxColor.B - Field[y, x] * MaxColor.B / max;
+                            int R = (int)(MaxColor.R - Field[y, x] * MaxColor.R / max);
+                            int G = (int)(MaxColor.G - Field[y, x] * MaxColor.G / max);
+                            int B = (int)(MaxColor.B - Field[y, x] * MaxColor.B / max);
                             color = new Color(R, G, B);
                         }
                         WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, HeatTileWidth, HeatTileHeight), color);
@@ -156,7 +156,8 @@ namespace TowerDefense {
                         if(Field[y, x] != -1) {
                             String heatText = Field[y, x].ToString();
                             Vector2 heatTextSize = Art.Font.MeasureString(heatText);
-                            WorldSpriteBatch.DrawString(Art.Font, heatText, new Vector2((x + 0.5f) * HeatTileWidth, (y + 0.5f) * HeatTileHeight) - heatTextSize / 2, Color.Black);
+                            //WorldSpriteBatch.DrawString(Art.Font, heatText, new Vector2((x + 0.5f) * HeatTileWidth, (y + 0.5f) * HeatTileHeight) - heatTextSize / 2, Color.Black);
+                            WorldSpriteBatch.DrawString(Art.Font, heatText, new Vector2((x + 0.5f) * HeatTileWidth, (y + 0.5f) * HeatTileHeight) - heatTextSize / 2, Color.Black, 0, new Vector2(0, 0), 1.0f / DivX, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 1f);
                         }
                     }
                 }
@@ -167,10 +168,43 @@ namespace TowerDefense {
         /// Get the heat map value of the given pixel point.
         /// </summary>
         /// <param name="p"></param>
-        public static int HMapAt(Point p) {
+        public static float HMapAt(Point p) {
             int x = Math.Min(p.X / HeatTileWidth, FieldWidth - 1);
             int y = Math.Min(p.Y / HeatTileHeight, FieldHeight - 1);
             return Field[y, x];
+        }
+
+        /// <summary>
+        /// Given a pixel point, return a direction vector.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static Vector2 GetDirVector(Point p) {
+            float left = HMapAt(p - new Point(HeatTileWidth, 0));
+            float right = HMapAt(p + new Point(HeatTileWidth, 0));
+            float up = HMapAt(p - new Point(0, HeatTileHeight));
+            float down = HMapAt(p + new Point(0, HeatTileHeight));
+            if (left == -1) { left = Math.Max(HMapAt(p), right); }
+            if (right == -1) { right = Math.Max(HMapAt(p), left); }
+            if (up == -1) { up = Math.Max(HMapAt(p), down); }
+            if (down == -1) { down = Math.Max(HMapAt(p), up); }
+
+            Vector2 dir = Vector2.Normalize(new Vector2(left - right, up - down));
+            if (Double.IsNaN(dir.X))
+                return Vector2.Zero;
+            return dir;
+        }
+
+        /// <summary>
+        /// Check if a monster with the given firing range has arrived if it is at Point p.
+        /// </summary>
+        /// <param name="p">The point of the monster.</param>
+        /// <param name="range">The firing range of the monster.</param>
+        /// <returns></returns>
+        public static bool HasArrived(Point p, float range) {
+            float val = HMapAt(p);
+            // return true if on a tile closer than firing range, or on a tile that may be greater than this, but due to the discrete nature of the heatmap, is still valid.
+            return val != -1 && range >= val;
         }
     }
 }
