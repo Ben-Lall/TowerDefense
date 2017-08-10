@@ -111,7 +111,7 @@ namespace Include {
         /// <summary>
         /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
         /// </summary>
-        public static List<Object> DrawSet { get; set; }
+        public static List<GameplayObject> DrawSet { get; set; }
 
         /// <summary>
         /// List of effects currently playing on the screen.
@@ -129,6 +129,11 @@ namespace Include {
         /// 2D array representing the game map.  Read by map[i.j], where i refers to the row, and j refers to the column.
         /// </summary>
         public static Tile[,] Map { get; set; }
+
+        /// <summary>
+        /// The player being controlled by the client.
+        /// </summary>
+        public static Player ActivePlayer { get; set; }
 
         /* Gameplay */
 
@@ -221,16 +226,13 @@ namespace Include {
             MapWidth = 100;
             MapHeight = 100;
 
-            // Set up camera
-            Camera = new Camera2d(new Vector2(ScreenWidth / 2, ScreenHeight / 2));
-
             // Initialize the gameplay objects.
             Map = new Tile[MapWidth, MapHeight];
 
             //Initialize collections
             Towers = new List<Tower>();
             Monsters = new List<Monster>();
-            DrawSet = new List<Object>();
+            DrawSet = new List<GameplayObject>();
             Buttons = new List<Button>();
             Effects = new List<Bolt>();
             UlTowers = new List<TowerTemplate>();
@@ -245,6 +247,11 @@ namespace Include {
             HeatMap.Initialize();
             TileMode = TileDrawMode.DEFAULT;
             Paused = true;
+
+            // Initialize ActivePlayer
+            ActivePlayer = new Player(new Point(20 * TileWidth, 20 * TileHeight));
+            Camera = new Camera2d(ActivePlayer.Pos.ToVector2());
+            DrawSet.Add(ActivePlayer);
         }
 
         /** General Helper Methods **/

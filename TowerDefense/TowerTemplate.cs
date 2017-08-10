@@ -83,7 +83,7 @@ namespace TowerDefense {
                     Sprite = new TowerSprite(Art.Hub);
                     Width = 3;
                     Height = 3;
-                    MaxHealth = 100;
+                    MaxHealth = 3000;
                     break;
                 default:
                     Width = 2;

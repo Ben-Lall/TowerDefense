@@ -51,8 +51,8 @@ namespace TowerDefense {
         public static void Initialize() {
             FieldPxWidth = MapWidth * TileWidth;
             FieldPxHeight = MapHeight * TileHeight;
-            HeatTileWidth = 8;
-            HeatTileHeight = 8;
+            HeatTileWidth = 1;
+            HeatTileHeight = 1;
             FieldWidth = MapWidth * TileWidth / HeatTileWidth;
             FieldHeight = MapHeight * TileHeight / HeatTileHeight;
 
@@ -61,17 +61,17 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Update each heatmap
+        /// Update the heatmap
         /// </summary>
         public static void Update() {
-            ResetFields();
+            ResetField();
             GenerateField(SetGoals());
         }
 
         /// <summary>
         /// Reset all heat maps to initial values.
         /// </summary>
-        private static void ResetFields() {
+        private static void ResetField() {
             for (int y = 0; y < FieldHeight; y++) {
                 for (int x = 0; x < FieldWidth; x++) {
                     Field[y, x] = -1;
@@ -80,7 +80,7 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Set goal tiles depending on the heatMap, and return a Queue containing them.
+        /// Set goal tiles, and return a Queue containing them.
         /// </summary>
         private static Queue<Point> SetGoals() {
             Queue<Point> q = new Queue<Point>();
@@ -102,7 +102,7 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Generate the heatmap for the given map.  Requires that goal points are set as 0.
+        /// Generate the heatmap.  Requires that goal points are set.
         /// </summary>
         /// <param name="q">A queue initialized with the goal points.</param>
         private static void GenerateField(Queue<Point> q) {
@@ -135,7 +135,7 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Overlay the heatmap to the screen.
+        /// Draw the heatmap to the screen.
         /// </summary>
         public static void Draw() {
             float max = FieldMax;
@@ -152,13 +152,6 @@ namespace TowerDefense {
                             color = new Color(R, G, B);
                         }
                         WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, HeatTileWidth, HeatTileHeight), color);
-
-                        if(Field[y, x] != -1) {
-                            String heatText = Field[y, x].ToString();
-                            Vector2 heatTextSize = Art.Font.MeasureString(heatText);
-                            //WorldSpriteBatch.DrawString(Art.Font, heatText, new Vector2((x + 0.5f) * HeatTileWidth, (y + 0.5f) * HeatTileHeight) - heatTextSize / 2, Color.Black);
-                            WorldSpriteBatch.DrawString(Art.Font, heatText, new Vector2((x + 0.5f) * HeatTileWidth, (y + 0.5f) * HeatTileHeight) - heatTextSize / 2, Color.Black, 0, new Vector2(0, 0), 1.0f / DivX, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 1f);
-                        }
                     }
                 }
             }
@@ -175,11 +168,22 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Update the heat map at the given pixel point
+        /// </summary>
+        /// <param name="p"></param>
+        public static void UpdateHMapAt(Point p, float value) {
+            int x = Math.Min(p.X / HeatTileWidth, FieldWidth - 1);
+            int y = Math.Min(p.Y / HeatTileHeight, FieldHeight - 1);
+            Field[y, x] = value;
+        }
+
+        /// <summary>
         /// Given a pixel point, return a direction vector.
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
         public static Vector2 GetDirVector(Point p) {
+            // Get field vector
             float left = HMapAt(p - new Point(HeatTileWidth, 0));
             float right = HMapAt(p + new Point(HeatTileWidth, 0));
             float up = HMapAt(p - new Point(0, HeatTileHeight));

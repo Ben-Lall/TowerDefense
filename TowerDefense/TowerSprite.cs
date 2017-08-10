@@ -44,7 +44,7 @@ namespace TowerDefense {
         /// <param name="template">The AnimatedSprite whose sprite data is to be copied.</param>
         /// <param name="timePerFrame">The amount of time for each frame to remain visible (measured in seconds).</param>
         public TowerSprite(AnimatedSprite template, double timePerFrame = 0.5) {
-            SpriteSheet = (Texture2D[][])template.SpriteSheet.Clone();
+            SpriteSheet = template.SpriteSheet;
             Frame = 0;
             TimePerFrame = timePerFrame;
         }

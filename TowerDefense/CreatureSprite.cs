@@ -46,7 +46,7 @@ namespace TowerDefense {
         /// <param name="timePerFrame">The amount of time for each frame to remain visible (measured in seconds).</param>
         public CreatureSprite(AnimatedSprite template, double timePerFrame = 0.2) {
             FrameType = CreatureAnimationType.IDLE;
-            SpriteSheet = (Texture2D[][])template.SpriteSheet.Clone();
+            SpriteSheet = template.SpriteSheet;
             Frame = 0;
             TimePerFrame = timePerFrame;
         }

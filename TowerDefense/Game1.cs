@@ -74,6 +74,7 @@ namespace TowerDefense {
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
                 UpdateEffects(gameTime);
+                ActivePlayer.Update(gameTime);
             }
 
             if (IsActive) {
@@ -126,7 +127,7 @@ namespace TowerDefense {
             Monsters.RemoveAll(x => !x.IsAlive);
             DrawSet.RemoveAll(x => x.GetType() == typeof(Monster) && !((Monster)x).IsAlive);
 
-            // Spawn new monsters based off of the spawn rate.
+            // Spawn new monsters if the cooldown has ended.
             if(SpawnCooldown == 0) {
                 SpawnWave();
                 SpawnCooldown = SpawnRate;
@@ -239,13 +240,9 @@ namespace TowerDefense {
         /// Draw each element in DrawSet.
         /// </summary>
         private void DrawGameplayObjects() {
-            // Draw towers / creatures in the proper order.
-            foreach (object obj in DrawSet) {
-                if (obj.GetType() == typeof(Tower)) {
-                    ((Tower)obj).Draw();
-                } else if (obj.GetType() == typeof(Monster)) {
-                    ((Monster)obj).Draw();
-                }
+            // Gameplay Objects in the proper order.
+            foreach (GameplayObject g in DrawSet) {
+                g.Draw();
             }
 
             // Draw firing ranges of all selected towers
@@ -384,17 +381,17 @@ namespace TowerDefense {
             for (int x = 0; x < MapWidth; x++) {
                 int fx = (int)Math.Sqrt(x / 3) + 1;
 
-                for (int y = -1; y < 2; y++) {
+                for (int y = -2; y < 3; y++) {
                     MapAt(x, MapHeight / 2 + fx + y).Type = TileType.OPEN;
                 }
-                for (int y = -1; y < 2; y++) {
+                for (int y = -2; y < 3; y++) {
                     MapAt(x, MapHeight / 2 - fx - y).Type = TileType.OPEN;
                 }
             }
 
             // Draw a horizontal line through the center
             for (int y = 0; y < MapHeight; y++) {
-                for (int x = -1; x < 2; x++) {
+                for (int x = -2; x < 3; x++) {
                     MapAt(MapWidth / 2 + x, y).Type = TileType.OPEN;
                 }
             }

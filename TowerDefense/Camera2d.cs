@@ -23,6 +23,7 @@ namespace TowerDefense {
             zoom = 1.0f;
             Rotation = 0.0f;
             this.pos = pos;
+            Move(new Vector2(0, 0)); // Align the camera to the acceptable boundaries.
         }
 
         /// <summary>
@@ -31,7 +32,16 @@ namespace TowerDefense {
         /// <param name="amount">Direction and magnitude of camera position change.</param>
         public void Move(Vector2 amount) {
             pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (ScreenWidth * 0.5f) / Zoom, (MapWidth * TileWidth) - (ScreenWidth * 0.5f / Zoom));
-            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (ScreenHeight * 0.5f) / Zoom, (MapHeight * TileHeight) -( ScreenHeight * 0.5f / Zoom));
+            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (ScreenHeight * 0.5f) / Zoom, (MapHeight * TileHeight) - (ScreenHeight * 0.5f / Zoom));
+        }
+
+        /// <summary>
+        /// Move the camera to the given location, while respecting camera boundaries.
+        /// </summary>
+        /// <param name="destination"></param>
+        public void MoveTo(Vector2 destination) {
+            pos = destination;
+            Move(new Vector2(0, 0));
         }
 
         /// <summary>

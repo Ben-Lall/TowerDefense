@@ -107,7 +107,10 @@ namespace TowerDefense {
             if (Keyboard.GetState().IsKeyDown(Keys.D)) {
                 movement.X++;
             }
-            Camera.Move(movement * 20);
+            movement.Normalize();
+            if (Double.IsNaN(movement.X))
+                movement = Vector2.Zero;
+            ActivePlayer.Direction = movement;
 
         }
         /// <summary>
