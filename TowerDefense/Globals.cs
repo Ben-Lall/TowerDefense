@@ -119,6 +119,11 @@ namespace Include {
         public static List<Bolt> Effects { get; set; }
 
         /// <summary>
+        /// List of players.
+        /// </summary>
+        public static List<Player> Players { get; set; }
+
+        /// <summary>
         /// The current tile drawing mode.
         /// </summary>
         public static TileDrawMode TileMode { get; set; }
@@ -223,8 +228,8 @@ namespace Include {
             TileHeight = 16;
 
             // Set the map dimensions
-            MapWidth = 100;
-            MapHeight = 100;
+            MapWidth = 1000;
+            MapHeight = 1000;
 
             // Initialize the gameplay objects.
             Map = new Tile[MapWidth, MapHeight];
@@ -235,6 +240,7 @@ namespace Include {
             DrawSet = new List<GameplayObject>();
             Buttons = new List<Button>();
             Effects = new List<Bolt>();
+            Players = new List<Player>();
             UlTowers = new List<TowerTemplate>();
             UlTowers.Add(BoltTowerTemplate);
 
@@ -252,6 +258,7 @@ namespace Include {
             ActivePlayer = new Player(new Point(20 * TileWidth, 20 * TileHeight));
             Camera = new Camera2d(ActivePlayer.Pos.ToVector2());
             DrawSet.Add(ActivePlayer);
+            
         }
 
         /** General Helper Methods **/

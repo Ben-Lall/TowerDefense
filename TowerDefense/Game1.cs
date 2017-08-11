@@ -166,7 +166,9 @@ namespace TowerDefense {
 
             WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
                     null, null, null, null, null, Camera.GetTransformation());
+
             DrawMap();
+            double time = gameTime.ElapsedGameTime.TotalSeconds;
             DrawGameplayObjects();
 
             if (IsPlacingTower) {
@@ -186,6 +188,7 @@ namespace TowerDefense {
             DrawUI();
             DrawDebug();
             UISpriteBatch.End();
+
 
             base.Draw(gameTime);
         }
@@ -288,7 +291,7 @@ namespace TowerDefense {
                 a = ((Monster)o).Pos;
                 b = new Point(((Monster)o).SpriteWidth, ((Monster)o).SpriteHeight);
             }
-            return new Rectangle(Camera.Pos.ToPoint(), new Point(ScreenWidth, ScreenHeight)).Intersects(new Rectangle(a, b));
+            return new Rectangle(Camera.Pos, new Point(ScreenWidth, ScreenHeight)).Intersects(new Rectangle(a, b));
         }
 
         /// <summary>
@@ -324,10 +327,10 @@ namespace TowerDefense {
         /// Draw the grid of tiles and their colorations.
         /// </summary>
         protected void DrawMap() {
-            // Shade in the tiles based on tile draw mode.
+            // Shade in the tiles within the camera's viewport based on tile draw mode.
             if (TileMode == Include.TileDrawMode.DEFAULT) {
-                for (int y = 0; y < MapHeight; y++) {
-                    for (int x = 0; x < MapWidth; x++) {
+                for (int y = Camera.CameraTileStart.Y; y <= Camera.CameraTileEnd.Y; y++) {
+                    for (int x = Camera.CameraTileStart.X; x <= Camera.CameraTileEnd.X; x++) {
                         if (MapAt(x, y).Type == TileType.LIMITED) {
                             DrawTile(x, y, Color.DarkOliveGreen);
                         } else if (MapAt(x, y).Type == TileType.OPEN) {
@@ -370,47 +373,14 @@ namespace TowerDefense {
         /// Load in the next map.
         /// </summary>
         protected void LoadMap() {
-            // Fill in the game map with limited tiles.
+            // Fill in the game map with open tiles.
             for (int y = 0; y < MapHeight; y++) {
                 for (int x = 0; x < MapWidth; x++) {
-                    Map[y, x] = new Tile(TileType.LIMITED, x, y);
+                    Map[y, x] = new Tile(TileType.OPEN, x, y);
                 }
             }
 
-            // Draw a horizontal parabola-shaped pathway
-            for (int x = 0; x < MapWidth; x++) {
-                int fx = (int)Math.Sqrt(x / 3) + 1;
-
-                for (int y = -2; y < 3; y++) {
-                    MapAt(x, MapHeight / 2 + fx + y).Type = TileType.OPEN;
-                }
-                for (int y = -2; y < 3; y++) {
-                    MapAt(x, MapHeight / 2 - fx - y).Type = TileType.OPEN;
-                }
-            }
-
-            // Draw a horizontal line through the center
-            for (int y = 0; y < MapHeight; y++) {
-                for (int x = -2; x < 3; x++) {
-                    MapAt(MapWidth / 2 + x, y).Type = TileType.OPEN;
-                }
-            }
-
-            // Draw a 5x5 square in the center
-            for (int y = -2; y <= 2; y++) {
-                for (int x = -2; x <= 2; x++) {
-                    MapAt(MapWidth / 2 + x, MapHeight / 2 + y).Type = TileType.OPEN;
-                }
-            }
-
-            // Place hub in the center
             AddTower(new Tower(HubTemplate, new Point(MapWidth / 2 - 1, MapHeight / 2 - 1)));
-
-            for (int y = -2; y <= 2; y++) {
-                for (int x = -2; x <= 2; x++) {
-                    MapAt(MapWidth / 2 + x + 4, MapHeight / 2 + y - 9).Type = TileType.OPEN;
-                }
-            }
             AddTower(new Tower(HubTemplate, new Point(53, 40)));
             HeatMap.Update();
 
@@ -421,7 +391,7 @@ namespace TowerDefense {
             Random r = new Random();
             int spawnAmt = 3 + r.Next(0, 5);
 
-            // Get the set of valid tiles -- OPEN tiles on the boundary of the screen.
+            // Get the set of valid tiles -- OPEN tiles within all player spawn ranges.
             List<Tile> spawnTiles = new List<Tile>();
             for (int i = 0; i < Math.Max(MapHeight, MapWidth); i++) {
                 if (i < MapWidth) {

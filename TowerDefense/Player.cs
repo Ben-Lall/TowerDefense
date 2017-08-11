@@ -21,6 +21,16 @@ namespace TowerDefense {
         public Vector2 Direction { get; set; }
 
         /// <summary>
+        /// Number of pixels minimum distance for spawning a new monster.
+        /// </summary>
+        public static int SpawnLowerBound { get => 1600; }
+
+        /// <summary>
+        /// Number of pixels maxmimum distance for spawning a new monster.
+        /// </summary>
+        public static int SpawnUpperBound { get => 2000; }
+
+        /// <summary>
         /// Create a new player at the position.
         /// </summary>
         /// <param name="pos"></param>

@@ -30,8 +30,14 @@ namespace TowerDefense {
         static int FieldPxWidth;
         static int FieldPxHeight;
 
-        static int HeatTileWidth;
-        static int HeatTileHeight;
+        /// <summary>
+        /// The width in units of pixels of a heatmap tile.
+        /// </summary>
+        public static int HeatTileWidth;
+        /// <summary>
+        /// The height in units of pixels of a heatmap tile.
+        /// </summary>
+        public static int HeatTileHeight;
 
         /// <summary>
         /// Scaling factor for converting world tiles to heat tiles over x.
@@ -49,10 +55,10 @@ namespace TowerDefense {
         /// Initialize the heat map with blank values.
         /// </summary>
         public static void Initialize() {
-            FieldPxWidth = MapWidth * TileWidth;
-            FieldPxHeight = MapHeight * TileHeight;
-            HeatTileWidth = 1;
-            HeatTileHeight = 1;
+            FieldPxWidth = FieldWidth * HeatTileWidth;
+            FieldPxHeight = FieldHeight * HeatTileHeight;
+            HeatTileWidth = 8;
+            HeatTileHeight = 8;
             FieldWidth = MapWidth * TileWidth / HeatTileWidth;
             FieldHeight = MapHeight * TileHeight / HeatTileHeight;
 
@@ -111,23 +117,24 @@ namespace TowerDefense {
             while(q.Count > 0) {
                 Point current = q.Dequeue();
                 heat = Field[current.Y, current.X] + (1.0f / DivX);
-
-                // Apply heat to adjacent, unmarked tiles.
-                if(current.Y > 0 && Field[current.Y - 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
-                    Field[current.Y - 1, current.X] = heat;
-                    q.Enqueue(new Point(current.X, current.Y - 1));
-                }
-                if (current.Y < FieldHeight - 1 && Field[current.Y + 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y + 1) / DivY).IsEmpty()) {
-                    Field[current.Y + 1, current.X] = heat;
-                    q.Enqueue(new Point(current.X, current.Y + 1));
-                }
-                if (current.X > 0 && Field[current.Y, current.X - 1] == -1 && MapAt((current.X - 1) / DivX, current.Y / DivY).IsEmpty()) {
-                    Field[current.Y, current.X - 1] = heat;
-                    q.Enqueue(new Point(current.X - 1, current.Y));
-                }
-                if (current.X < FieldWidth - 1 && Field[current.Y, current.X + 1] == -1 && MapAt((current.X + 1) / DivX, current.Y / DivY).IsEmpty()) {
-                    Field[current.Y, current.X + 1] = heat;
-                    q.Enqueue(new Point(current.X + 1, current.Y));
+                if (heat <= HeatTileWidth * Player.SpawnUpperBound / TileWidth) {
+                    // Apply heat to adjacent, unmarked tiles.
+                    if (current.Y > 0 && Field[current.Y - 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
+                        Field[current.Y - 1, current.X] = heat;
+                        q.Enqueue(new Point(current.X, current.Y - 1));
+                    }
+                    if (current.Y < FieldHeight - 1 && Field[current.Y + 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y + 1) / DivY).IsEmpty()) {
+                        Field[current.Y + 1, current.X] = heat;
+                        q.Enqueue(new Point(current.X, current.Y + 1));
+                    }
+                    if (current.X > 0 && Field[current.Y, current.X - 1] == -1 && MapAt((current.X - 1) / DivX, current.Y / DivY).IsEmpty()) {
+                        Field[current.Y, current.X - 1] = heat;
+                        q.Enqueue(new Point(current.X - 1, current.Y));
+                    }
+                    if (current.X < FieldWidth - 1 && Field[current.Y, current.X + 1] == -1 && MapAt((current.X + 1) / DivX, current.Y / DivY).IsEmpty()) {
+                        Field[current.Y, current.X + 1] = heat;
+                        q.Enqueue(new Point(current.X + 1, current.Y));
+                    }
                 }
             }
             // Record the maximum difference in heat for this map
@@ -140,8 +147,8 @@ namespace TowerDefense {
         public static void Draw() {
             float max = FieldMax;
             if (max > 0) {
-                for (int y = 0; y < FieldHeight; y += 1) {
-                    for (int x = 0; x < FieldWidth; x += 1) {
+                for (int y = Camera.CameraHeatStart.Y; y <= Camera.CameraHeatEnd.Y; y += 1) {
+                    for (int x = Camera.CameraHeatStart.X; x <= Camera.CameraHeatEnd.X; x += 1) {
                         Color color;
                         if (Field[y, x] == -1) {
                             color = Color.Red;
