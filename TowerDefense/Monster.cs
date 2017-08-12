@@ -43,12 +43,12 @@ namespace TowerDefense {
         /// <summary>
         /// Monster's target.
         /// </summary>
-        public Tower Target { get; set; }
+        public GameplayObject Target { get; set; }
 
         /// <summary>
         /// Whether this monster has arrived at its target tile.
         /// </summary>
-        public Boolean HasArrived { get => HeatMap.HasArrived(CenterPoint, (float)AttackRange); }
+        public Boolean HasArrived { get => HeatMap.HasArrived(CenterPoint, (float)AttackRange) || Intersects(ActivePlayer.BoundingBox); }
 
         /// <summary>
         /// The distance this monster is from a tile it can attack from.
@@ -68,7 +68,7 @@ namespace TowerDefense {
             switch(Type) {
                 case MonsterType.IMP:
                     CombatType = CombatType.MELEE;
-                    Speed = 10;
+                    Speed = 13.5;
                     MaxHealth = 10;
                     AttackDamage = 3;
                     AttackRange = 0.5;
@@ -118,9 +118,6 @@ namespace TowerDefense {
                     ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
                     Attack();
                 }
-
-
-
             }
         }
 
@@ -129,11 +126,15 @@ namespace TowerDefense {
         /// Assumes that this.Target != null
         /// </summary>
         public override void Attack() {
-            if(Target == null || Target != null && !Target.IsAlive) {
-                foreach(Tower t in Towers) {
-                    if(Intersects(t.BoundingBox)) {
-                        Target = t;
-                        break;
+            if(Target == null || Target != null && (!Target.IsAlive || Target.Equals(ActivePlayer))) {
+                if (Intersects(ActivePlayer.BoundingBox)) {
+                    Target = ActivePlayer;
+                } else {
+                    foreach (Tower t in Towers) {
+                        if (Intersects(t.BoundingBox)) {
+                            Target = t;
+                            break;
+                        }
                     }
                 }
             }
@@ -156,12 +157,17 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Move this monster towards its next tile.  Assumes pf.Count > 0
+        /// Move this monster towards its next tile.  Assumes !HasArrived.
         /// </summary>
         /// <param name="gameTime"></param>
         public void Move(GameTime gameTime) {
             Vector2 dirVector = HeatMap.GetDirVector(CenterPoint);
-
+            // If direction vector is zero, path towards nearest player.
+            if(dirVector.Equals(Vector2.Zero)) {
+                dirVector = Vector2.Normalize((ActivePlayer.CenterPoint - CenterPoint).ToVector2());
+                if (Double.IsNaN(dirVector.X))
+                    dirVector = Vector2.Zero;
+            }
             Pos += (new Vector2(dirVector.X * TileWidth, dirVector.Y * TileHeight) * (float)Speed * (float)gameTime.ElapsedGameTime.TotalSeconds).ToPoint();
             // Update sprite with new position data.
             ((CreatureSprite)Sprite).Update(gameTime, dirVector);

@@ -39,7 +39,7 @@ namespace TowerDefense {
             Pos = pos;
             MaxHealth = 100;
             CurrentHealth = MaxHealth;
-            Speed = 20;
+            Speed = 13;
         }
 
         /// <summary>
@@ -47,6 +47,10 @@ namespace TowerDefense {
         /// </summary>
         public override void Draw() {
             Sprite.Draw(CenterPoint, WorldSpriteBatch);
+            if (CurrentHealth < MaxHealth) {
+                Rectangle healthBarBox = new Rectangle(CenterPoint + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
+                Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
+            }
         }
 
         /// <summary>
@@ -73,7 +77,7 @@ namespace TowerDefense {
         }
 
         public override void TakeDamage(int damage) {
-            throw new NotImplementedException();
+            CurrentHealth = Math.Max(0, CurrentHealth - damage);
         }
     }
 }
