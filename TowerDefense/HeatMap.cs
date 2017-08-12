@@ -91,14 +91,12 @@ namespace TowerDefense {
         private static Queue<Point> SetGoals() {
             Queue<Point> q = new Queue<Point>();
             foreach(Tower t in Towers) {
-                if(t.Type == TowerType.HUB) {
-                    for(int y = t.TileY; y < t.TileY + t.HeightTiles; y++) {
-                        for(int x = t.TileX; x < t.TileX + t.WidthTiles; x++) {
-                            for (int hy = 0; hy < DivY; hy += 1) {
-                                for (int hx = 0; hx < DivX; hx += 1) {
-                                    Field[y * DivY + hy, x * DivX + hx] = 0;
-                                    q.Enqueue(new Point(x * DivX + hx, y * DivY + hy));
-                                }
+                for(int y = t.TileY; y < t.TileY + t.HeightTiles; y++) {
+                    for(int x = t.TileX; x < t.TileX + t.WidthTiles; x++) {
+                        for (int hy = 0; hy < DivY; hy += 1) {
+                            for (int hx = 0; hx < DivX; hx += 1) {
+                                Field[y * DivY + hy, x * DivX + hx] = 0;
+                                q.Enqueue(new Point(x * DivX + hx, y * DivY + hy));
                             }
                         }
                     }
@@ -117,7 +115,7 @@ namespace TowerDefense {
             while(q.Count > 0) {
                 Point current = q.Dequeue();
                 heat = Field[current.Y, current.X] + (1.0f / DivX);
-                if (heat <= HeatTileWidth * Player.SpawnUpperBound / TileWidth) {
+                if (heat <= DivX * Player.SpawnUpperBound / TileWidth ) {
                     // Apply heat to adjacent, unmarked tiles.
                     if (current.Y > 0 && Field[current.Y - 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
                         Field[current.Y - 1, current.X] = heat;

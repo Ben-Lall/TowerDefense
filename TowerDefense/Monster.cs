@@ -60,10 +60,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="sprite">Sprite for this monster.</param>
         /// <param name="type">Type of monster.</param>
-        /// <param name="pos">The tile position of this monster.</param>
+        /// <param name="pos">The pixel position of this monster.</param>
         public Monster(CreatureSprite sprite, MonsterType type, Point pos) {
             Sprite = sprite;
-            Pos = new Point(pos.X * TileWidth, pos.Y * TileHeight);
+            Pos = pos;
             Type = type;
             switch(Type) {
                 case MonsterType.IMP:
@@ -131,7 +131,7 @@ namespace TowerDefense {
         public override void Attack() {
             if(Target == null || Target != null && !Target.IsAlive) {
                 foreach(Tower t in Towers) {
-                    if(t.Type == TowerType.HUB && Intersects(t.BoundingBox)) {
+                    if(Intersects(t.BoundingBox)) {
                         Target = t;
                         break;
                     }

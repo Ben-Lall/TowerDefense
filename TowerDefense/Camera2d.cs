@@ -25,9 +25,15 @@ namespace TowerDefense {
         public Point CameraStart { get => new Point(Pos.X, Pos.Y); }
         public Point CameraTileStart { get => new Point(CameraStart.X / TileWidth, CameraStart.Y / TileHeight); }
         public Point CameraHeatStart { get => new Point(CameraStart.X / HeatMap.HeatTileWidth, CameraStart.Y / HeatMap.HeatTileHeight); }
+        public Point SpawnLeftStart {get => new Point(CameraStart.X - Player.SpawnUpperBound, CameraStart.Y - Player.SpawnUpperBound); }
+        public Point SpawnLeftEnd { get => new Point(CameraStart.X - Player.SpawnLowerBound, CameraStart.Y - Player.SpawnLowerBound); }
         public Point CameraEnd { get => new Point(Math.Min(Pos.X + ScreenWidth, (MapWidth -1) * TileWidth), Math.Min(Pos.Y + ScreenHeight, (MapHeight - 1) * TileHeight)); }
         public Point CameraTileEnd { get => new Point(CameraEnd.X / TileWidth, CameraEnd.Y / TileHeight); }
         public Point CameraHeatEnd { get => new Point(CameraEnd.X / HeatMap.HeatTileWidth, CameraEnd.Y / HeatMap.HeatTileHeight); }
+        public Point SpawnRightStart { get => new Point(CameraEnd.X + Player.SpawnLowerBound, CameraEnd.Y + Player.SpawnLowerBound); }
+        public Point SpawnRightEnd { get => new Point(CameraEnd.X + Player.SpawnUpperBound, CameraEnd.Y + Player.SpawnUpperBound); }
+
+
 
         /// <summary>
         /// Create a new camera centered at the given position.

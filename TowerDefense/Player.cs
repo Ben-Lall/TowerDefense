@@ -23,12 +23,12 @@ namespace TowerDefense {
         /// <summary>
         /// Number of pixels minimum distance for spawning a new monster.
         /// </summary>
-        public static int SpawnLowerBound { get => 1600; }
+        public static int SpawnLowerBound { get => 648; }
 
         /// <summary>
         /// Number of pixels maxmimum distance for spawning a new monster.
         /// </summary>
-        public static int SpawnUpperBound { get => 2000; }
+        public static int SpawnUpperBound { get => 720; }
 
         /// <summary>
         /// Create a new player at the position.

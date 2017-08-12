@@ -66,7 +66,7 @@ namespace TowerDefense {
         /// </summary>
         /// <returns></returns>
         public bool ObstructsTower() {
-            return ContainsTower || Type == TileType.WALL || Type == TileType.OPEN;
+            return ContainsTower || Type == TileType.WALL;
         }
     }
 }

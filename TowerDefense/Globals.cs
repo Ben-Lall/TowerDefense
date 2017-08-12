@@ -255,7 +255,7 @@ namespace Include {
             Paused = true;
 
             // Initialize ActivePlayer
-            ActivePlayer = new Player(new Point(20 * TileWidth, 20 * TileHeight));
+            ActivePlayer = new Player(new Point(495 * TileWidth, 495 * TileHeight));
             Camera = new Camera2d(ActivePlayer.Pos.ToVector2());
             DrawSet.Add(ActivePlayer);
             
@@ -373,6 +373,7 @@ namespace Include {
                     MapAt(tower.TilePos.X + x, tower.TilePos.Y + y).ContainsTower = true;
                 }
             }
+            HeatMap.Update();
         }
 
         /// <summary>

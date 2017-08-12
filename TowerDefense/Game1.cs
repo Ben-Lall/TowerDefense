@@ -380,8 +380,7 @@ namespace TowerDefense {
                 }
             }
 
-            AddTower(new Tower(HubTemplate, new Point(MapWidth / 2 - 1, MapHeight / 2 - 1)));
-            AddTower(new Tower(HubTemplate, new Point(53, 40)));
+            AddTower(new Tower(HubTemplate, new Point(500, 500)));
             HeatMap.Update();
 
             SpawnWave();
@@ -389,35 +388,37 @@ namespace TowerDefense {
 
         public void SpawnWave() {
             Random r = new Random();
-            int spawnAmt = 3 + r.Next(0, 5);
-
-            // Get the set of valid tiles -- OPEN tiles within all player spawn ranges.
-            List<Tile> spawnTiles = new List<Tile>();
-            for (int i = 0; i < Math.Max(MapHeight, MapWidth); i++) {
-                if (i < MapWidth) {
-                    if (MapAt(i, 0).Type == TileType.OPEN) {
-                        spawnTiles.Add(MapAt(i, 0));
-                    }
-                    if (MapAt(i, MapHeight - 1).Type == TileType.OPEN) {
-                        spawnTiles.Add(MapAt(i, MapHeight - 1));
-                    }
-                }
-
-                if (i < MapHeight) {
-                    if (MapAt(0, i).Type == TileType.OPEN) {
-                        spawnTiles.Add(MapAt(0, i));
-                    }
-                    if (MapAt(MapWidth - 1, i).Type == TileType.OPEN) {
-                        spawnTiles.Add(MapAt(MapWidth - 1, i));
-                    }
-                }
-            }
+            int spawnAmt = 25 + r.Next(5, 20);
 
             // Spawn each enemy at a random tile.
             for (int i = 0; i < spawnAmt; i++) {
-                Tile spawnTile = spawnTiles[r.Next(0, spawnTiles.Count - 1)];
-                if (!TileContainsMonster(spawnTile)) {
-                    AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, spawnTile.Pos));
+                int x = -1;
+                int y = -1;
+                if (r.NextDouble() <= 0.5) {
+                    if (r.NextDouble() <= 0.5) {
+                        x = r.Next(Camera.SpawnLeftStart.X, Camera.SpawnLeftEnd.X);
+                    }
+                    if (x < 0) {
+                        x = r.Next(Camera.SpawnRightStart.X, Camera.SpawnRightEnd.X);
+                    }
+                    if (x >= MapWidth * TileWidth) {
+                        x = r.Next(Camera.SpawnLeftStart.X, Camera.SpawnLeftEnd.X);
+                    }
+                    y = r.Next(Camera.CameraStart.Y, Camera.CameraEnd.Y);
+                } else {
+                    if (r.NextDouble() <= 0.5) {
+                        y = r.Next(Camera.SpawnLeftStart.Y, Camera.SpawnLeftEnd.Y);
+                    }
+                    if (y < 0) {
+                        y = r.Next(Camera.SpawnRightStart.Y, Camera.SpawnRightEnd.Y);
+                    }
+                    if (y >= MapHeight * TileHeight) {
+                        y = r.Next(Camera.SpawnLeftStart.Y, Camera.SpawnLeftEnd.Y);
+                    }
+                    x = r.Next(Camera.CameraStart.X, Camera.CameraEnd.X);
+                }
+                if (MapAt(x / TileWidth, y / TileHeight).IsEmpty()) {
+                    AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, new Point(x, y)));
                 }
             }
         }
