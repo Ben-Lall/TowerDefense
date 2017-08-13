@@ -114,9 +114,6 @@ namespace TowerDefense {
             // Remove dead towers from the lists.
             Towers.RemoveAll(x => !x.IsAlive);
             DrawSet.RemoveAll(x => x.GetType() == typeof(Tower) && !((Tower)x).IsAlive);
-            if(removed) {
-                HeatMap.Update();
-            }
         }
 
         /// <summary>
@@ -340,6 +337,8 @@ namespace TowerDefense {
                 }
             } else if (TileMode == Include.TileDrawMode.HEATMAP) {
                 HeatMap.Draw();
+            } else if(TileMode == Include.TileDrawMode.HEATMAP_NUMBERS) {
+                HeatMap.Draw(true);
             }
 
             // If the player is currently in placement mode, highlight the selected tiles.
@@ -381,7 +380,6 @@ namespace TowerDefense {
             }
 
             AddTower(new Tower(HubTemplate, new Point(500, 500)));
-            HeatMap.Update();
 
             SpawnWave();
         }

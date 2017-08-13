@@ -18,7 +18,7 @@ namespace TowerDefense {
         /// <summary>
         /// The maximum heat differential.
         /// </summary>
-        static float FieldMax;
+        static float FieldMax { get => (float)SQRT2 * Player.SpawnUpperBound / TileWidth; }
 
         /// <summary>
         /// The color for a goal tile.
@@ -50,7 +50,7 @@ namespace TowerDefense {
         /// </summary>
         static int DivY { get => TileHeight / HeatTileHeight; }
 
-
+        static float HeatIncrement { get => 1.0f / DivX; }
 
         /// <summary>
         /// Initialize the heat map with blank values.
@@ -58,52 +58,59 @@ namespace TowerDefense {
         public static void Initialize() {
             FieldPxWidth = FieldWidth * HeatTileWidth;
             FieldPxHeight = FieldHeight * HeatTileHeight;
-            HeatTileWidth = 8;
-            HeatTileHeight = 8;
+            HeatTileWidth = TileWidth / 2;
+            HeatTileHeight = TileHeight / 2;
             FieldWidth = MapWidth * TileWidth / HeatTileWidth;
             FieldHeight = MapHeight * TileHeight / HeatTileHeight;
 
             Field = new float[FieldHeight, FieldWidth];
-            FieldMax = 0;
-        }
-
-        /// <summary>
-        /// Update the heatmap
-        /// </summary>
-        public static void Update() {
             ResetField();
-            GenerateField(SetGoals());
         }
 
-        /// <summary>
-        /// Reset all heat maps to initial values.
-        /// </summary>
-        private static void ResetField() {
-            for (int y = 0; y < FieldHeight; y++) {
-                for (int x = 0; x < FieldWidth; x++) {
-                    Field[y, x] = -1;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set goal tiles, and return a Queue containing them.
-        /// </summary>
-        private static Queue<Point> SetGoals() {
+        public static void AddTower(Tower t) {
+            // Set all cells associated with the base of this tower to 0 and enqueue them.
             Queue<Point> q = new Queue<Point>();
-            foreach(Tower t in Towers) {
-                for(int y = t.TileY; y < t.TileY + t.HeightTiles; y++) {
-                    for(int x = t.TileX; x < t.TileX + t.WidthTiles; x++) {
-                        for (int hy = 0; hy < DivY; hy += 1) {
-                            for (int hx = 0; hx < DivX; hx += 1) {
-                                Field[y * DivY + hy, x * DivX + hx] = 0;
-                                q.Enqueue(new Point(x * DivX + hx, y * DivY + hy));
-                            }
+            for (int y = t.TileY; y < t.TileY + t.HeightTiles; y++) {
+                for (int x = t.TileX; x < t.TileX + t.WidthTiles; x++) {
+                    for (int hy = 0; hy < DivY; hy += 1) {
+                        for (int hx = 0; hx < DivX; hx += 1) {
+                            Field[y * DivY + hy, x * DivX + hx] = 0;
+                            q.Enqueue(new Point(x * DivX + hx, y * DivY + hy));
                         }
                     }
                 }
             }
-            return q;
+            GenerateField(q);
+        }
+
+        /// <summary>
+        /// Remove a tower's heat influence from the heatmap.
+        /// </summary>
+        /// <param name="t"></param>
+        public static void RemoveTower(Tower t) {
+            // Enqueue all cells associated with the base of this tower.
+            Queue<Point> q = new Queue<Point>();
+            for (int y = t.TileY; y < t.TileY + t.HeightTiles; y++) {
+                for (int x = t.TileX; x < t.TileX + t.WidthTiles; x++) {
+                    for (int hy = 0; hy < DivY; hy += 1) {
+                        for (int hx = 0; hx < DivX; hx += 1) {
+                            q.Enqueue(new Point(x * DivX + hx, y * DivY + hy));
+                        }
+                    }
+                }
+            }
+            RemoveField(q);
+        }
+
+        /// <summary>
+        /// Reset Field to initial values.
+        /// </summary>
+        private static void ResetField() {
+            for (int y = 0; y < FieldHeight; y++) {
+                for (int x = 0; x < FieldWidth; x++) {
+                    Field[y, x] = FieldMax;
+                }
+            }
         }
 
         /// <summary>
@@ -115,53 +122,120 @@ namespace TowerDefense {
             float heat = 0;
             while(q.Count > 0) {
                 Point current = q.Dequeue();
-                heat = Field[current.Y, current.X] + (1.0f / DivX);
-                if (heat <= DivX * Player.SpawnUpperBound / TileWidth ) {
-                    // Apply heat to adjacent, unmarked tiles.
-                    if (current.Y > 0 && Field[current.Y - 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
+                heat = Field[current.Y, current.X] + HeatIncrement;
+                if (heat <= FieldMax ) { // Extend heatmap out to some number of tiles.
+                    // Apply heat to adjacent tiles whose current heat is greater than the projected heat.
+                    if (current.Y > 0 && Field[current.Y - 1, current.X] > heat && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
                         Field[current.Y - 1, current.X] = heat;
                         q.Enqueue(new Point(current.X, current.Y - 1));
                     }
-                    if (current.Y < FieldHeight - 1 && Field[current.Y + 1, current.X] == -1 && MapAt(current.X / DivX, (current.Y + 1) / DivY).IsEmpty()) {
+                    if (current.Y < FieldHeight - 1 && Field[current.Y + 1, current.X] > heat && MapAt(current.X / DivX, (current.Y + 1) / DivY).IsEmpty()) {
                         Field[current.Y + 1, current.X] = heat;
                         q.Enqueue(new Point(current.X, current.Y + 1));
                     }
-                    if (current.X > 0 && Field[current.Y, current.X - 1] == -1 && MapAt((current.X - 1) / DivX, current.Y / DivY).IsEmpty()) {
+                    if (current.X > 0 && Field[current.Y, current.X - 1] > heat && MapAt((current.X - 1) / DivX, current.Y / DivY).IsEmpty()) {
                         Field[current.Y, current.X - 1] = heat;
                         q.Enqueue(new Point(current.X - 1, current.Y));
                     }
-                    if (current.X < FieldWidth - 1 && Field[current.Y, current.X + 1] == -1 && MapAt((current.X + 1) / DivX, current.Y / DivY).IsEmpty()) {
+                    if (current.X < FieldWidth - 1 && Field[current.Y, current.X + 1] > heat && MapAt((current.X + 1) / DivX, current.Y / DivY).IsEmpty()) {
                         Field[current.Y, current.X + 1] = heat;
                         q.Enqueue(new Point(current.X + 1, current.Y));
                     }
                 }
             }
-            // Record the maximum difference in heat for this map
-            FieldMax = heat - 1;
+        }
+
+        /// <summary>
+        /// Remove a chunk of the heatmap starting at the points given by the queue, then fills the gap left behind.
+        /// </summary>
+        /// <param name="q">A queue initialized with the goal points.</param>
+        private static void RemoveField(Queue<Point> q) {
+            // Begin a BFS initialized with all the goal points.
+            Queue<Point> generateQ = new Queue<Point>();
+            float heat = 0;
+            while (q.Count > 0) {
+                Point current = q.Dequeue();
+                heat = Field[current.Y, current.X];
+                Field[current.Y, current.X] = FieldMax;
+                // Enqueue adjacent tiles to be removed if their heat is higher than this one's.  Otherwise, enqueue it into generateQ.
+                if (current.Y > 0) {
+                    if (Field[current.Y - 1, current.X] > heat && Field[current.Y - 1, current.X] != FieldMax) {
+                        q.Enqueue(new Point(current.X, current.Y - 1));
+                    } else {
+                        generateQ.Enqueue(new Point(current.X, current.Y - 1));
+                    }
+                }
+                if (current.Y < FieldHeight - 1) {
+                    if (Field[current.Y + 1, current.X] > heat && Field[current.Y + 1, current.X] != FieldMax) {
+                        q.Enqueue(new Point(current.X, current.Y + 1));
+                    } else {
+                        generateQ.Enqueue(new Point(current.X, current.Y + 1));
+                    }
+                }
+                if (current.X > 0) {
+                    if (Field[current.Y, current.X - 1] > heat && Field[current.Y, current.X - 1] != FieldMax) {
+                        q.Enqueue(new Point(current.X - 1, current.Y));
+                    } else {
+                        generateQ.Enqueue(new Point(current.X - 1, current.Y));
+                    }
+                }
+                if (current.X < FieldWidth - 1) {
+                    if (Field[current.Y, current.X + 1] > heat && Field[current.Y, current.X + 1] != FieldMax) {
+                        q.Enqueue(new Point(current.X + 1, current.Y));
+                    } else {
+                        generateQ.Enqueue(new Point(current.X + 1, current.Y));
+                    }
+                }
+            }
+            // Generate a new field starting at the frontier left behind by this removal brushfire.
+            GenerateField(generateQ);
         }
 
         /// <summary>
         /// Draw an approximation of the heatmap to the screen. Each regular tile will be filled as one color.
         /// </summary>
-        public static void Draw() {
-            float max = FieldMax;
-            int c = 0;
-            if (max > 0) {
+        /// <param name="numbers">Whether or not the numbers should be drawn.</param>
+        public static void Draw(bool numbers=false) {
+            if (FieldMax > 0) {
                 for (int y = Camera.CameraHeatStart.Y; y <= Camera.CameraHeatEnd.Y; y += DivY) {
                     for (int x = Camera.CameraHeatStart.X; x <= Camera.CameraHeatEnd.X; x += DivX) {
-                        c++;
-                        Color color;
-                        if (Field[y, x] == -1) {
-                            color = Color.Red;
-                        } else {
-                            int R = (int)(MaxColor.R - Field[y, x] * MaxColor.R / max);
-                            int G = (int)(MaxColor.G - Field[y, x] * MaxColor.G / max);
-                            int B = (int)(MaxColor.B - Field[y, x] * MaxColor.B / max);
-                            color = new Color(R, G, B);
+                        DrawTile(x, y);
+                        if (numbers) {
+                            DrawTileValue(x, y);
                         }
-                        WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, TileWidth, TileHeight), color);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Draw the HeatMap tile at the HeatMap coordinates specified.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public static void DrawTile(int x, int y) {
+            Color color;
+            if (Field[y, x] == -1) {
+                color = Color.Red;
+            } else {
+                int R = (int)(MaxColor.R - Field[y, x] * MaxColor.R / FieldMax);
+                int G = (int)(MaxColor.G - Field[y, x] * MaxColor.G / FieldMax);
+                int B = (int)(MaxColor.B - Field[y, x] * MaxColor.B / FieldMax);
+                color = new Color(R, G, B);
+            }
+            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, TileWidth, TileHeight), color);
+        }
+
+        /// <summary>
+        /// Draw the value of the HeatMap tile at the HeatMap coordinates specified.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public static void DrawTileValue(int x, int y) {
+            if (Field[y, x] != -1) {
+                String heatText = Math.Ceiling(Field[y, x]).ToString();
+                Vector2 heatTextSize = Art.Font.MeasureString(heatText);
+                WorldSpriteBatch.DrawString(Art.Font, heatText, new Vector2((x + 0.5f) * HeatTileWidth, (y + 0.5f) * HeatTileHeight) - heatTextSize / 2, Color.Black);
             }
         }
 
@@ -197,10 +271,6 @@ namespace TowerDefense {
             float right = HMapAt(p + new Point(HeatTileWidth, 0));
             float up = HMapAt(p - new Point(0, HeatTileHeight));
             float down = HMapAt(p + new Point(0, HeatTileHeight));
-            if (left == -1) { left = Math.Max(HMapAt(p), right); }
-            if (right == -1) { right = Math.Max(HMapAt(p), left); }
-            if (up == -1) { up = Math.Max(HMapAt(p), down); }
-            if (down == -1) { down = Math.Max(HMapAt(p), up); }
 
             Vector2 dir = Vector2.Normalize(new Vector2(left - right, up - down));
             if (Double.IsNaN(dir.X))

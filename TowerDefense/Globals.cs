@@ -12,7 +12,7 @@ namespace Include {
     /// <summary>
     /// Create a new map class for this along with a new map class!
     /// </summary>
-    enum TileDrawMode { DEFAULT, HEATMAP, TOTAL_DRAW_MODES }
+    enum TileDrawMode { DEFAULT, HEATMAP, HEATMAP_NUMBERS, TOTAL_DRAW_MODES }
 
     /// <summary>
     /// A class containing global variables and helper methods.
@@ -373,7 +373,7 @@ namespace Include {
                     MapAt(tower.TilePos.X + x, tower.TilePos.Y + y).ContainsTower = true;
                 }
             }
-            HeatMap.Update();
+            HeatMap.AddTower(tower);
         }
 
         /// <summary>

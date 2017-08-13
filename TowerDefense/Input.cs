@@ -30,6 +30,11 @@ namespace TowerDefense {
         private static bool TileModePressed { get; set; }
 
         /// <summary>
+        /// Toggle boolean for the delete button.
+        /// </summary>
+        private static bool DeletePressed { get; set; }
+
+        /// <summary>
         /// Previously recorded mouse wheel scroll.
         /// </summary>
         public static int PreviousMouseWheel { get; set; }
@@ -91,6 +96,19 @@ namespace TowerDefense {
             }
             if (Keyboard.GetState().IsKeyUp(Keys.H) && TileModePressed) {
                 TileModePressed = false;
+            }
+
+            // Delete button
+            if (Keyboard.GetState().IsKeyDown(Keys.Delete) && !DeletePressed) {
+                DeletePressed = true;
+                foreach(Tower t in Towers) {
+                    if(t.Selected) {
+                        t.CurrentHealth = 0;
+                    }
+                }
+            }
+            if (Keyboard.GetState().IsKeyUp(Keys.Delete) && DeletePressed) {
+                DeletePressed = false;
             }
 
             // Movement keys
