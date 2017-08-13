@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -140,13 +141,15 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Draw the heatmap to the screen.
+        /// Draw an approximation of the heatmap to the screen. Each regular tile will be filled as one color.
         /// </summary>
         public static void Draw() {
             float max = FieldMax;
+            int c = 0;
             if (max > 0) {
-                for (int y = Camera.CameraHeatStart.Y; y <= Camera.CameraHeatEnd.Y; y += 1) {
-                    for (int x = Camera.CameraHeatStart.X; x <= Camera.CameraHeatEnd.X; x += 1) {
+                for (int y = Camera.CameraHeatStart.Y; y <= Camera.CameraHeatEnd.Y; y += DivY) {
+                    for (int x = Camera.CameraHeatStart.X; x <= Camera.CameraHeatEnd.X; x += DivX) {
+                        c++;
                         Color color;
                         if (Field[y, x] == -1) {
                             color = Color.Red;
@@ -156,7 +159,7 @@ namespace TowerDefense {
                             int B = (int)(MaxColor.B - Field[y, x] * MaxColor.B / max);
                             color = new Color(R, G, B);
                         }
-                        WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, HeatTileWidth, HeatTileHeight), color);
+                        WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, TileWidth, TileHeight), color);
                     }
                 }
             }
@@ -167,6 +170,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="p"></param>
         public static float HMapAt(Point p) {
+            Debug.Assert(p.X >= 0 && p.Y >= 0, "p is within bounds of the map.");
             int x = Math.Min(p.X / HeatTileWidth, FieldWidth - 1);
             int y = Math.Min(p.Y / HeatTileHeight, FieldHeight - 1);
             return Field[y, x];
