@@ -52,6 +52,7 @@
     <Compile Include="EnglishSort.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Input.cs" />
+    <Compile Include="WorldMap.cs" />
     <Compile Include="Monster.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Player.cs" />

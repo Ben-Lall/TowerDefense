@@ -136,11 +136,6 @@ namespace Include {
         /* Game World */
 
         /// <summary>
-        /// 2D array representing the game map.  Read by map[i.j], where i refers to the row, and j refers to the column.
-        /// </summary>
-        public static Tile[,] Map { get; set; }
-
-        /// <summary>
         /// The player being controlled by the client.
         /// </summary>
         public static Player ActivePlayer { get; set; }
@@ -236,9 +231,6 @@ namespace Include {
             MapWidth = 1000;
             MapHeight = 1000;
 
-            // Initialize the gameplay objects.
-            Map = new Tile[MapWidth, MapHeight];
-
             //Initialize collections
             Towers = new List<Tower>();
             Monsters = new List<Monster>();
@@ -254,8 +246,9 @@ namespace Include {
 
             // Initialize gameplay stuff.
             SpawnRate = 6.0;
-            SpawnCooldown = SpawnRate;
+            SpawnCooldown = 0;
             HeatMap.Initialize();
+            WorldMap.Initialize();
             TileMode = TileDrawMode.DEFAULT;
             Paused = true;
 
@@ -287,16 +280,6 @@ namespace Include {
         }
 
         /// <summary>
-        /// Returns the tile at the given coordianates.
-        /// </summary>
-        /// <param name="x">The x coordinate.</param>
-        /// <param name="y">The y coordinate.</param>
-        /// <returns>map[y, x]</returns>
-        public static Tile MapAt(int x, int y) {
-            return Map[y, x];
-        }
-
-        /// <summary>
         /// Assumes isPlacingTower = true, and CursorIsOnMap() = true.  Return true if the area the cursor is hovering over allows
         /// for enough space to place the currently selected tower. Returns false otherwise.
         /// </summary>
@@ -306,7 +289,7 @@ namespace Include {
             Point pos = GetAreaStartPoint();
             for (int y = pos.Y; y < pos.Y + PendingTowerTemplate.Height; y++) {
                 for (int x = pos.X; x < pos.X + PendingTowerTemplate.Width; x++) {
-                    if (MapAt(x, y).ObstructsTower()) {
+                    if (WorldMap.At(x, y).ObstructsTower()) {
                         return false;
                     }
                 }
@@ -375,7 +358,7 @@ namespace Include {
             // Mark each of its tiles as TOWER
             for (int y = 0; y < tower.HeightTiles; y++) {
                 for (int x = 0; x < tower.WidthTiles; x++) {
-                    MapAt(tower.TilePos.X + x, tower.TilePos.Y + y).ContainsTower = true;
+                    WorldMap.At(tower.TilePos.X + x, tower.TilePos.Y + y).ContainsTower = true;
                 }
             }
             HeatMap.AddTower(tower);

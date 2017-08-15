@@ -125,19 +125,19 @@ namespace TowerDefense {
                 heat = Field[current.Y, current.X] + HeatIncrement;
                 if (heat <= FieldMax ) { // Extend heatmap out to some number of tiles.
                     // Apply heat to adjacent tiles whose current heat is greater than the projected heat.
-                    if (current.Y > 0 && Field[current.Y - 1, current.X] > heat && MapAt(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
+                    if (current.Y > 0 && Field[current.Y - 1, current.X] > heat && WorldMap.At(current.X / DivX, (current.Y - 1) / DivY).IsEmpty()) {
                         Field[current.Y - 1, current.X] = heat;
                         q.Enqueue(new Point(current.X, current.Y - 1));
                     }
-                    if (current.Y < FieldHeight - 1 && Field[current.Y + 1, current.X] > heat && MapAt(current.X / DivX, (current.Y + 1) / DivY).IsEmpty()) {
+                    if (current.Y < FieldHeight - 1 && Field[current.Y + 1, current.X] > heat && WorldMap.At(current.X / DivX, (current.Y + 1) / DivY).IsEmpty()) {
                         Field[current.Y + 1, current.X] = heat;
                         q.Enqueue(new Point(current.X, current.Y + 1));
                     }
-                    if (current.X > 0 && Field[current.Y, current.X - 1] > heat && MapAt((current.X - 1) / DivX, current.Y / DivY).IsEmpty()) {
+                    if (current.X > 0 && Field[current.Y, current.X - 1] > heat && WorldMap.At((current.X - 1) / DivX, current.Y / DivY).IsEmpty()) {
                         Field[current.Y, current.X - 1] = heat;
                         q.Enqueue(new Point(current.X - 1, current.Y));
                     }
-                    if (current.X < FieldWidth - 1 && Field[current.Y, current.X + 1] > heat && MapAt((current.X + 1) / DivX, current.Y / DivY).IsEmpty()) {
+                    if (current.X < FieldWidth - 1 && Field[current.Y, current.X + 1] > heat && WorldMap.At((current.X + 1) / DivX, current.Y / DivY).IsEmpty()) {
                         Field[current.Y, current.X + 1] = heat;
                         q.Enqueue(new Point(current.X + 1, current.Y));
                     }
@@ -197,8 +197,8 @@ namespace TowerDefense {
         /// <param name="numbers">Whether or not the numbers should be drawn.</param>
         public static void Draw(bool numbers=false) {
             if (FieldMax > 0) {
-                for (int y = Camera.CameraHeatStart.Y; y <= Camera.CameraHeatEnd.Y; y += DivY) {
-                    for (int x = Camera.CameraHeatStart.X; x <= Camera.CameraHeatEnd.X; x += DivX) {
+                for (int y = Camera.CameraHeatStart.Y; y <= Camera.CameraHeatEnd.Y; y += 1) {
+                    for (int x = Camera.CameraHeatStart.X; x <= Camera.CameraHeatEnd.X; x += 1) {
                         DrawTile(x, y);
                         if (numbers) {
                             DrawTileValue(x, y);
@@ -223,7 +223,7 @@ namespace TowerDefense {
                 int B = (int)(MaxColor.B - Field[y, x] * MaxColor.B / FieldMax);
                 color = new Color(R, G, B);
             }
-            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, TileWidth, TileHeight), color);
+            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(x * HeatTileWidth, y * HeatTileHeight, HeatTileWidth, HeatTileHeight), color);
         }
 
         /// <summary>

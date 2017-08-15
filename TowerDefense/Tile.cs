@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.Globals;
 
 
 
@@ -73,6 +74,14 @@ namespace TowerDefense {
         /// <returns></returns>
         public bool ObstructsTower() {
             return ContainsTower || Type == TileType.WALL;
+        }
+
+        /// <summary>
+        /// Draw a tile to the game screen.
+        /// </summary>
+        /// <param name="tint">The color</param>
+        public void Draw(Color tint) {
+            WorldSpriteBatch.Draw(Art.TileSet, new Rectangle((X * TileWidth), (Y * TileHeight), TileWidth, TileHeight), Art.GetSourceRectangle(WorldMap.At(X, Y).SpriteId), tint);
         }
     }
 }

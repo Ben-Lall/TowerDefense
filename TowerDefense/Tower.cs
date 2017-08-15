@@ -159,7 +159,7 @@ namespace TowerDefense {
         public void Remove() {
             for(int y = TilePos.Y; y < TilePos.Y + HeightTiles; y++) {
                 for (int x = TilePos.X; x < TilePos.X + WidthTiles; x++) {
-                    MapAt(x, y).ContainsTower = false;
+                    WorldMap.At(x, y).ContainsTower = false;
                 }
             }
             HeatMap.RemoveTower(this);

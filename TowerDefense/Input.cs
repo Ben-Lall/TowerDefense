@@ -60,10 +60,10 @@ namespace TowerDefense {
             }
             // Scroll Wheel
             if(mouseState.ScrollWheelValue < PreviousMouseWheel) {
-                Camera.Zoom -= 0.1f;
+                Camera.Zoom -= 0.2f;
             }
             if (mouseState.ScrollWheelValue > PreviousMouseWheel) {
-                Camera.Zoom += 0.1f;
+                Camera.Zoom += 0.2f;
             }
             PreviousMouseWheel = mouseState.ScrollWheelValue;
 
