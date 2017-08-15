@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using System.IO;
+using static Include.Globals;
+
 
 namespace TowerDefense {
     /// <summary>
@@ -19,6 +21,9 @@ namespace TowerDefense {
         /* UI Textures */
         public static Texture2D MenuPanel;
         public static Texture2D TowerButton;
+
+        /* World Textures */
+        public static Texture2D TileSet;
 
         /** GameplayObject Textures **/
 
@@ -44,6 +49,9 @@ namespace TowerDefense {
             /* UI Textures */
             MenuPanel = content.Load<Texture2D>("menu_panel");
             TowerButton = content.Load<Texture2D>("menu_panel");
+
+            /* World Textures */
+            TileSet = content.Load<Texture2D>("tiles/terrain_atlas");
 
             /* Player Textures */
             Player = LoadCreatureSprite(content, "player");
@@ -126,6 +134,17 @@ namespace TowerDefense {
                 }
             }
             return new CreatureSprite(spriteSheet);
+        }
+
+        /// <summary>
+        /// Given an ID, return region for the proper texture from the tileset.
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        public static Rectangle GetSourceRectangle(int ID) {
+            int y = ID / (TileSet.Width / TileWidth);
+            int x = ID % (TileSet.Width / TileWidth);
+            return new Rectangle(x * TileWidth, y * TileHeight, TileWidth, TileHeight);
         }
     }
 }

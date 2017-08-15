@@ -327,11 +327,7 @@ namespace TowerDefense {
             if (TileMode == Include.TileDrawMode.DEFAULT) {
                 for (int y = Camera.CameraTileStart.Y; y <= Camera.CameraTileEnd.Y; y++) {
                     for (int x = Camera.CameraTileStart.X; x <= Camera.CameraTileEnd.X; x++) {
-                        if (MapAt(x, y).Type == TileType.LIMITED) {
-                            DrawTile(x, y, Color.SandyBrown);
-                        } else if (MapAt(x, y).Type == TileType.OPEN) {
-                            DrawTile(x, y, Color.DarkOliveGreen);
-                        }
+                        DrawTile(x, y, Color.White);
                     }
                 }
             } else if (TileMode == Include.TileDrawMode.HEATMAP) {
@@ -354,7 +350,9 @@ namespace TowerDefense {
                 }
             }
             // Overlay grid
-            DrawGrid();
+            if (GridToggle) {
+                DrawGrid();
+            }
         }
 
         /// <summary>
@@ -364,17 +362,27 @@ namespace TowerDefense {
         /// <param name="y">y position.</param>
         /// <param name="color">The color</param>
         protected void DrawTile(int x, int y, Color color) {
-            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle((x * TileWidth), (y * TileHeight), TileWidth, TileHeight), color);
+            WorldSpriteBatch.Draw(Art.TileSet, new Rectangle((x * TileWidth), (y * TileHeight), TileWidth, TileHeight), Art.GetSourceRectangle(MapAt(x, y).SpriteId), color);
         }
 
         /// <summary>
         /// Load in the next map.
         /// </summary>
         protected void LoadMap() {
+            Random r = new Random();
             // Fill in the game map with open tiles.
             for (int y = 0; y < MapHeight; y++) {
                 for (int x = 0; x < MapWidth; x++) {
-                    Map[y, x] = new Tile(TileType.OPEN, x, y);
+                    int ID = 183;
+                    double roll = r.NextDouble();
+                    if (roll > 0.90) {
+                        ID = 182;
+                    } else if(roll > 0.75) {
+                        ID = 181;
+                    }
+
+                    Map[y, x] = new Tile(TileType.OPEN, x, y, ID);
+
                 }
             }
 
@@ -385,7 +393,7 @@ namespace TowerDefense {
 
         public void SpawnWave() {
             Random r = new Random();
-            int spawnAmt = 25 + r.Next(5, 20);
+            int spawnAmt = r.Next(10, 15);
 
             // Spawn each enemy at a random tile.
             for (int i = 0; i < spawnAmt; i++) {

@@ -78,7 +78,7 @@ namespace TowerDefense {
             switch(Type) {
                 case MonsterType.IMP:
                     CombatType = CombatType.MELEE;
-                    Speed = 13.5;
+                    Speed = 8.2;
                     MaxHealth = 10;
                     AttackDamage = 3;
                     AttackRange = 0.5;

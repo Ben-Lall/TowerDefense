@@ -72,8 +72,8 @@ namespace TowerDefense {
             switch(type) {
                 case TowerType.BOLT:
                     Sprite = new TowerSprite(Art.Tower);
-                    Width = 2;
-                    Height = 2;
+                    Width = 1;
+                    Height = 1;
                     AttackDamage = 8;
                     AttackRate = 1.5;
                     AttackRange = 6;
@@ -81,8 +81,8 @@ namespace TowerDefense {
                     break;
                 case TowerType.HUB:
                     Sprite = new TowerSprite(Art.Hub);
-                    Width = 3;
-                    Height = 3;
+                    Width = 2;
+                    Height = 2;
                     MaxHealth = 3000;
                     break;
                 default:

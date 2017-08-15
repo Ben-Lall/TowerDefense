@@ -20,9 +20,9 @@ namespace TowerDefense {
         private static bool MousePressed { get; set; }
 
         /// <summary>
-        /// Toggle boolean for the rotation button.
+        /// Toggle boolean for the grid toggle button.
         /// </summary>
-        private static bool RotatePressed { get; set; }
+        private static bool GridPressed { get; set; }
 
         /// <summary>
         /// Toggle boolean for back button.
@@ -93,6 +93,15 @@ namespace TowerDefense {
                 PausePressed = false;
             }
 
+            // Grid overlay toggle
+            if (Keyboard.GetState().IsKeyDown(Keys.G) && !GridPressed) {
+                // Toggle grid overlay.
+                GridToggle = !GridToggle;
+                GridPressed = true;
+            } else if (Keyboard.GetState().IsKeyUp(Keys.G) && GridPressed) {
+                GridPressed = false;
+            }
+
             // Map draw mode
             if (Keyboard.GetState().IsKeyDown(Keys.H) && !TileModePressed) {
                 TileModePressed = true;
@@ -133,21 +142,8 @@ namespace TowerDefense {
             if (Double.IsNaN(movement.X))
                 movement = Vector2.Zero;
             ActivePlayer.Direction = movement;
-
-            // Rotation
-            //if(Keyboard.GetState().IsKeyDown(Keys.E) && !RotatePressed) {
-            //    Camera.Rotate((float)(Math.PI / 2));
-            //    RotatePressed = true;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.Q) && !RotatePressed) {
-            //    Camera.Rotate(-(float)(Math.PI / 2));
-            //    RotatePressed = true;
-            //}
-            //if(Keyboard.GetState().IsKeyUp(Keys.E) && Keyboard.GetState().IsKeyUp(Keys.Q) && RotatePressed) {
-            //    RotatePressed = false;
-            //}
-
         }
+
         /// <summary>
         /// Handle a left mouse click event.
         /// </summary>

@@ -89,7 +89,7 @@ namespace TowerDefense {
 
         public float Zoom {
             get { return zoom; }
-            set { zoom = MathHelper.Clamp(value, 0.5f, 2.0f); }
+            set { zoom = MathHelper.Clamp(value, 1.0f, 2.0f); }
         }
     }
 }

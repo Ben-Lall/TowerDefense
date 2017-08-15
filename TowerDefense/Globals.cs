@@ -35,7 +35,7 @@ namespace Include {
         /// <summary>
         /// SpriteBatch containing details of drawing creatures and map features.
         /// </summary>
-        public static SpriteBatch WorldSpriteBatch{ get; set; }
+        public static SpriteBatch WorldSpriteBatch { get; set; }
 
         /// <summary>
         /// SpriteBatch containing details of drawing UI elements.
@@ -127,6 +127,11 @@ namespace Include {
         /// The current tile drawing mode.
         /// </summary>
         public static TileDrawMode TileMode { get; set; }
+
+        /// <summary>
+        /// Whether or not the grid should be overlayed to the screen.
+        /// </summary>
+        public static bool GridToggle { get; set; }
 
         /* Game World */
 
@@ -224,8 +229,8 @@ namespace Include {
             MenuPanelHeight = ScreenHeight;
 
             // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120: 1120 = 1280 * (7/8).
-            TileWidth = 16;
-            TileHeight = 16;
+            TileWidth = 32;
+            TileHeight = 32;
 
             // Set the map dimensions
             MapWidth = 1000;
@@ -405,7 +410,7 @@ namespace Include {
         public static Point GetAreaStartPoint() {
             int width = PendingTowerTemplate.Width;
             int height = PendingTowerTemplate.Height;
-            Point cursorTilePos = PixelToClosestTile(WorldMousePos.ToPoint());
+            Point cursorTilePos = PixelToTile(WorldMousePos.ToPoint());
             int x = MathHelper.Clamp(cursorTilePos.X - width / 2, 0, MapWidth - width);
             int y = MathHelper.Clamp(cursorTilePos.Y - height / 2, 0, MapHeight - height);
             return new Point(x, y);

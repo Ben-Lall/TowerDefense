@@ -39,7 +39,7 @@ namespace TowerDefense {
             Pos = pos;
             MaxHealth = 100;
             CurrentHealth = MaxHealth;
-            Speed = 13;
+            Speed = 8;
         }
 
         /// <summary>
