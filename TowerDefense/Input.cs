@@ -20,6 +20,11 @@ namespace TowerDefense {
         private static bool MousePressed { get; set; }
 
         /// <summary>
+        /// Toggle boolean for the rotation button.
+        /// </summary>
+        private static bool RotatePressed { get; set; }
+
+        /// <summary>
         /// Toggle boolean for back button.
         /// </summary>
         private static bool BackPressed { get; set; }
@@ -61,7 +66,6 @@ namespace TowerDefense {
                 Camera.Zoom += 0.1f;
             }
             PreviousMouseWheel = mouseState.ScrollWheelValue;
-
 
 
             /** Keyboard Handling **/
@@ -129,6 +133,19 @@ namespace TowerDefense {
             if (Double.IsNaN(movement.X))
                 movement = Vector2.Zero;
             ActivePlayer.Direction = movement;
+
+            // Rotation
+            //if(Keyboard.GetState().IsKeyDown(Keys.E) && !RotatePressed) {
+            //    Camera.Rotate((float)(Math.PI / 2));
+            //    RotatePressed = true;
+            //}
+            //if (Keyboard.GetState().IsKeyDown(Keys.Q) && !RotatePressed) {
+            //    Camera.Rotate(-(float)(Math.PI / 2));
+            //    RotatePressed = true;
+            //}
+            //if(Keyboard.GetState().IsKeyUp(Keys.E) && Keyboard.GetState().IsKeyUp(Keys.Q) && RotatePressed) {
+            //    RotatePressed = false;
+            //}
 
         }
         /// <summary>

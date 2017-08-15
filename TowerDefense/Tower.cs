@@ -79,8 +79,6 @@ namespace TowerDefense {
         public override void Draw() {
             if (Selected) {
                 DrawBoundingBox();
-
-                //TODO: add aura
             }
 
             // Draw this tower, with sprite positioning dependent on tower type.
@@ -132,13 +130,16 @@ namespace TowerDefense {
                       if(m.DistanceToTarget < lowestDistance) {
                         lowestDistance = m.DistanceToTarget;
                         target = m;
+                        if(lowestDistance == 0) {
+                            break;
+                        }
                     }
                 }
             }
 
             if(target != null) {
                 target.TakeDamage(AttackDamage);
-                Cooldown += (1.0 / AttackRate);
+                Cooldown = (1.0 / AttackRate);
                 Effects.Add(new Bolt(FirePoint.ToVector2(), target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
             }
         }

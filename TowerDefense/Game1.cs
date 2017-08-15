@@ -101,13 +101,11 @@ namespace TowerDefense {
         /// <param name="gameTime"></param>
         private void UpdateTowers(GameTime gameTime) {
             // Remove dead towers and update living ones.
-            bool removed = false;
             foreach (Tower t in Towers) {
                 if (t.IsAlive) {
                     t.Update(gameTime);
                 } else {
                     t.Remove();
-                    removed = true;
                 }
             }
 
@@ -120,12 +118,13 @@ namespace TowerDefense {
         /// Update Monsters.  For now, this only entails movement.
         /// </summary>
         private void UpdateMonsters(GameTime gameTime) {
-            // Remove dead monsters from the list.
-            Monsters.RemoveAll(x => !x.IsAlive);
-            DrawSet.RemoveAll(x => x.GetType() == typeof(Monster) && !((Monster)x).IsAlive);
+            // Remove dead monsters and out of bounds monsters.
+            Monsters.RemoveAll(x => !x.IsAlive || !x.IsSimulated);
+            DrawSet.RemoveAll(x => x.GetType() == typeof(Monster) && (!((Monster)x).IsAlive || !((Monster)x).IsSimulated));
+
 
             // Spawn new monsters if the cooldown has ended.
-            if(SpawnCooldown == 0) {
+            if (SpawnCooldown == 0) {
                 SpawnWave();
                 SpawnCooldown = SpawnRate;
             } else {
@@ -329,9 +328,9 @@ namespace TowerDefense {
                 for (int y = Camera.CameraTileStart.Y; y <= Camera.CameraTileEnd.Y; y++) {
                     for (int x = Camera.CameraTileStart.X; x <= Camera.CameraTileEnd.X; x++) {
                         if (MapAt(x, y).Type == TileType.LIMITED) {
-                            DrawTile(x, y, Color.DarkOliveGreen);
-                        } else if (MapAt(x, y).Type == TileType.OPEN) {
                             DrawTile(x, y, Color.SandyBrown);
+                        } else if (MapAt(x, y).Type == TileType.OPEN) {
+                            DrawTile(x, y, Color.DarkOliveGreen);
                         }
                     }
                 }

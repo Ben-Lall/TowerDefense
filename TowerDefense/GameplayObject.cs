@@ -127,6 +127,11 @@ namespace TowerDefense
         public abstract void TakeDamage(int damage);
 
         /// <summary>
+        /// Determine if this creature is in player range.
+        /// </summary>
+        public virtual bool IsInPlayerRange { get => BoundingBox.Intersects(new Rectangle(Camera.SpawnLeftStart, new Point(Player.SpawnUpperBound * 2, Player.SpawnUpperBound * 2))); }
+
+        /// <summary>
         /// Draw the hitbox of this GameplayObject
         /// </summary>
         public virtual void DrawBoundingBox() {
@@ -143,7 +148,6 @@ namespace TowerDefense
         /// <returns>true if they intersect, false otherwise.</returns>
         public virtual bool Intersects(Rectangle r) {
             // Range is interpreted as a circle centered on this, with a radius of AttackRange
-
             // Find the closest corner of the rectangle, and see if it's within the range.
             int dx = CenterPoint.X - MathHelper.Clamp(CenterPoint.X, r.X, r.X + r.Width);
             int dy = CenterPoint.Y - MathHelper.Clamp(CenterPoint.Y, r.Y, r.Y + r.Height);

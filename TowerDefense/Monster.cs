@@ -48,7 +48,17 @@ namespace TowerDefense {
         /// <summary>
         /// Whether this monster has arrived at its target tile.
         /// </summary>
-        public Boolean HasArrived { get => HeatMap.HasArrived(CenterPoint, (float)AttackRange) || Intersects(ActivePlayer.BoundingBox); }
+        public bool HasArrived { get => HeatMap.HasArrived(CenterPoint, (float)AttackRange) || Intersects(ActivePlayer.BoundingBox); }
+
+        /// <summary>
+        /// Whether this monster is currently working at attacking a tower.
+        /// </summary>
+        public bool TargettingTower { get; set; }
+
+        /// <summary>
+        /// Whether this monster is to be simulated.  In order for it to be despawned, it must be out of player range and have no tower to attack.
+        /// </summary>
+        public bool IsSimulated { get => base.IsInPlayerRange || TargettingTower; }
 
         /// <summary>
         /// The distance this monster is from a tile it can attack from.
@@ -86,16 +96,11 @@ namespace TowerDefense {
         /// Draw this monster to its place on the screen.
         /// </summary>
         public override void Draw() {
-
             Sprite.Draw(CenterPoint + MeleeDisplacement, WorldSpriteBatch);
-            DrawBoundingBox();
-
             if (CurrentHealth < MaxHealth) {
                 Rectangle healthBarBox = new Rectangle(Pos + new Point(0, SpriteHeight + 2), new Point(SpriteWidth, 10));
                 Graphics.DrawHealthBar(1.0 * CurrentHealth / MaxHealth, healthBarBox);
             }
-            WorldSpriteBatch.Draw(Art.Pixel, new Rectangle(CenterPoint, new Point(1, 1)), Color.Blue);
-
         }
 
         /// <summary>
@@ -162,8 +167,9 @@ namespace TowerDefense {
         /// <param name="gameTime"></param>
         public void Move(GameTime gameTime) {
             Vector2 dirVector = HeatMap.GetDirVector(CenterPoint);
+            TargettingTower = !dirVector.Equals(Vector2.Zero);
             // If direction vector is zero, path towards nearest player.
-            if(dirVector.Equals(Vector2.Zero)) {
+            if(!TargettingTower) {
                 dirVector = Vector2.Normalize((ActivePlayer.CenterPoint - CenterPoint).ToVector2());
                 if (Double.IsNaN(dirVector.X))
                     dirVector = Vector2.Zero;

@@ -25,13 +25,13 @@ namespace TowerDefense {
         public Point CameraStart { get => new Point(Pos.X, Pos.Y); }
         public Point CameraTileStart { get => new Point(CameraStart.X / TileWidth, CameraStart.Y / TileHeight); }
         public Point CameraHeatStart { get => new Point(CameraStart.X / HeatMap.HeatTileWidth, CameraStart.Y / HeatMap.HeatTileHeight); }
-        public Point SpawnLeftStart {get => new Point(CameraStart.X - Player.SpawnUpperBound, CameraStart.Y - Player.SpawnUpperBound); }
-        public Point SpawnLeftEnd { get => new Point(CameraStart.X - Player.SpawnLowerBound, CameraStart.Y - Player.SpawnLowerBound); }
+        public Point SpawnLeftStart {get => new Point((int)pos.X - Player.SpawnUpperBound, (int)pos.Y - Player.SpawnUpperBound); }
+        public Point SpawnLeftEnd { get => new Point((int)pos.X - Player.SpawnLowerBound, (int)pos.Y - Player.SpawnLowerBound); }
         public Point CameraEnd { get => new Point(Math.Min(Pos.X + ScreenWidth, (MapWidth - 1) * TileWidth), Math.Min(Pos.Y + ScreenHeight, (MapHeight - 1) * TileHeight)); }
         public Point CameraTileEnd { get => new Point(CameraEnd.X / TileWidth, CameraEnd.Y / TileHeight); }
         public Point CameraHeatEnd { get => new Point(CameraEnd.X / HeatMap.HeatTileWidth, CameraEnd.Y / HeatMap.HeatTileHeight); }
-        public Point SpawnRightStart { get => new Point(CameraEnd.X + Player.SpawnLowerBound, CameraEnd.Y + Player.SpawnLowerBound); }
-        public Point SpawnRightEnd { get => new Point(CameraEnd.X + Player.SpawnUpperBound, CameraEnd.Y + Player.SpawnUpperBound); }
+        public Point SpawnRightStart { get => new Point((int)pos.X + Player.SpawnLowerBound, (int)pos.Y + Player.SpawnLowerBound); }
+        public Point SpawnRightEnd { get => new Point((int)pos.X + Player.SpawnUpperBound, (int)pos.Y + Player.SpawnUpperBound); }
 
 
 
@@ -67,6 +67,14 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Rotate the camera by the given amount of radians.
+        /// </summary>
+        /// <param name="rotation"></param>
+        public void Rotate(float rotation) {
+            Rotation = (Rotation + rotation) % (float)(2 * Math.PI);
+        }
+
+        /// <summary>
         /// Generate and return a new transformation for this camera.
         /// </summary>
         /// <returns>The 3x3 Matrix representing the this camera's transform.</returns>
@@ -81,7 +89,7 @@ namespace TowerDefense {
 
         public float Zoom {
             get { return zoom; }
-            set { zoom = MathHelper.Clamp(value, 1.0f, 2.0f); }
+            set { zoom = MathHelper.Clamp(value, 0.5f, 2.0f); }
         }
     }
 }
