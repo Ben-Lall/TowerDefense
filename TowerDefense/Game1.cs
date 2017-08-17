@@ -25,10 +25,11 @@ namespace TowerDefense {
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize() {
+            // Set tile size to be 32x32
+            TileWidth = 32;
+            TileHeight = 32;
             base.Initialize();
-
             InitializeGlobals(Window);
-
         }
 
         /// <summary>
@@ -36,13 +37,12 @@ namespace TowerDefense {
         /// all of your content.
         /// </summary>
         protected override void LoadContent() {
-            /// Initialize SpriteBatches
+            // Initialize SpriteBatches
             WorldSpriteBatch = new SpriteBatch(GraphicsDevice);
             UISpriteBatch = new SpriteBatch(GraphicsDevice);
             BoltSpriteBatch = new SpriteBatch(GraphicsDevice);
 
             Art.LoadContent(Content, GraphicsDevice);
-
         }
 
         /// <summary>
@@ -157,31 +157,36 @@ namespace TowerDefense {
 
             /* Draw world elements */
 
-            WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
-                    null, SamplerState.PointClamp, null, null, null, Camera.GetTransformation());
+            if (MapOverlayToggle) {
+                UISpriteBatch.Begin();
+                WorldMap.DrawAutoMap();
+                UISpriteBatch.End();
+            } else {
+                WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
+                        null, SamplerState.PointClamp, null, null, null, Camera.GetTransformation());
 
-            DrawMap();
-            double time = gameTime.ElapsedGameTime.TotalSeconds;
-            DrawGameplayObjects();
+                DrawMap();
+                double time = gameTime.ElapsedGameTime.TotalSeconds;
+                DrawGameplayObjects();
 
-            if (IsPlacingTower) {
-                DrawPendingTower();
+                if (IsPlacingTower) {
+                    DrawPendingTower();
+                }
+                WorldSpriteBatch.End();
+
+                /* Draw effect elements */
+                BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.Transform);
+                foreach (Bolt e in Effects) {
+                    e.Draw(BoltSpriteBatch);
+                }
+                BoltSpriteBatch.End();
+
+                /* Draw UI elements */
+                UISpriteBatch.Begin();
+                DrawUI();
+                DrawDebug();
+                UISpriteBatch.End();
             }
-            WorldSpriteBatch.End();
-
-            /* Draw effect elements */
-            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.Transform);
-            foreach (Bolt e in Effects) {
-                e.Draw(BoltSpriteBatch);
-            }
-            BoltSpriteBatch.End();
-
-            /* Draw UI elements */
-            UISpriteBatch.Begin();
-            DrawUI();
-            DrawDebug();
-            UISpriteBatch.End();
-
 
             base.Draw(gameTime);
         }
@@ -322,11 +327,7 @@ namespace TowerDefense {
         protected void DrawMap() {
             // Shade in the tiles within the camera's viewport based on tile draw mode.
             if (TileMode == Include.TileDrawMode.DEFAULT) {
-                for (int y = Camera.CameraTileStart.Y; y <= Camera.CameraTileEnd.Y; y++) {
-                    for (int x = Camera.CameraTileStart.X; x <= Camera.CameraTileEnd.X; x++) {
-                        WorldMap.At(x, y).Draw(Color.White);
-                    }
-                }
+                WorldMap.Draw();
             } else if (TileMode == Include.TileDrawMode.HEATMAP) {
                 HeatMap.Draw();
             } else if(TileMode == Include.TileDrawMode.HEATMAP_NUMBERS) {

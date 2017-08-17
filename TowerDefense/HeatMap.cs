@@ -56,12 +56,12 @@ namespace TowerDefense {
         /// Initialize the heat map with blank values.
         /// </summary>
         public static void Initialize() {
-            FieldPxWidth = FieldWidth * HeatTileWidth;
-            FieldPxHeight = FieldHeight * HeatTileHeight;
             HeatTileWidth = TileWidth / 2;
             HeatTileHeight = TileHeight / 2;
             FieldWidth = MapWidth * TileWidth / HeatTileWidth;
             FieldHeight = MapHeight * TileHeight / HeatTileHeight;
+            FieldPxWidth = FieldWidth * HeatTileWidth;
+            FieldPxHeight = FieldHeight * HeatTileHeight;
 
             Field = new float[FieldHeight, FieldWidth];
             ResetField();
@@ -267,10 +267,10 @@ namespace TowerDefense {
         /// <returns></returns>
         public static Vector2 GetDirVector(Point p) {
             // Get field vector
-            float left = HMapAt(p - new Point(HeatTileWidth, 0));
-            float right = HMapAt(p + new Point(HeatTileWidth, 0));
-            float up = HMapAt(p - new Point(0, HeatTileHeight));
-            float down = HMapAt(p + new Point(0, HeatTileHeight));
+            float left = HMapAt(new Point(Math.Max(0, p.X - HeatTileWidth), p.Y));
+            float right = HMapAt(new Point(Math.Min(FieldPxWidth, p.X + HeatTileWidth), p.Y));
+            float up = HMapAt(new Point(p.X, Math.Max(0, p.Y - HeatTileHeight)));
+            float down = HMapAt(new Point(p.X, Math.Min(FieldPxHeight, p.Y + HeatTileHeight)));
 
             Vector2 dir = Vector2.Normalize(new Vector2(left - right, up - down));
             if (Double.IsNaN(dir.X))

@@ -15,9 +15,21 @@ namespace TowerDefense {
     static class WorldMap {
         private static Tile[,] Map;
 
+        /** AutoMap **/
+        static Point AutoMapSize { get; set; }
+        static Point AutoMapTileSize { get; set; }
+        static Camera2d AutoMapCamera;
+
+        /// <summary>
+        /// Initialize the world map.
+        /// </summary>
         public static void Initialize() {
             Map = new Tile[MapWidth, MapHeight];
             GenerateMap();
+            // Automap settings
+            AutoMapTileSize = new Point(16, 16);
+            AutoMapSize = new Point(ScreenWidth / AutoMapTileSize.X, ScreenHeight / AutoMapTileSize.Y);
+            AutoMapCamera = new Camera2d(ActivePlayer.Pos.ToVector2(), ScreenWidth * TileWidth / AutoMapTileSize.X, ScreenHeight * TileHeight / AutoMapTileSize.Y);
         }
 
         /// <summary>
@@ -51,17 +63,58 @@ namespace TowerDefense {
                     int ID = 183;
                     double roll = r.NextDouble();
                     if (roll > 0.90) {
-                        ID = 182;
-                    } else if (roll > 0.75) {
                         ID = 181;
+                    } else if (roll > 0.75) {
+                        ID = 182;
                     }
-
                     Map[y, x] = new Tile(TileType.OPEN, x, y, ID);
-
                 }
             }
+            AddTower(new Tower(HubTemplate, new Point(MapWidth / 2, MapHeight / 2)));
+        }
 
-            AddTower(new Tower(HubTemplate, new Point(500, 500)));
+        /// <summary>
+        /// Draw the viewable portion of the map to the screen.
+        /// </summary>
+        public static void Draw() {
+            for (int y = Camera.CameraTileStart.Y; y <= Camera.CameraTileEnd.Y; y++) {
+                for (int x = Camera.CameraTileStart.X; x <= Camera.CameraTileEnd.X; x++) {
+                    At(x, y).Draw(Color.White);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Overlay the AutoMap to the screen.
+        /// </summary>
+        public static void DrawAutoMap() {
+            AutoMapCamera.MoveTo(ActivePlayer.Pos.ToVector2());
+            // Draw ground tiles to the auto map.
+            for (int y = 0; y <= AutoMapSize.Y; y++) {
+                for (int x = 0; x <= AutoMapSize.X; x++) {
+                    Tile repTile = At(AutoMapCamera.CameraTileStart.X + x, AutoMapCamera.CameraTileStart.Y + y);
+                    UISpriteBatch.Draw(Art.Pixel, new Rectangle(x * AutoMapTileSize.X, y * AutoMapTileSize.Y, AutoMapTileSize.X, AutoMapTileSize.Y), Art.PrevalentColors[repTile.SpriteId]);
+                }
+            }
+            // Draw gameplay objects
+            Rectangle AutoMapRegion = new Rectangle(AutoMapCamera.CameraStart, AutoMapCamera.CameraEnd);
+            foreach(Tower t in Towers) {
+                Point towerEnd = t.Pos + new Point(t.WidthTiles * TileWidth, t.HeightTiles * TileHeight);
+                Rectangle towerRegion = new Rectangle(t.Pos, towerEnd);
+                if(AutoMapRegion.Intersects(towerRegion)) {
+                    for(int y = t.TilePos.Y; y < t.TilePos.Y + t.HeightTiles; y+= 1) {
+                        for(int x = t.TilePos.X; x < t.TilePos.X + t.WidthTiles; x+= 1) {
+                            if(y >= AutoMapCamera.CameraTileStart.Y && x >= AutoMapCamera.CameraTileStart.X) {
+                                Point drawTile = new Point(x, y) - AutoMapCamera.CameraTileStart;
+                                UISpriteBatch.Draw(Art.Pixel, new Rectangle(drawTile.X * AutoMapTileSize.X, drawTile.Y * AutoMapTileSize.Y, AutoMapTileSize.X, AutoMapTileSize.Y), Color.Gray);
+                            }
+                        }
+                    }
+                }
+            }
+            // Draw players last, with the active player absolutely last.
+            Point drawPos = ActivePlayer.CenterTile - AutoMapCamera.CameraTileStart;
+            UISpriteBatch.Draw(Art.Pixel, new Rectangle(drawPos.X * AutoMapTileSize.X, drawPos.Y * AutoMapTileSize.Y, AutoMapTileSize.X, AutoMapTileSize.Y), Color.Blue);
         }
 
         /// <summary>
@@ -98,6 +151,7 @@ namespace TowerDefense {
                     }
                     x = r.Next(Camera.CameraStart.X, Camera.CameraEnd.X);
                 }
+                Debug.Assert(y > 0 && x > 0);
                 if (At(x / TileWidth, y / TileHeight).IsEmpty()) {
                     AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, new Point(x, y)));
                 }

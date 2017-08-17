@@ -35,6 +35,11 @@ namespace TowerDefense {
         private static bool TileModePressed { get; set; }
 
         /// <summary>
+        /// Toggle boolean for the map toggle.
+        /// </summary>
+        private static bool MapButtonPressed { get; set; }
+
+        /// <summary>
         /// Toggle boolean for the delete button.
         /// </summary>
         private static bool DeletePressed { get; set; }
@@ -109,6 +114,14 @@ namespace TowerDefense {
             }
             if (Keyboard.GetState().IsKeyUp(Keys.H) && TileModePressed) {
                 TileModePressed = false;
+            }
+
+            // Map overlay toggle
+            if (Keyboard.GetState().IsKeyDown(Keys.M) && !MapButtonPressed) {
+                MapOverlayToggle = !MapOverlayToggle;
+                MapButtonPressed = true;
+            } else if (Keyboard.GetState().IsKeyUp(Keys.M) && MapButtonPressed) {
+                MapButtonPressed = false;
             }
 
             // Delete button

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 /// <summary>
 /// Enum containing the different types of monster.
@@ -108,6 +109,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime) {
+            Debug.Assert(CenterPoint.X >= 0 && CenterPoint.Y >= 0 && CenterPoint.X < MapWidth * TileWidth && CenterPoint.Y < MapHeight * TileHeight, "Violation of: Monster is dimensions of the map");
             if (Cooldown > 0) { // Handle cooldown before this monster can take any other actions.
                 Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
                 if (CombatType == CombatType.MELEE) { // Give displacement for drawing "bash" attack animation

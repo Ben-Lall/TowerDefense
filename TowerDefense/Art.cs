@@ -24,6 +24,10 @@ namespace TowerDefense {
 
         /* World Textures */
         public static Texture2D TileSet;
+        /// <summary>
+        /// An array where each index refers to the most prevalent color of the texture of that ID in the TileSet.
+        /// </summary>
+        public static Color[] PrevalentColors;
 
         /** GameplayObject Textures **/
 
@@ -52,6 +56,7 @@ namespace TowerDefense {
 
             /* World Textures */
             TileSet = content.Load<Texture2D>("tiles/terrain_atlas");
+            LoadPrevalentColors();
 
             /* Player Textures */
             Player = LoadCreatureSprite(content, "player");
@@ -70,6 +75,46 @@ namespace TowerDefense {
             Pixel.SetData<Color>(new Color[] { Color.White });
         }
 
+        /// <summary>
+        /// Load the most prevalent colors of each tile from the tileset to an array of colors.
+        /// </summary>
+        private static void LoadPrevalentColors() {
+            int ID = 0;
+            PrevalentColors = new Color[(TileSet.Width / TileWidth) * (TileSet.Height / TileHeight)];
+            for(int i = 0; i < TileSet.Height; i+= TileHeight) {
+                for (int j = 0; j < TileSet.Width; j+= TileWidth) {
+                    // Get texture's color data
+                    Color[] buffer = new Color[TileWidth * TileHeight];
+                    TileSet.GetData(0, new Rectangle(j, i, TileWidth, TileHeight), buffer, 0, TileWidth * TileHeight);
+                    // Get totals of each non-transparent color's occurence.
+                    Dictionary<Color, int> occurrences = new Dictionary<Color, int>();
+                    foreach (Color c in buffer) {
+                        if(!c.Equals(Color.Transparent)) {
+                            if(occurrences.ContainsKey(c)) {
+                                occurrences[c]++;
+                            } else {
+                                occurrences[c] = 1;
+                            }
+                        }
+                    }
+
+                    // Get the color that has the highest key (frequency).
+                    if (occurrences.Count > 0) {
+                        PrevalentColors[ID] = occurrences.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+                    } else {
+                        PrevalentColors[ID] = Color.Black;
+                    }
+                    ID++;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Loads the spritesheet for a creature sprite from the given directory.
+        /// </summary>
+        /// <param name="folderName">The name of the immediately containing folder.</param>
+        /// <returns></returns>
         private static TowerSprite LoadTowerSprite(ContentManager content, String folderName) {
             String folderDirectory = "towers/" + folderName;
             DirectoryInfo dir = new DirectoryInfo(content.RootDirectory + "/" + folderDirectory);

@@ -13,21 +13,24 @@ namespace TowerDefense {
         public float zoom; // Camera Zoom
         public Matrix Transform; // Matrix Transform
         public Vector2 pos; // Camera Position
+
+        public int Width { get; set; }
+        public int Height { get; set; }
         /// <summary>
         /// Pixel Position of the top-left corner of the camera.
         /// </summary>
         public Point Pos {
-            get { return new Point(MathHelper.Clamp((int)pos.X - ScreenWidth / 2, 0, MapWidth * TileWidth - ScreenWidth), MathHelper.Clamp((int)pos.Y - ScreenHeight / 2, 0, MapHeight * TileHeight - ScreenHeight)); }
+            get { return new Point(MathHelper.Clamp((int)pos.X - Width / 2, 0, MapWidth * TileWidth - Width), MathHelper.Clamp((int)pos.Y - Height / 2, 0, MapHeight * TileHeight - Height)); }
         }
         protected float Rotation { get; set; } // Camera Rotation
-        public int ViewPortHeight { get => TileHeight * ScreenHeight; }
-        public int ViewPortWidth { get => TileWidth * ScreenWidth; }
+        public int ViewPortHeight { get => TileHeight * Height; }
+        public int ViewPortWidth { get => TileWidth * Width; }
         public Point CameraStart { get => new Point(Pos.X, Pos.Y); }
         public Point CameraTileStart { get => new Point(CameraStart.X / TileWidth, CameraStart.Y / TileHeight); }
         public Point CameraHeatStart { get => new Point(CameraStart.X / HeatMap.HeatTileWidth, CameraStart.Y / HeatMap.HeatTileHeight); }
         public Point SpawnLeftStart {get => new Point((int)pos.X - Player.SpawnUpperBound, (int)pos.Y - Player.SpawnUpperBound); }
         public Point SpawnLeftEnd { get => new Point((int)pos.X - Player.SpawnLowerBound, (int)pos.Y - Player.SpawnLowerBound); }
-        public Point CameraEnd { get => new Point(Math.Min(Pos.X + ScreenWidth, (MapWidth - 1) * TileWidth), Math.Min(Pos.Y + ScreenHeight, (MapHeight - 1) * TileHeight)); }
+        public Point CameraEnd { get => new Point(Math.Min(Pos.X + Width, (MapWidth - 1) * TileWidth), Math.Min(Pos.Y + Height, (MapHeight - 1) * TileHeight)); }
         public Point CameraTileEnd { get => new Point(CameraEnd.X / TileWidth, CameraEnd.Y / TileHeight); }
         public Point CameraHeatEnd { get => new Point(CameraEnd.X / HeatMap.HeatTileWidth, CameraEnd.Y / HeatMap.HeatTileHeight); }
         public Point SpawnRightStart { get => new Point((int)pos.X + Player.SpawnLowerBound, (int)pos.Y + Player.SpawnLowerBound); }
@@ -39,9 +42,11 @@ namespace TowerDefense {
         /// Create a new camera centered at the given position.
         /// </summary>
         /// <param name="pos">Centerpoint of this camera</param>
-        public Camera2d(Vector2 pos) {
+        public Camera2d(Vector2 pos, int width, int height) {
             zoom = 1.0f;
             Rotation = 0.0f;
+            Width = width;
+            Height = height;
             this.pos = pos;
             Move(new Vector2(0, 0)); // Align the camera to the acceptable boundaries.
         }
@@ -51,10 +56,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="amount">Direction and magnitude of camera position change.</param>
         public void Move(Vector2 amount) {
-            pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (ScreenWidth * 0.5f) / Zoom, (MapWidth * TileWidth) - (ScreenWidth * 0.5f / Zoom));
-            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (ScreenHeight * 0.5f) / Zoom, (MapHeight * TileHeight) - (ScreenHeight * 0.5f / Zoom));
-            pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (ScreenWidth * 0.5f) / Zoom, (MapWidth * TileWidth) - (ScreenWidth * 0.5f / Zoom));
-            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (ScreenHeight * 0.5f) / Zoom, (MapHeight * TileHeight) - (ScreenHeight * 0.5f / Zoom));
+            pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (Width * 0.5f) / Zoom, (MapWidth * TileWidth) - (Width * 0.5f / Zoom));
+            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (Height * 0.5f) / Zoom, (MapHeight * TileHeight) - (Height * 0.5f / Zoom));
+            pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (Width * 0.5f) / Zoom, (MapWidth * TileWidth) - (Width * 0.5f / Zoom));
+            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (Height * 0.5f) / Zoom, (MapHeight * TileHeight) - (Height * 0.5f / Zoom));
         }
 
         /// <summary>
@@ -83,7 +88,7 @@ namespace TowerDefense {
             Matrix.CreateTranslation(new Vector3(-pos.X, -pos.Y, 0)) *
                                         Matrix.CreateRotationZ(Rotation) *
                                         Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
-                                        Matrix.CreateTranslation(new Vector3(ScreenWidth * 0.5f, ScreenHeight * 0.5f, 0));
+                                        Matrix.CreateTranslation(new Vector3(Width * 0.5f, Height * 0.5f, 0));
             return Transform;
         }
 

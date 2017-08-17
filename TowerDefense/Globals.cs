@@ -148,6 +148,11 @@ namespace Include {
         public static bool Paused { get; set; }
 
         /// <summary>
+        /// Boolean representing the presence of the map overlay.
+        /// </summary>
+        public static bool MapOverlayToggle { get; set; }
+
+        /// <summary>
         /// List of templates of towers unlocked by the player
         /// </summary>
         public static List <TowerTemplate> UlTowers { get; set; }
@@ -223,13 +228,9 @@ namespace Include {
             MenuPanelWidth = ScreenWidth / 8;
             MenuPanelHeight = ScreenHeight;
 
-            // Set the tile dimensions to 16px.  16 is a common factor of 720 and 1120: 1120 = 1280 * (7/8).
-            TileWidth = 32;
-            TileHeight = 32;
-
             // Set the map dimensions
-            MapWidth = 1000;
-            MapHeight = 1000;
+            MapWidth = 2000;
+            MapHeight = 2000;
 
             //Initialize collections
             Towers = new List<Tower>();
@@ -244,6 +245,11 @@ namespace Include {
             // Initialize Input
             Input.PreviousMouseWheel = MouseState.ScrollWheelValue;
 
+            // Initialize ActivePlayer
+            ActivePlayer = new Player(new Point(((MapWidth / 2) - 1) * TileWidth, ((MapHeight / 2) - 1) * TileHeight));
+            Camera = new Camera2d(ActivePlayer.Pos.ToVector2(), ScreenWidth, ScreenHeight);
+            DrawSet.Add(ActivePlayer);
+
             // Initialize gameplay stuff.
             SpawnRate = 6.0;
             SpawnCooldown = 0;
@@ -251,12 +257,6 @@ namespace Include {
             WorldMap.Initialize();
             TileMode = TileDrawMode.DEFAULT;
             Paused = true;
-
-            // Initialize ActivePlayer
-            ActivePlayer = new Player(new Point(495 * TileWidth, 495 * TileHeight));
-            Camera = new Camera2d(ActivePlayer.Pos.ToVector2());
-            DrawSet.Add(ActivePlayer);
-            
         }
 
         /** General Helper Methods **/
