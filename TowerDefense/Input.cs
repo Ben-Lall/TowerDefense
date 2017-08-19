@@ -77,11 +77,11 @@ namespace TowerDefense {
             // Back/cancel
             if (!BackPressed && Keyboard.GetState().IsKeyDown(Keys.Escape)) {
                 BackPressed = true;
-                if (IsPlacingTower) {// Stop tower placement
+                if (MapOverlayToggle) {
+                    WorldMap.ToggleMapUI();
+                } else if (IsPlacingTower) {// Stop tower placement
                     IsPlacingTower = false;
                     PendingTowerTemplate = null;
-                } else if (MapOverlayToggle) {
-                    MapOverlayToggle = false;
                 } else if (!IsPlacingTower) {
                     ClearTowerIllumination();
                 }
@@ -118,7 +118,6 @@ namespace TowerDefense {
 
             // Map overlay toggle
             if (Keyboard.GetState().IsKeyDown(Keys.M) && !MapButtonPressed) {
-                MapOverlayToggle = !MapOverlayToggle;
                 WorldMap.ToggleMapUI();
                 MapButtonPressed = true;
             } else if (Keyboard.GetState().IsKeyUp(Keys.M) && MapButtonPressed) {
@@ -181,7 +180,7 @@ namespace TowerDefense {
                         ((Tower)selectedItem).Selected = true;
                     }
                 }
-            } else if (IsPlacingTower && CursorIsOnMap() && ValidTowerLocation()) {
+            } else if (IsPlacingTower && CursorIsOnMap() && ValidTowerLocation() && !MapOverlayToggle) {
                 PlacePendingTower();
             } else { // Actions that would deselect the selected towers on mouse click
                 ClearTowerIllumination();
@@ -194,19 +193,15 @@ namespace TowerDefense {
         /// <param name="mouseState">The mouse's current state.</param>
         /// <returns>The object that the mouse is hovering over, or null if it isn't mousing over any object.</returns>
         private static object GetClickedObject(MouseState mouseState) {
-            // Run quick check to see if mouse is within the boundaries of possible tower button placement.
             List<Button> buttons = Include.Globals.Buttons;
-            if (buttons.Count > 0 && mouseState.X >= buttons[0].X && mouseState.X <= buttons[0].X + buttons[0].Width) {
-                // Then find a button with a matching Y coordinate (if any).
-                foreach (Button b in buttons) {
-                    if (mouseState.Y >= b.Y && mouseState.Y <= b.Y + b.Height) {
-                        return b;
-                    }
+            foreach (Button b in buttons) {
+                if (mouseState.Y >= b.Y && mouseState.Y <= b.Y + b.Height) {
+                    return b;
                 }
             }
 
             // Next, check if a tower was selected
-            else if (CursorIsOnMap()) {
+            if (!MapOverlayToggle && CursorIsOnMap()) {
                 Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
                 foreach (Tower t in Towers) {
                     if (t.ContainsTile(clickedTile)) {

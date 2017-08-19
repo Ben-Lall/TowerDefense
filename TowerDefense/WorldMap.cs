@@ -142,6 +142,7 @@ namespace TowerDefense {
         public static void ToggleMapUI() {
             // Either let the list of currently interactable buttons be equal to this map's buttons, or clear the list of buttons
             // and allow the new UI to repopulate it.
+            MapOverlayToggle = !MapOverlayToggle;
             Buttons.Clear();
             if (MapOverlayToggle) {
                 Buttons.AddRange(AutoMapButtons);
