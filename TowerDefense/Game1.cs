@@ -142,7 +142,7 @@ namespace TowerDefense {
             for (int i = 0; i < UlTowers.Count; i++) {
                 Rectangle buttonBox = new Rectangle(ScreenWidth - MenuPanelWidth + (MenuPanelWidth / 4), (i * MenuPanelHeight / 12) + (5 * i) + 5,
                                                     MenuPanelWidth / 2, MenuPanelHeight / 12);
-                Include.Globals.Buttons.Add(new Button(buttonBox, Art.TowerButton, Art.Tower, null));
+                Include.Globals.Buttons.Add(new Button(buttonBox, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
             }
         }
 

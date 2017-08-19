@@ -58,8 +58,6 @@ namespace TowerDefense {
         public void Move(Vector2 amount) {
             pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (Width * 0.5f) / Zoom, (MapWidth * TileWidth) - (Width * 0.5f / Zoom));
             pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (Height * 0.5f) / Zoom, (MapHeight * TileHeight) - (Height * 0.5f / Zoom));
-            pos.X = (int)MathHelper.Clamp(pos.X + amount.X, (Width * 0.5f) / Zoom, (MapWidth * TileWidth) - (Width * 0.5f / Zoom));
-            pos.Y = (int)MathHelper.Clamp(pos.Y + amount.Y, (Height * 0.5f) / Zoom, (MapHeight * TileHeight) - (Height * 0.5f / Zoom));
         }
 
         /// <summary>

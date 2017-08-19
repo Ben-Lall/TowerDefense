@@ -58,9 +58,8 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime) {
-            Sprite.Update(gameTime);
-            Move(gameTime);
             ((CreatureSprite)Sprite).Update(gameTime, Direction);
+            Move(gameTime);
         }
 
         /// <summary>
@@ -70,6 +69,7 @@ namespace TowerDefense {
         public void Move(GameTime gameTime) {
             Pos += (new Vector2(Direction.X * TileWidth, Direction.Y * TileHeight) * (float)Speed * (float)gameTime.ElapsedGameTime.TotalSeconds).ToPoint();
             Camera.MoveTo(CenterPoint.ToVector2());
+            Direction = Vector2.Zero;
         }
 
         public override void Attack() {

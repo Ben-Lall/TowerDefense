@@ -21,6 +21,7 @@ namespace TowerDefense {
         /* UI Textures */
         public static Texture2D MenuPanel;
         public static Texture2D TowerButton;
+        public static Texture2D RecenterButton;
 
         /* World Textures */
         public static Texture2D TileSet;
@@ -53,6 +54,7 @@ namespace TowerDefense {
             /* UI Textures */
             MenuPanel = content.Load<Texture2D>("menu_panel");
             TowerButton = content.Load<Texture2D>("menu_panel");
+            RecenterButton = content.Load<Texture2D>("recenter");
 
             /* World Textures */
             TileSet = content.Load<Texture2D>("tiles/terrain_atlas");

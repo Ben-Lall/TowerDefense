@@ -80,10 +80,10 @@ namespace TowerDefense {
                 if (IsPlacingTower) {// Stop tower placement
                     IsPlacingTower = false;
                     PendingTowerTemplate = null;
+                } else if (MapOverlayToggle) {
+                    MapOverlayToggle = false;
                 } else if (!IsPlacingTower) {
                     ClearTowerIllumination();
-                } else if (!PausePressed) {
-                    //TODO: Open menu
                 }
             } else if (Keyboard.GetState().IsKeyUp(Keys.Escape)) {
                 BackPressed = false;
@@ -107,7 +107,7 @@ namespace TowerDefense {
                 GridPressed = false;
             }
 
-            // Map draw mode
+            // Tile draw mode
             if (Keyboard.GetState().IsKeyDown(Keys.H) && !TileModePressed) {
                 TileModePressed = true;
                 TileMode = (Include.TileDrawMode)(((int)(TileMode) + 1) % (int)(Include.TileDrawMode.TOTAL_DRAW_MODES));
@@ -119,6 +119,7 @@ namespace TowerDefense {
             // Map overlay toggle
             if (Keyboard.GetState().IsKeyDown(Keys.M) && !MapButtonPressed) {
                 MapOverlayToggle = !MapOverlayToggle;
+                WorldMap.ToggleMapUI();
                 MapButtonPressed = true;
             } else if (Keyboard.GetState().IsKeyUp(Keys.M) && MapButtonPressed) {
                 MapButtonPressed = false;
@@ -151,10 +152,16 @@ namespace TowerDefense {
             if (Keyboard.GetState().IsKeyDown(Keys.D)) {
                 movement.X++;
             }
-            movement.Normalize();
-            if (Double.IsNaN(movement.X))
-                movement = Vector2.Zero;
-            ActivePlayer.Direction = movement;
+            // Normalize vector
+            if (movement.X != 0 && movement.Y != 0) {
+                movement.Normalize();
+            }
+            // Move either the map camera or the active player.
+            if (MapOverlayToggle) {
+                WorldMap.PanCamera(movement);
+            } else {
+                ActivePlayer.Direction = movement;
+            }
         }
 
         /// <summary>
@@ -162,10 +169,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="mouseState">The mouse's current state.</param>
         private static void HandleLeftMouseClick(MouseState mouseState) {
-            object selectedItem = GetClickedObject(mouseState);
+             object selectedItem = GetClickedObject(mouseState);
             if (selectedItem != null) {
                 if (selectedItem.GetType() == typeof(Button)) { // if a button was pressed
-                    BeginTowerPlacement(UlTowers[Include.Globals.Buttons.IndexOf((Button)selectedItem)]);
+                    ((Button)selectedItem).OnClick();
                 } else if (selectedItem.GetType() == typeof(Tower)) { // if a tower was clicked
                     if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) { // and shift was held
                         ((Tower)selectedItem).Selected = !((Tower)selectedItem).Selected;

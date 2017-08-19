@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.Globals;
+
 
 enum ButtonType {TOWER};
 
@@ -37,13 +39,13 @@ namespace TowerDefense {
         /// <summary>
         /// The action the button should perform upon being pressed.
         /// </summary>
-        public Action PressAction { get; set; }
+        public Action OnClick;
 
         private void createNewRep(Rectangle shape, Texture2D background, AnimatedSprite contents, Action action) {
             HitBox = shape;
             Background = background;
             Contents = contents;
-            PressAction = action;
+            OnClick = action;
         }
 
         /// <summary>
