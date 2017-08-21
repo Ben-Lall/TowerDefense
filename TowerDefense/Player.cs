@@ -31,6 +31,11 @@ namespace TowerDefense {
         public static int SpawnUpperBound { get => 720; }
 
         /// <summary>
+        /// List of UI elements that need to be rendered for this player.  Sorted in descending order of depth.
+        /// </summary>
+        public List<UIPanel> UIElements;
+
+        /// <summary>
         /// Create a new player at the position.
         /// </summary>
         /// <param name="pos"></param>
@@ -40,6 +45,13 @@ namespace TowerDefense {
             MaxHealth = 100;
             CurrentHealth = MaxHealth;
             Speed = 8;
+
+            // Personal UI elements
+            UIElements = new List<UIPanel>();
+            Rectangle buttonBox = new Rectangle(ScreenWidth - MenuPanelWidth + (MenuPanelWidth / 4), 5, MenuPanelWidth / 2, MenuPanelHeight / 12);
+            UIPanel towerPanel = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth - MenuPanelWidth, 0, MenuPanelWidth, MenuPanelHeight), null, UIType.TOWERPANEL);
+            towerPanel.AddButton(new Button(buttonBox, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
+            UIElements.Add(towerPanel);
         }
 
         /// <summary>

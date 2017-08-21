@@ -185,6 +185,11 @@ namespace Include {
         public static List<Button> Buttons { get; set; }
 
         /// <summary>
+        /// A list of UI Panels, sorted in descending order of depth.  Alias to the ActivePlayer's UI.
+        /// </summary>
+        public static List<UIPanel> UIPanels { get; set; }
+
+        /// <summary>
         /// Boolean representing whether or not the player has selected a tower and is working on placing it.
         /// </summary>
         public static bool IsPlacingTower { get; set; }
@@ -247,6 +252,7 @@ namespace Include {
 
             // Initialize ActivePlayer
             ActivePlayer = new Player(new Point(((MapWidth / 2) - 1) * TileWidth, ((MapHeight / 2) - 1) * TileHeight));
+            UIPanels = ActivePlayer.UIElements;
             Camera = new Camera2d(ActivePlayer.Pos.ToVector2(), ScreenWidth, ScreenHeight);
             DrawSet.Add(ActivePlayer);
 

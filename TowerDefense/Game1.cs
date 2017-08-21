@@ -62,13 +62,8 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
             Include.Globals.MouseState = Mouse.GetState();
-            DrawSet.Sort(DrawComparer);
+            SortCollections();
             if (!Paused) {
-                // If a tower has been added/removed from the list, refresh the buttons list
-                if (Include.Globals.Buttons.Count != UlTowers.Count) {
-                    RefreshButtonsList();
-                }
-
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
                 UpdateEffects(gameTime);
@@ -80,6 +75,14 @@ namespace TowerDefense {
             }
 
             base.Update(gameTime);
+        }
+
+        /// <summary>
+        /// Sort all collections as needed.
+        /// </summary>
+        private void SortCollections() {
+            DrawSet.Sort(DrawComparer);
+            UIPanels.Sort((x, y) => x.Depth.CompareTo(y.Depth));
         }
 
         /// <summary>
@@ -133,19 +136,6 @@ namespace TowerDefense {
             }
         }
 
-        /// <summary>
-        /// Refresh the list of buttons to reflect the list of currently unlocked towers.
-        /// </summary>
-        private void RefreshButtonsList() {
-            Include.Globals.Buttons.Clear();
-            // Add a button for each tower in the list
-            for (int i = 0; i < UlTowers.Count; i++) {
-                Rectangle buttonBox = new Rectangle(ScreenWidth - MenuPanelWidth + (MenuPanelWidth / 4), (i * MenuPanelHeight / 12) + (5 * i) + 5,
-                                                    MenuPanelWidth / 2, MenuPanelHeight / 12);
-                Include.Globals.Buttons.Add(new Button(buttonBox, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
-            }
-        }
-
         /* Graphics functions */
 
         /// <summary>
@@ -195,8 +185,10 @@ namespace TowerDefense {
         /// Draw the UI to the screen.
         /// </summary>
         private void DrawUI() {
-            if (!IsPlacingTower) {
-                DrawMenuPanel();
+            foreach(UIPanel u in UIPanels) {
+                if(!IsPlacingTower && u.Type == UIType.TOWERPANEL) {
+                    u.Draw(UISpriteBatch);
+                }
             }
             DrawUIText();
         }
@@ -279,31 +271,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="o"></param>
         /// <returns></returns>
-        protected bool IsOnScreen(object o) {
-            Point a = new Point();
-            Point b = new Point();
-            if (o.GetType() == typeof(Tower)) {
-                a = ((Tower)o).Pos;
-                b = new Point(((Tower)o).SpriteWidth, ((Tower)o).SpriteHeight);
-            } else if (o.GetType() == typeof(Monster)) {
-                a = ((Monster)o).Pos;
-                b = new Point(((Monster)o).SpriteWidth, ((Monster)o).SpriteHeight);
-            }
+        public bool IsOnScreen(GameplayObject g) {
+            Point a = g.Pos;
+            Point b = new Point(g.SpriteWidth, g.SpriteHeight);
             return new Rectangle(Camera.Pos, new Point(ScreenWidth, ScreenHeight)).Intersects(new Rectangle(a, b));
-        }
-
-        /// <summary>
-        /// Draw the menu panel to the correct position on the screen.
-        /// </summary>
-        protected void DrawMenuPanel() {
-            int menuPanelX = ScreenWidth - MenuPanelWidth;
-            UISpriteBatch.Draw(Art.MenuPanel, new Rectangle(menuPanelX, 0, MenuPanelWidth, MenuPanelHeight), Color.White);
-
-            /* Draw buttons for the panel. */
-            foreach (Button b in Include.Globals.Buttons) {
-                b.Draw(UISpriteBatch);
-            }
-
         }
 
         /// <summary>

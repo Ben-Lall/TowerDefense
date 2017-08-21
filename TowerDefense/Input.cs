@@ -168,10 +168,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="mouseState">The mouse's current state.</param>
         private static void HandleLeftMouseClick(MouseState mouseState) {
-             object selectedItem = GetClickedObject(mouseState);
+            object selectedItem = GetClickedObject(mouseState);
             if (selectedItem != null) {
-                if (selectedItem.GetType() == typeof(Button)) { // if a button was pressed
-                    ((Button)selectedItem).OnClick();
+                if (selectedItem.GetType() == typeof(UIPanel)) { // if a UIPanel was pressed
+                    ((UIPanel)selectedItem).Click(mouseState.Position);
                 } else if (selectedItem.GetType() == typeof(Tower)) { // if a tower was clicked
                     if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) { // and shift was held
                         ((Tower)selectedItem).Selected = !((Tower)selectedItem).Selected;
@@ -193,10 +193,10 @@ namespace TowerDefense {
         /// <param name="mouseState">The mouse's current state.</param>
         /// <returns>The object that the mouse is hovering over, or null if it isn't mousing over any object.</returns>
         private static object GetClickedObject(MouseState mouseState) {
-            List<Button> buttons = Include.Globals.Buttons;
-            foreach (Button b in buttons) {
-                if (mouseState.Y >= b.Y && mouseState.Y <= b.Y + b.Height) {
-                    return b;
+            // Check if a UI element was clicked. 
+            foreach (UIPanel u in UIPanels) {
+                if (u.IsClicked(mouseState.Position)) {
+                    return u;
                 }
             }
 

@@ -41,6 +41,13 @@ namespace TowerDefense {
         /// </summary>
         public Action OnClick;
 
+        /// <summary>
+        /// Create a new button.
+        /// </summary>
+        /// <param name="shape"></param>
+        /// <param name="background"></param>
+        /// <param name="contents"></param>
+        /// <param name="action"></param>
         private void createNewRep(Rectangle shape, Texture2D background, AnimatedSprite contents, Action action) {
             HitBox = shape;
             Background = background;
@@ -71,6 +78,10 @@ namespace TowerDefense {
             createNewRep(shape, background, contents, action);
         }
 
+        /// <summary>
+        /// Draw this button using the given SpriteBatch.
+        /// </summary>
+        /// <param name="spriteBatch"></param>
         public void Draw(SpriteBatch spriteBatch) {
             // Draw the background of the button
             spriteBatch.Draw(Background, HitBox, Color.White);
@@ -79,11 +90,20 @@ namespace TowerDefense {
             if (Contents != null) {
                 int contentsWidth = HitBox.Width / 3;
                 int contentsHeight = (HitBox.Height * 2) / 3;
-                int towerY = HitBox.Y + HitBox.Height  / 2;
-                int towerX = HitBox.X + HitBox.Width  / 2;
+                int towerY = HitBox.Y + HitBox.Height / 2;
+                int towerX = HitBox.X + HitBox.Width / 2;
 
                 Contents.Draw(towerX, towerY, spriteBatch, contentsWidth, contentsHeight);
             }
+        }
+
+        /// <summary>
+        /// Check if the given point is contained within the bounds of this button.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public bool Contains(Point p) {
+            return HitBox.Contains(p);
         }
     }
 }

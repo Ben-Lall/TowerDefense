@@ -12,7 +12,7 @@ namespace TowerDefense
     /// <summary>
     /// Base abstract class for monsters and towers.
     /// </summary>
-    abstract class GameplayObject {
+    public abstract class GameplayObject {
         /// <summary>
         /// Pixel coordinates of this GameplayObject.
         /// </summary>

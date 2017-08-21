@@ -10,7 +10,7 @@ namespace TowerDefense {
     /// <summary>
     /// Class that draws animated sprites.
     /// </summary>
-    abstract class AnimatedSprite {
+    public abstract class AnimatedSprite {
 
         /// <summary>
         /// The spritesheet for this sprite.  Each row of the array corresponds to a different animation for this sprite.
