@@ -36,6 +36,16 @@ namespace TowerDefense {
         public List<UIPanel> UIElements;
 
         /// <summary>
+        /// This player's AutoMap.
+        /// </summary>
+        private AutoMap aMap;
+
+        /// <summary>
+        /// Whether or not this player's map has been toggled.
+        /// </summary>
+        public bool MapOverlayToggled { get => aMap.Visible; }
+
+        /// <summary>
         /// Create a new player at the position.
         /// </summary>
         /// <param name="pos"></param>
@@ -48,10 +58,14 @@ namespace TowerDefense {
 
             // Personal UI elements
             UIElements = new List<UIPanel>();
+            // The towerPanel
             Rectangle buttonBox = new Rectangle(ScreenWidth - MenuPanelWidth + (MenuPanelWidth / 4), 5, MenuPanelWidth / 2, MenuPanelHeight / 12);
             UIPanel towerPanel = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth - MenuPanelWidth, 0, MenuPanelWidth, MenuPanelHeight), null, UIType.TOWERPANEL);
             towerPanel.AddButton(new Button(buttonBox, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
             UIElements.Add(towerPanel);
+            // The AutoMap
+            aMap = new AutoMap(Pos.ToVector2());
+            UIElements.Add(aMap);
         }
 
         /// <summary>
@@ -66,12 +80,71 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Draw this player's UI to the screen.
+        /// </summary>
+        public void DrawUI() {
+            if(MapOverlayToggled) {
+                aMap.Draw(UISpriteBatch);
+            } else {
+                foreach(UIPanel u in UIElements) {
+                    if(u.Visible) {
+                        u.Draw(UISpriteBatch);
+                    }
+                }
+            }
+            DrawUIText();
+        }
+
+        /// <summary>
+        /// Draw the UI text to the screen.
+        /// </summary>
+        private void DrawUIText() {
+            String PauseText = "Paused!";
+            Vector2 PauseTextSize = Art.Font.MeasureString(PauseText);
+            Vector2 PausePosition = new Vector2(ScreenWidth - 5, ScreenHeight - 45) - PauseTextSize;
+            if (Paused) {
+                UISpriteBatch.DrawString(Art.Font, PauseText, PausePosition, Color.Black);
+            }
+
+            String monsterText = "Monsters: " + Monsters.Count;
+            Vector2 monsterTextSize = Art.Font.MeasureString(monsterText);
+            Vector2 monsterTextPosition = new Vector2(ScreenWidth - 5, PausePosition.Y) - monsterTextSize;
+            UISpriteBatch.DrawString(Art.Font, monsterText, monsterTextPosition, Color.Black);
+        }
+
+        /// <summary>
         /// Update this player
         /// </summary>
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime) {
-            ((CreatureSprite)Sprite).Update(gameTime, Direction);
-            Move(gameTime);
+            UpdateUI();
+            SortCollections();
+            // Using the input direction, move the map or the player depending on what's active.
+            if (MapOverlayToggled) {
+                aMap.PanCamera(Direction);
+                ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
+            } else {
+                ((CreatureSprite)Sprite).Update(gameTime, Direction);
+                Move(gameTime);
+            }
+        }
+
+        /// <summary>
+        /// Update the UI to reflect the player settings.
+        /// </summary>
+        private void UpdateUI() {
+            foreach(UIPanel u in UIElements) {
+                if(u.Type == UIType.TOWERPANEL) {
+                    u.Visible = !MapOverlayToggled && !IsPlacingTower;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sort all the collections contained within this player as needed.
+        /// </summary>
+        private void SortCollections() {
+            UIPanels.Sort((x, y) => x.Depth.CompareTo(y.Depth));
         }
 
         /// <summary>
@@ -88,8 +161,19 @@ namespace TowerDefense {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Take damage.
+        /// </summary>
+        /// <param name="damage"></param>
         public override void TakeDamage(int damage) {
             CurrentHealth = Math.Max(0, CurrentHealth - damage);
+        }
+
+        /// <summary>
+        /// Toggle this player's AutoMap visibility.
+        /// </summary>
+        public void ToggleMapUI() {
+            aMap.Visible = !aMap.Visible;
         }
     }
 }

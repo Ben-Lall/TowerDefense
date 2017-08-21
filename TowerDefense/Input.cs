@@ -77,8 +77,8 @@ namespace TowerDefense {
             // Back/cancel
             if (!BackPressed && Keyboard.GetState().IsKeyDown(Keys.Escape)) {
                 BackPressed = true;
-                if (MapOverlayToggle) {
-                    WorldMap.ToggleMapUI();
+                if (ActivePlayer.MapOverlayToggled) {
+                    ActivePlayer.ToggleMapUI();
                 } else if (IsPlacingTower) {// Stop tower placement
                     IsPlacingTower = false;
                     PendingTowerTemplate = null;
@@ -118,7 +118,7 @@ namespace TowerDefense {
 
             // Map overlay toggle
             if (Keyboard.GetState().IsKeyDown(Keys.M) && !MapButtonPressed) {
-                WorldMap.ToggleMapUI();
+                ActivePlayer.ToggleMapUI();
                 MapButtonPressed = true;
             } else if (Keyboard.GetState().IsKeyUp(Keys.M) && MapButtonPressed) {
                 MapButtonPressed = false;
@@ -155,12 +155,8 @@ namespace TowerDefense {
             if (movement.X != 0 && movement.Y != 0) {
                 movement.Normalize();
             }
-            // Move either the map camera or the active player.
-            if (MapOverlayToggle) {
-                WorldMap.PanCamera(movement);
-            } else {
-                ActivePlayer.Direction = movement;
-            }
+            // Move Change the player's active direction.
+            ActivePlayer.Direction = movement;
         }
 
         /// <summary>
@@ -170,7 +166,7 @@ namespace TowerDefense {
         private static void HandleLeftMouseClick(MouseState mouseState) {
             object selectedItem = GetClickedObject(mouseState);
             if (selectedItem != null) {
-                if (selectedItem.GetType() == typeof(UIPanel)) { // if a UIPanel was pressed
+                if (UIPanel.IsUIElement(selectedItem)) { // if a UIPanel was pressed
                     ((UIPanel)selectedItem).Click(mouseState.Position);
                 } else if (selectedItem.GetType() == typeof(Tower)) { // if a tower was clicked
                     if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) { // and shift was held
@@ -180,7 +176,7 @@ namespace TowerDefense {
                         ((Tower)selectedItem).Selected = true;
                     }
                 }
-            } else if (IsPlacingTower && CursorIsOnMap() && ValidTowerLocation() && !MapOverlayToggle) {
+            } else if (IsPlacingTower && CursorIsOnMap() && ValidTowerLocation()) {
                 PlacePendingTower();
             } else { // Actions that would deselect the selected towers on mouse click
                 ClearTowerIllumination();
@@ -201,7 +197,7 @@ namespace TowerDefense {
             }
 
             // Next, check if a tower was selected
-            if (!MapOverlayToggle && CursorIsOnMap()) {
+            if (CursorIsOnMap()) {
                 Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
                 foreach (Tower t in Towers) {
                     if (t.ContainsTile(clickedTile)) {

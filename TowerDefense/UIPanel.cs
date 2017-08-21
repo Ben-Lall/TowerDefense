@@ -74,10 +74,15 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Parameterless constructor used for inherited classes.
+        /// </summary>
+        protected internal UIPanel() { }
+
+        /// <summary>
         /// Draw this UI panel using the given SpriteBatch
         /// </summary>
         /// <param name="spriteBatch"></param>
-        public void Draw(SpriteBatch spriteBatch) {
+        public virtual void Draw(SpriteBatch spriteBatch) {
             spriteBatch.Draw(BodySprite, Bounds, Color.White);
             foreach(Button b in Buttons) {
                 b.Draw(spriteBatch);
@@ -92,8 +97,22 @@ namespace TowerDefense {
             Buttons.Add(b);
         }
 
+        /// <summary>
+        /// Determine if the given point is within the bounds of this UI Panel, and that this UI Panel is visible.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         public bool IsClicked(Point p) {
             return Visible && Bounds.Contains(p);
+        }
+
+        /// <summary>
+        /// Determine if the given object is a UIPanel or an inherited class.
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsUIElement(object o) {
+            Type t = o.GetType();
+            return t == typeof(UIPanel) || t == typeof(AutoMap);
         }
 
         /// <summary>

@@ -148,11 +148,6 @@ namespace Include {
         public static bool Paused { get; set; }
 
         /// <summary>
-        /// Boolean representing the presence of the map overlay.
-        /// </summary>
-        public static bool MapOverlayToggle { get; set; }
-
-        /// <summary>
         /// List of templates of towers unlocked by the player
         /// </summary>
         public static List <TowerTemplate> UlTowers { get; set; }
@@ -178,11 +173,6 @@ namespace Include {
         public static double SpawnCooldown { get; set; }
 
         /* UI */
-
-        /// <summary>
-        /// List of Buttons.
-        /// </summary>
-        public static List<Button> Buttons { get; set; }
 
         /// <summary>
         /// A list of UI Panels, sorted in descending order of depth.  Alias to the ActivePlayer's UI.
@@ -241,7 +231,6 @@ namespace Include {
             Towers = new List<Tower>();
             Monsters = new List<Monster>();
             DrawSet = new List<GameplayObject>();
-            Buttons = new List<Button>();
             Effects = new List<Bolt>();
             Players = new List<Player>();
             UlTowers = new List<TowerTemplate>();

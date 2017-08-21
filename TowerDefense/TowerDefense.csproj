@@ -42,6 +42,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AutoMap.cs" />
     <Compile Include="HeatMap.cs" />
     <Compile Include="CreatureSprite.cs" />
     <Compile Include="AnimatedSprite.cs" />

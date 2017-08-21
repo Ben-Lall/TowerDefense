@@ -82,7 +82,6 @@ namespace TowerDefense {
         /// </summary>
         private void SortCollections() {
             DrawSet.Sort(DrawComparer);
-            UIPanels.Sort((x, y) => x.Depth.CompareTo(y.Depth));
         }
 
         /// <summary>
@@ -146,68 +145,32 @@ namespace TowerDefense {
             GraphicsDevice.Clear(Color.Blue);
 
             /* Draw world elements */
+            WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
+                    null, SamplerState.PointClamp, null, null, null, Camera.GetTransformation());
 
-            if (MapOverlayToggle) {
-                UISpriteBatch.Begin();
-                WorldMap.DrawAutoMap();
-                UISpriteBatch.End();
-            } else {
-                WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
-                        null, SamplerState.PointClamp, null, null, null, Camera.GetTransformation());
+            DrawMap();
+            double time = gameTime.ElapsedGameTime.TotalSeconds;
+            DrawGameplayObjects();
 
-                DrawMap();
-                double time = gameTime.ElapsedGameTime.TotalSeconds;
-                DrawGameplayObjects();
-
-                if (IsPlacingTower) {
-                    DrawPendingTower();
-                }
-                WorldSpriteBatch.End();
-
-                /* Draw effect elements */
-                BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.Transform);
-                foreach (Bolt e in Effects) {
-                    e.Draw(BoltSpriteBatch);
-                }
-                BoltSpriteBatch.End();
-
-                /* Draw UI elements */
-                UISpriteBatch.Begin();
-                DrawUI();
-                DrawDebug();
-                UISpriteBatch.End();
+            if (IsPlacingTower) {
+                DrawPendingTower();
             }
+            WorldSpriteBatch.End();
+
+            /* Draw effect elements */
+            BoltSpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera.Transform);
+            foreach (Bolt e in Effects) {
+                e.Draw(BoltSpriteBatch);
+            }
+            BoltSpriteBatch.End();
+
+            /* Draw UI elements */
+            UISpriteBatch.Begin();
+            ActivePlayer.DrawUI();
+            DrawDebug();
+            UISpriteBatch.End();
 
             base.Draw(gameTime);
-        }
-
-        /// <summary>
-        /// Draw the UI to the screen.
-        /// </summary>
-        private void DrawUI() {
-            foreach(UIPanel u in UIPanels) {
-                if(!IsPlacingTower && u.Type == UIType.TOWERPANEL) {
-                    u.Draw(UISpriteBatch);
-                }
-            }
-            DrawUIText();
-        }
-
-        /// <summary>
-        /// Draw the UI text to the screen.
-        /// </summary>
-        private void DrawUIText() {
-            String PauseText = "Paused!";
-            Vector2 PauseTextSize = Art.Font.MeasureString(PauseText);
-            Vector2 PausePosition = new Vector2(ScreenWidth - 5, ScreenHeight - 45) - PauseTextSize;
-            if (Paused) {
-                UISpriteBatch.DrawString(Art.Font, PauseText, PausePosition, Color.Black);
-            }
-
-            String monsterText = "Monsters: " + Monsters.Count;
-            Vector2 monsterTextSize = Art.Font.MeasureString(monsterText);
-            Vector2 monsterTextPosition = new Vector2(ScreenWidth - 5, PausePosition.Y) - monsterTextSize;
-            UISpriteBatch.DrawString(Art.Font, monsterText, monsterTextPosition, Color.Black);
         }
 
         /// <summary>
