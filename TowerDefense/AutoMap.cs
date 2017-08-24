@@ -14,6 +14,11 @@ namespace TowerDefense {
         Point AutoMapTileSize { get; set; }
         Camera2d AutoMapCamera;
 
+        /// <summary>
+        /// Boolean representing if the camera has been panned.  Used to determine where the map should be drawn to upon next opening.
+        /// </summary>
+        bool Panning;
+
         public AutoMap(Vector2 startPos) {
             Type = UIType.AUTOMAP;
             Depth = 0;
@@ -27,17 +32,28 @@ namespace TowerDefense {
 
             // Create UI elements
             Point recenterPos = new Point(ScreenWidth - Art.RecenterButton.Width - 5, 5);
-            Buttons.Add(new Button(new Rectangle(recenterPos, new Point(Art.RecenterButton.Width, Art.RecenterButton.Height)), Art.RecenterButton, () => AutoMapCamera.MoveTo(ActivePlayer.Pos.ToVector2())));
+            Buttons.Add(new Button(new Rectangle(recenterPos, new Point(Art.RecenterButton.Width, Art.RecenterButton.Height)), Art.RecenterButton, Recenter));
         }
 
         /// <summary>
-        /// Overlay the AutoMap to the screen.
+        /// Update this automap.
+        /// </summary>
+        public void Update() {
+            if (!Panning) {
+                AutoMapCamera.MoveTo(ActivePlayer.Pos.ToVector2());
+            }
+        }
+
+        /// <summary>
+        /// Overlay this AutoMap to the screen.
         /// </summary>
         public override void Draw(SpriteBatch spriteBatch) {
             // Draw ground tiles to the auto map.
-            for (int y = 0; y <= AutoMapSize.Y; y++) {
-                for (int x = 0; x <= AutoMapSize.X; x++) {
-                    Tile repTile = WorldMap.At(AutoMapCamera.CameraTileStart.X + x, AutoMapCamera.CameraTileStart.Y + y);
+            for (int i = AutoMapCamera.CameraTileStart.Y; i <= AutoMapCamera.CameraTileEnd.Y; i++) {
+                for (int j = AutoMapCamera.CameraTileStart.X; j <= AutoMapCamera.CameraTileEnd.X; j++) {
+                    int y = i - AutoMapCamera.CameraTileStart.Y;
+                    int x = j - AutoMapCamera.CameraTileStart.X;
+                    Tile repTile = WorldMap.At(j, i);
                     spriteBatch.Draw(Art.Pixel, new Rectangle(x * AutoMapTileSize.X, y * AutoMapTileSize.Y, AutoMapTileSize.X, AutoMapTileSize.Y), Art.PrevalentColors[repTile.SpriteId]);
                 }
             }
@@ -80,7 +96,17 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="direction">Vector giving the direction to pan the camera in.</param>
         public void PanCamera(Vector2 direction) {
-            AutoMapCamera.Move(new Vector2((float)Math.Round(direction.X) * AutoMapTileSize.X / 4, (float)Math.Round(direction.Y) * AutoMapTileSize.Y / 4));
+            if(!direction.Equals(Vector2.Zero)) {
+                Panning = true;
+                AutoMapCamera.Move(new Vector2((float)Math.Round(direction.X) * AutoMapTileSize.X / 4, (float)Math.Round(direction.Y) * AutoMapTileSize.Y / 4));
+            }
+        }
+
+        /// <summary>
+        /// Set panning to off.
+        /// </summary>
+        public void Recenter() {
+            Panning = false;
         }
     }
 }

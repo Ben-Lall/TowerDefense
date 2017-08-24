@@ -138,6 +138,11 @@ namespace TowerDefense {
             }
 
             // Movement keys
+            int movementMul = 1;
+            if(Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) {
+                movementMul = 10;
+            }
+
             Vector2 movement = Vector2.Zero;
             if (Keyboard.GetState().IsKeyDown(Keys.W)) {
                 movement.Y--;
@@ -155,6 +160,7 @@ namespace TowerDefense {
             if (movement.X != 0 && movement.Y != 0) {
                 movement.Normalize();
             }
+            movement *= movementMul;
             // Move Change the player's active direction.
             ActivePlayer.Direction = movement;
         }

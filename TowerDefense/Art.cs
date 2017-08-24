@@ -25,6 +25,14 @@ namespace TowerDefense {
 
         /* World Textures */
         public static Texture2D TileSet;
+
+        // Start indices for certain sprites types in the tilset
+        public const int FieldStartIndex = 181;
+        public const int DesertStartIndex = 448;
+        public const int SwampStartIndex = 800;
+        public const int CaveStartIndex = 995;
+        public const int TundraStartIndex = 777;
+
         /// <summary>
         /// An array where each index refers to the most prevalent color of the texture of that ID in the TileSet.
         /// </summary>

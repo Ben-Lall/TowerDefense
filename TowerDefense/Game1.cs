@@ -78,7 +78,7 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Sort all collections as needed.
+        /// Sort all collections.  
         /// </summary>
         private void SortCollections() {
             DrawSet.Sort(DrawComparer);

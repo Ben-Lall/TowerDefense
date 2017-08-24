@@ -90,7 +90,6 @@ namespace TowerDefense {
             }
 
             CurrentHealth = MaxHealth;
-
         }
         
         /// <summary>

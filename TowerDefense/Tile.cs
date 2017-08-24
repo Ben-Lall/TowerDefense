@@ -30,6 +30,11 @@ namespace TowerDefense {
         public TileType Type { get; set; }
 
         /// <summary>
+        /// The type of geography this tile is.
+        /// </summary>
+        public GeoType GeoType { get; set; }
+
+        /// <summary>
         /// The ID used to retrieve the sprite for this tile.
         /// </summary>
         public int SpriteId { get; set; }
@@ -53,11 +58,12 @@ namespace TowerDefense {
         /// <param name="type">TileType representing the type of tile this is.</param>
         /// <param name="xPos">X coorinate of this tile's position.</param>
         /// <param name="yPos">Y coordinate of this tile's position.</param>
-        public Tile(TileType type, int x, int y, int ID) {
+        public Tile(TileType type, int x, int y, GeoType geoType, int ID) {
             Type = type;
             Pos = new Point(x, y);
             ContainsTower = false;
             SpriteId = ID;
+            GeoType = geoType;
         }
 
         /// <summary>

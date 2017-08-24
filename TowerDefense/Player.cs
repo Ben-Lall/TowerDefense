@@ -119,6 +119,7 @@ namespace TowerDefense {
         public override void Update(GameTime gameTime) {
             UpdateUI();
             SortCollections();
+            aMap.Update();
             // Using the input direction, move the map or the player depending on what's active.
             if (MapOverlayToggled) {
                 aMap.PanCamera(Direction);

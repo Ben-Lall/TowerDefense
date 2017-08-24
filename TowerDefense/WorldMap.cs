@@ -10,9 +10,17 @@ using static Include.Globals;
 
 namespace TowerDefense {
     /// <summary>
+    /// Types of world geography.
+    /// </summary>
+    enum GeoType { NONE, FIELD, SWAMP, DESERT, TUNDRA, CAVE, NUMBER_OF_GEOGRAPHY_TYPES };
+
+    /// <summary>
     /// A Matrix of Tiles representing the world map.
     /// </summary>
     static class WorldMap {
+        /// <summary>
+        /// The representation of the map, as a 2d array of Tiles.
+        /// </summary>
         private static Tile[,] Map;
 
         /** AutoMap **/
@@ -22,7 +30,7 @@ namespace TowerDefense {
         /// Initialize the world map.
         /// </summary>
         public static void Initialize() {
-            Map = new Tile[MapWidth, MapHeight];
+            Map = new Tile[MapHeight, MapWidth];
             GenerateMap();
         }
 
@@ -51,20 +59,110 @@ namespace TowerDefense {
         /// </summary>
         static void GenerateMap() {
             Random r = new Random();
-            // Fill in the game map with open tiles.
+
+            // Create a voronoi diagram to determine biome areas.
+            GeoType[,] voronoi = new GeoType[MapHeight, MapWidth];
+
+            // Create a set of seeds.
+            Point[] seeds = new Point[(int)GeoType.NUMBER_OF_GEOGRAPHY_TYPES];
+            seeds[(int)GeoType.FIELD] = new Point(MapWidth / 2, MapHeight / 2);
+            seeds[(int)GeoType.SWAMP] = new Point(3 * MapWidth / 4, 3 * MapHeight / 4);
+            seeds[(int)GeoType.DESERT] = new Point(MapWidth / 4, MapHeight / 4);
+            seeds[(int)GeoType.TUNDRA] = new Point(MapWidth / 4, 3 * MapHeight / 4);
+            seeds[(int)GeoType.CAVE] = new Point(3 * MapWidth / 4, MapHeight / 4);
+
+            // Initialize voronoi
             for (int y = 0; y < MapHeight; y++) {
                 for (int x = 0; x < MapWidth; x++) {
-                    int ID = 183;
-                    double roll = r.NextDouble();
-                    if (roll > 0.90) {
-                        ID = 181;
-                    } else if (roll > 0.75) {
-                        ID = 182;
-                    }
-                    Map[y, x] = new Tile(TileType.OPEN, x, y, ID);
+                    voronoi[y, x] = GetClosestSeed(new Point(x, y), seeds);
                 }
             }
+
+            // Set tiles.
+            for (int y = 0; y < MapHeight; y++) {
+                for (int x = 0; x < MapWidth; x++) {
+                    int ID = GetSpriteIDFromGeoType(voronoi[y, x], r);
+                    Map[y, x] = new Tile(TileType.OPEN, x, y, voronoi[y, x], ID);
+                }
+            }
+
             AddTower(new Tower(HubTemplate, new Point(MapWidth / 2, MapHeight / 2)));
+
+        }
+
+        /// <summary>
+        /// Given a geography type, return a random sprite ID for that type.
+        /// </summary>
+        /// <param name="gt">Geography type.</param>
+        /// <param name="r">Random number generator.  Passed in to reduce this function's overhead.</param>
+        /// <returns></returns>
+        static int GetSpriteIDFromGeoType(GeoType gt, Random r) {
+            double rand = r.NextDouble();
+            int offset = 0;
+
+            switch(gt) {
+                case GeoType.FIELD:
+                    if (rand >= 0.90) {
+                        offset = 2;
+                    } else if (rand >= 0.75) {
+                        offset = 1;
+                    }
+                    return Art.FieldStartIndex + offset;
+                case GeoType.SWAMP:
+                    if (rand >= 0.98) {
+                        offset = 4;
+                    } else if (rand >= 0.92) {
+                        offset = 2;
+                    } else if (rand >= 0.70 ) {
+                        offset = 1;
+                    }
+                    return Art.SwampStartIndex + offset;
+                case GeoType.DESERT:
+                    if (rand >= 0.90) {
+                        offset = 2;
+                    } else if (rand >= 0.75) {
+                        offset = 1;
+                    }
+                    return Art.DesertStartIndex + offset;
+                case GeoType.CAVE:
+                    if (rand >= 0.98) {
+                        offset = 2;
+                    } else if (rand >= 0.80) {
+                        offset = 1;
+                    }
+                    return Art.CaveStartIndex + offset;
+                case GeoType.TUNDRA:
+                    if (rand >= 0.90) {
+                        offset = 2;
+                    } else if (rand >= 0.75) {
+                        offset = 1;
+                    }
+                    return Art.TundraStartIndex + offset;
+                default:
+                    Debug.Fail("Error: Tried to find sprite for unsupported geography type.");
+                    return 0;
+            }
+        }
+
+        /// <summary>
+        /// Find the seed closest to the given coordinate and return its geography type.
+        /// </summary>
+        /// <param name="p">The point being investigated.</param>
+        /// <param name="seeds">Array of seeds, where each seed's GeoType is represented by its index.</param>
+        /// <returns></returns>
+        static GeoType GetClosestSeed(Point p, Point[] seeds) {
+            double closestDistance = MapWidth * MapHeight;
+            int geoType = 0;
+            for(int i = 1; i < seeds.Count(); i++) {
+                double d = Distance(p, seeds[i]);
+                if (d < closestDistance) {
+                    closestDistance = d;
+                    geoType = i;
+                }
+            }
+
+            Debug.Assert(geoType != 0, "Could not find valid geography type for tile at " + p.ToString());
+            return (GeoType)geoType;
         }
 
         /// <summary>
