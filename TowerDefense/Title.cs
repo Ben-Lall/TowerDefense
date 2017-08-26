@@ -30,11 +30,11 @@ namespace TowerDefense {
             UIPanels = new List<UIPanel>();
 
             //Create main title menu
-            Button startButton = new Button("Load World", new Vector2(ScreenWidth / 2, 2 * ScreenHeight / 5), Art.MenuPanel, BeginPlay);
-            List<Button> buttons = new List<Button>();
-            buttons.Add(startButton);
+            Button startButton = new Button("Load World", Art.MenuPanel, BeginPlay);
             Rectangle bounds = new Rectangle(2 * ScreenWidth / 5, ScreenHeight / 3, ScreenWidth / 5, ScreenHeight / 3);
-            UIPanels.Add(new UIPanel(Art.MenuPanel, bounds, buttons, UIType.Menu));
+            UIPanel titlePanel = new UIPanel(Art.MenuPanel, bounds, UIType.Menu, bounds.Height / 6);
+            titlePanel.AddButton(startButton);
+            UIPanels.Add(titlePanel);
         }
 
         /// <summary>

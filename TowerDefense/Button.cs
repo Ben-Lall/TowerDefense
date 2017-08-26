@@ -15,14 +15,12 @@ namespace TowerDefense {
     class Button {
 
         /// <summary>
-        /// The rectangular bounds of this button.
+        /// The size of this button.
         /// </summary>
-        public Rectangle Bounds { get; set; }
+        public Point Size { get; set; }
 
-        public int X { get => Bounds.X; set => Bounds = new Rectangle(value, Y, Width, Height); }
-        public int Y { get => Bounds.Y; set => Bounds = new Rectangle(X, value, Width, Height); }
-        public int Width { get => Bounds.Width; }
-        public int Height { get => Bounds.Height; }
+        public int Width { get => Size.X; }
+        public int Height { get => Size.Y; }
 
         /// <summary>
         /// Texture for the button background.
@@ -53,9 +51,9 @@ namespace TowerDefense {
         /// <param name="contents"></param>
         /// <param name="text"></param>
         /// <param name="action"></param>
-        private void createNewRep(Rectangle bounds, Texture2D background, AnimatedSprite contents, String text, Action action) {
+        private void createNewRep(Point size, Texture2D background, AnimatedSprite contents, String text, Action action) {
             Debug.Assert((contents == null || text == null), "A button cannot have both a string and an image for its contents!");
-            Bounds = bounds;
+            Size = size;
             Background = background;
             Contents = contents;
             Text = text == null ? null : new StringBuilder(text);
@@ -65,22 +63,22 @@ namespace TowerDefense {
         /// <summary>
         /// Create a button consisting only of a texture background.
         /// </summary>
-        /// <param name="bounds">Rectangle representing the hitbox of this button.</param>
+        /// <param name="size">The size of this button.</param>
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
-        public Button(Rectangle bounds, Texture2D background, Action action) {
-            createNewRep(bounds, background, null, null, action);
+        public Button(Point size, Texture2D background, Action action) {
+            createNewRep(size, background, null, null, action);
         }
 
         /// <summary>
         /// Create a new button with a second sprite filling its body.
         /// </summary>
-        /// <param name="bounds">Rectangle representing the hitbox of this button.</param>
+        /// <param name="size">The size of this button.</param>
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="contents">Texture representing the interior content of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
-        public Button(Rectangle bounds, Texture2D background, AnimatedSprite contents, Action action) {
-            createNewRep(bounds, background, contents, null, action);
+        public Button(Point size, Texture2D background, AnimatedSprite contents, Action action) {
+            createNewRep(size, background, contents, null, action);
         }
 
         /// <summary>
@@ -90,8 +88,8 @@ namespace TowerDefense {
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="text">Text filling the body of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
-        public Button(Rectangle shape, Texture2D background, String text, Action action) {
-            createNewRep(shape, background, null, text, action);
+        public Button(Point size, Texture2D background, String text, Action action) {
+            createNewRep(size, background, null, text, action);
         }
 
         /// <summary>
@@ -101,42 +99,42 @@ namespace TowerDefense {
         /// <param name="centerPoint">The point this button should be centered around.</param>
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
-        public Button(String text, Vector2 centerPoint, Texture2D background, Action action) {
+        public Button(String text, Texture2D background, Action action) {
             const int BUFFER_SIZE = 4; // buffer space between the text and the edge of the button, measured in pixels.
-            Vector2 ButtonSize = Art.Font.MeasureString(text) + new Vector2(BUFFER_SIZE * 2, BUFFER_SIZE * 2);
-            Rectangle bounds = new Rectangle((centerPoint - ButtonSize / 2).ToPoint(), ButtonSize.ToPoint());
-            createNewRep(bounds, background, null, text, action);
+            Vector2 buttonSize = Art.Font.MeasureString(text) + new Vector2(BUFFER_SIZE * 2, BUFFER_SIZE * 2);
+            createNewRep(buttonSize.ToPoint(), background, null, text, action);
         }
 
         /// <summary>
-        /// Draw this button using the given SpriteBatch.
+        /// Draw this button using the given SpriteBatch to the given position.
         /// </summary>
         /// <param name="spriteBatch"></param>
-        public void Draw(SpriteBatch spriteBatch) {
+        public void Draw(SpriteBatch spriteBatch, Point p) {
             Debug.Assert((Contents == null || Text == null), "A button cannot have both a string and an image for its contents!");
             // Draw the background of the button
-            spriteBatch.Draw(Background, Bounds, Color.White);
+            Rectangle bounds = new Rectangle(p, Size);
+            spriteBatch.Draw(Background, bounds, Color.White);
 
             // Draw the contents of the button, if any
             if (Contents != null) {
-                int contentsWidth = Bounds.Width / 3;
-                int contentsHeight = (Bounds.Height * 2) / 3;
-                int towerY = Bounds.Y + Bounds.Height / 2;
-                int towerX = Bounds.X + Bounds.Width / 2;
+                int contentsWidth = bounds.Width / 3;
+                int contentsHeight = (bounds.Height * 2) / 3;
+                int towerY = bounds.Y + bounds.Height / 2;
+                int towerX = bounds.X + bounds.Width / 2;
 
                 Contents.Draw(towerX, towerY, spriteBatch, contentsWidth, contentsHeight);
             } else if(Text != null) {
                 Vector2 textSize = Art.Font.MeasureString(Text);
                 // Resize text to fit this button, if necessary
                 Vector2 Scale = new Vector2(1, 1);
-                if(textSize.X > Bounds.Width) {
-                    Scale.X = Bounds.Width / textSize.X;
+                if(textSize.X > bounds.Width) {
+                    Scale.X = bounds.Width / textSize.X;
                 }
-                if(textSize.Y > Bounds.Height) {
-                    Scale.Y = Bounds.Height / textSize.Y;
+                if(textSize.Y > bounds.Height) {
+                    Scale.Y = bounds.Height / textSize.Y;
                 }
 
-                Vector2 Pos = Bounds.Center.ToVector2() - (textSize / 2);
+                Vector2 Pos = bounds.Center.ToVector2() - (textSize / 2);
                 spriteBatch.DrawString(Art.Font, Text, Pos, Color.Black, 0, Vector2.Zero, Scale, SpriteEffects.None, 1f);
             }
         }
@@ -144,10 +142,11 @@ namespace TowerDefense {
         /// <summary>
         /// Check if the given point is contained within the bounds of this button.
         /// </summary>
-        /// <param name="p"></param>
+        /// <param name="p">the point to be checked</param>
+        /// <param name="startPos">The start point of this button.</param>
         /// <returns></returns>
-        public bool Contains(Point p) {
-            return Bounds.Contains(p);
+        public bool Contains(Point p, Point startPos) {
+            return new Rectangle(startPos, Size).Contains(p);
         }
     }
 }

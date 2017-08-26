@@ -60,9 +60,9 @@ namespace TowerDefense {
             UIElements = new List<UIPanel>();
             // The towerPanel
             int menuPanelWidth = ScreenWidth / 8;
-            Rectangle buttonBox = new Rectangle(ScreenWidth - menuPanelWidth + (menuPanelWidth / 4), 5, menuPanelWidth / 2, ScreenHeight / 12);
-            UIPanel towerPanel = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth - menuPanelWidth, 0, menuPanelWidth, ScreenHeight), null, UIType.TowerPanel);
-            towerPanel.AddButton(new Button(buttonBox, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
+            Point buttonSize = new Point(menuPanelWidth / 2, ScreenHeight / 12);
+            UIPanel towerPanel = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth - menuPanelWidth, 0, menuPanelWidth, ScreenHeight), UIType.TowerPanel, 4);
+            towerPanel.AddButton(new Button(buttonSize, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
             UIElements.Add(towerPanel);
             // The AutoMap
             aMap = new AutoMap(Pos.ToVector2());

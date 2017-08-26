@@ -28,11 +28,11 @@ namespace TowerDefense {
             AutoMapTileSize = new Point(16, 16);
             AutoMapSize = new Point(ScreenWidth / AutoMapTileSize.X, ScreenHeight / AutoMapTileSize.Y);
             AutoMapCamera = new Camera2d(startPos, ScreenWidth * TileWidth / AutoMapTileSize.X, ScreenHeight * TileHeight / AutoMapTileSize.Y);
-            Buttons = new List<Button>();
+            Buttons = new Dictionary<Button, Point>();
 
             // Create UI elements
             Point recenterPos = new Point(ScreenWidth - Art.RecenterButton.Width - 5, 5);
-            Buttons.Add(new Button(new Rectangle(recenterPos, new Point(Art.RecenterButton.Width, Art.RecenterButton.Height)), Art.RecenterButton, Recenter));
+            Buttons.Add(new Button(new Point(Art.RecenterButton.Width, Art.RecenterButton.Height), Art.RecenterButton, Recenter), recenterPos);
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace TowerDefense {
         /// </summary>
         private void DrawAutoMapUI() {
             //Draw buttons
-            foreach (Button b in Buttons) {
-                b.Draw(UISpriteBatch);
+            foreach (KeyValuePair<Button, Point> bPair in Buttons) {
+                bPair.Key.Draw(UISpriteBatch, Bounds.Location + bPair.Value);
             }
         }
 

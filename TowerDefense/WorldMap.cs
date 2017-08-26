@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,7 +88,25 @@ namespace TowerDefense {
             }
 
             AddTower(new Tower(HubTemplate, new Point(MapWidth / 2, MapHeight / 2)));
+            SaveMap();
+        }
 
+        /// <summary>
+        /// Save the world map to a file.
+        /// </summary>
+        public static void SaveMap() {
+            // Build a temporary file from the current world map.
+            FileStream mapTemp = new FileStream("world.sav.tmp", FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+            for(int y = 0; y < MapHeight; y++) {
+                for(int x = 0; x < MapWidth; x++) {
+                    mapTemp.Write(At(x, y).ToByteArray(), 0, Tile.TileDataSize);
+                }
+            }
+
+            // Save the temporary file to the real file and delete the temporary.
+            mapTemp.Dispose();
+            File.Copy("world.sav.tmp", "world.sav", true);
+            File.Delete("world.sav.tmp");
         }
 
         /// <summary>

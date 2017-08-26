@@ -50,6 +50,8 @@ namespace TowerDefense {
         public int X { get => Pos.X; }
         public int Y { get => Pos.Y; }
 
+        public static int TileDataSize { get => 4; }
+
         /// <summary>
         /// Constructor for a tile
         /// </summary>
@@ -86,6 +88,19 @@ namespace TowerDefense {
         /// <param name="tint">The color</param>
         public void Draw(Color tint) {
             WorldSpriteBatch.Draw(Art.TileSet, new Rectangle((X * TileWidth), (Y * TileHeight), TileWidth, TileHeight), Art.GetSourceRectangle(WorldMap.At(X, Y).SpriteId), tint);
+        }
+
+        /// <summary>
+        /// Get the conversion of this tile to a byte array.
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToByteArray() {
+            byte[] bytes = new byte[TileDataSize];
+            bytes[0] = (byte)Type;
+            bytes[1] = (byte)GeoType;
+            bytes[2] = (byte)(SpriteId >> 8);
+            bytes[3] = (byte)SpriteId;
+            return bytes;
         }
     }
 }
