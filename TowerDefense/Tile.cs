@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,6 +51,9 @@ namespace TowerDefense {
         public int X { get => Pos.X; }
         public int Y { get => Pos.Y; }
 
+        /// <summary>
+        /// The number of bytes of memory each tile takes when being saved.
+        /// </summary>
         public static int TileDataSize { get => 4; }
 
         /// <summary>
@@ -101,6 +105,16 @@ namespace TowerDefense {
             bytes[2] = (byte)(SpriteId >> 8);
             bytes[3] = (byte)SpriteId;
             return bytes;
+        }
+
+        /// <summary>
+        /// Instantiate and return a new tile loaded from the given byte array.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        public static Tile LoadFromByteArray(int x, int y, byte[] bytes) {
+            Debug.Assert(bytes.Count() == TileDataSize, "Invalid number of bytes given to load tile.");
+            return new Tile((TileType)bytes[0], x, y, (GeoType)bytes[1], (bytes[2] << 8) | bytes[3]);
         }
     }
 }

@@ -38,6 +38,12 @@ namespace TowerDefense {
         public StringBuilder Text { get; set; }
 
         /// <summary>
+        /// The color of the text of this button.
+        /// </summary>
+        public Color TextColor { get; set; }
+        static Color DefaultTextColor { get => Color.Black; }
+
+        /// <summary>
         /// The action the button should perform upon being pressed.
         /// </summary>
         public Action OnClick;
@@ -51,13 +57,25 @@ namespace TowerDefense {
         /// <param name="contents"></param>
         /// <param name="text"></param>
         /// <param name="action"></param>
-        private void createNewRep(Point size, Texture2D background, AnimatedSprite contents, String text, Action action) {
-            Debug.Assert((contents == null || text == null), "A button cannot have both a string and an image for its contents!");
+        private void CreateButton(Point size, Texture2D background, Action action) {
             Size = size;
             Background = background;
-            Contents = contents;
-            Text = text == null ? null : new StringBuilder(text);
             OnClick = action;
+        }
+
+        /// <summary>
+        /// Create a new button whose size is determined by the given String.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="textColor"></param>
+        /// <param name="background"></param>
+        /// <param name="action"></param>
+        private void CreateButtonFromText(String text, Color textColor, Texture2D background, Action action) {
+            const int BUFFER_SIZE = 4; // buffer space between the text and the edge of the button, measured in pixels.
+            Vector2 buttonSize = Art.Font.MeasureString(text) + new Vector2(BUFFER_SIZE * 2, BUFFER_SIZE * 2);
+            CreateButton(buttonSize.ToPoint(), background, action);
+            Text = new StringBuilder(text);
+            TextColor = textColor;
         }
 
         /// <summary>
@@ -67,7 +85,7 @@ namespace TowerDefense {
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
         public Button(Point size, Texture2D background, Action action) {
-            createNewRep(size, background, null, null, action);
+            CreateButton(size, background, action);
         }
 
         /// <summary>
@@ -78,7 +96,8 @@ namespace TowerDefense {
         /// <param name="contents">Texture representing the interior content of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
         public Button(Point size, Texture2D background, AnimatedSprite contents, Action action) {
-            createNewRep(size, background, contents, null, action);
+            CreateButton(size, background, action);
+            Contents = contents;
         }
 
         /// <summary>
@@ -89,20 +108,29 @@ namespace TowerDefense {
         /// <param name="text">Text filling the body of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
         public Button(Point size, Texture2D background, String text, Action action) {
-            createNewRep(size, background, null, text, action);
+            CreateButton(size, background, action);
+            Text = new StringBuilder(text);
         }
 
         /// <summary>
         /// Create a new button from a string of text, so that the button will fit it.
         /// </summary>
         /// <param name="text">Text filling the body of this button.</param>
-        /// <param name="centerPoint">The point this button should be centered around.</param>
         /// <param name="background">Texture representing the background contents of this button.</param>
         /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
         public Button(String text, Texture2D background, Action action) {
-            const int BUFFER_SIZE = 4; // buffer space between the text and the edge of the button, measured in pixels.
-            Vector2 buttonSize = Art.Font.MeasureString(text) + new Vector2(BUFFER_SIZE * 2, BUFFER_SIZE * 2);
-            createNewRep(buttonSize.ToPoint(), background, null, text, action);
+            CreateButtonFromText(text, DefaultTextColor, background, action);
+        }
+
+        /// <summary>
+        /// Create a new button from a string of text, so that the button will fit it.  The text color can also be specified.
+        /// </summary>
+        /// <param name="text">Text filling the body of this button.</param>
+        /// <param name="textColor">Color for this button's text.</param>
+        /// <param name="background">Texture representing the background contents of this button.</param>
+        /// <param name="action">Action referring to the function this button will call upon being pressed.</param>
+        public Button(String text, Color textColor, Texture2D background, Action action) {
+            CreateButtonFromText(text, textColor, background, action);
         }
 
         /// <summary>
@@ -135,7 +163,7 @@ namespace TowerDefense {
                 }
 
                 Vector2 Pos = bounds.Center.ToVector2() - (textSize / 2);
-                spriteBatch.DrawString(Art.Font, Text, Pos, Color.Black, 0, Vector2.Zero, Scale, SpriteEffects.None, 1f);
+                spriteBatch.DrawString(Art.Font, Text, Pos, TextColor, 0, Vector2.Zero, Scale, SpriteEffects.None, 1f);
             }
         }
 

@@ -212,28 +212,26 @@ namespace TowerDefense {
         /// <returns>The object that the mouse is hovering over, or null if it isn't mousing over any object.</returns>
         private static object GetClickedObject(MouseState mouseState) {
             // Check if a UI element was clicked.
-            List<UIPanel> UI = new List<UIPanel>();
-            if(CurrentGameState == GameState.Title) {
-                UI = Title.UIPanels;
+            if (CurrentGameState == GameState.Title) {
+                return Title.CurrentScreen.Contains(mouseState.Position) ? Title.CurrentScreen : null;
             } else {
-                UI = UIPanels;
-            }
-            foreach (UIPanel u in UI) {
-                if (u.Contains(mouseState.Position)) {
-                    return u;
-                }
-            }
-
-            // Next, check if a tower was selected
-            if (CurrentGameState == GameState.Playing && CursorIsOnMap()) {
-                Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
-                foreach (Tower t in Towers) {
-                    if (t.ContainsTile(clickedTile)) {
-                        return t;
+                foreach (UIPanel u in UIPanels) {
+                    if (u.Contains(mouseState.Position)) {
+                        return u;
                     }
                 }
+
+                // Next, check if a tower was selected
+                if (CurrentGameState == GameState.Playing && CursorIsOnMap()) {
+                    Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
+                    foreach (Tower t in Towers) {
+                        if (t.ContainsTile(clickedTile)) {
+                            return t;
+                        }
+                    }
+                }
+                return null;
             }
-            return null;
         }
     }
 }    

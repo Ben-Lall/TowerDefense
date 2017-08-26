@@ -15,26 +15,58 @@ namespace TowerDefense {
         /// <summary>
         /// The list of UI Panels for the title screen.
         /// </summary>
-        public static List<UIPanel> UIPanels { get; set; }
+        public static UIPanel CurrentScreen { get; set; }
 
         /// <summary>
         /// Whether or not the title screen has been initialized.
         /// </summary>
         public static bool Initialized { get; set; }
 
+        static Rectangle DefaultPanelBounds { get => new Rectangle(2 * ScreenWidth / 5, ScreenHeight / 3, ScreenWidth / 5, ScreenHeight / 3); }
+        static UIPanel DefaultUIPanel { get => new UIPanel(Art.MenuPanel, DefaultPanelBounds, UIType.Menu, DefaultPanelBounds.Height / 6); }
+
+        static Rectangle SmallPanelBounds { get => new Rectangle(2 * ScreenWidth / 5, ScreenHeight / 3, ScreenWidth / 5, ScreenHeight / 3); }
+        static UIPanel SmallUIPanel { get => new UIPanel(Art.MenuPanel, DefaultPanelBounds, UIType.Menu, DefaultPanelBounds.Height / 6); }
+
         /// <summary>
         /// Initialize the title screen.
         /// </summary>
         public static void Initialize() {
             Initialized = true;
-            UIPanels = new List<UIPanel>();
+            DisplayTitleScreen();
+        }
 
-            //Create main title menu
-            Button startButton = new Button("Load World", Art.MenuPanel, BeginPlay);
-            Rectangle bounds = new Rectangle(2 * ScreenWidth / 5, ScreenHeight / 3, ScreenWidth / 5, ScreenHeight / 3);
-            UIPanel titlePanel = new UIPanel(Art.MenuPanel, bounds, UIType.Menu, bounds.Height / 6);
-            titlePanel.AddButton(startButton);
-            UIPanels.Add(titlePanel);
+
+
+        /// <summary>
+        /// Display the title screen.
+        /// </summary>
+        static void DisplayTitleScreen() {
+            CurrentScreen = DefaultUIPanel;
+            CurrentScreen.AddButton(new Button("Play", Art.MenuPanel, DisplayPlayScreen));
+        }
+
+        /// <summary>
+        /// Display the screen for starting a game.
+        /// </summary>
+        static void DisplayPlayScreen() {
+            CurrentScreen = DefaultUIPanel;
+            CurrentScreen.AddButton(new Button("Create New World", Art.MenuPanel, () => WorldMap.GenerateMap(SaveManager.NextDefaultWorldName())));
+            Color loadTextColor = SaveManager.HasLoadableWorlds() ? Color.Black : Color.Gray;
+            CurrentScreen.AddButton(new Button("Load World", loadTextColor, Art.MenuPanel, DisplayLoadWorldScreen));
+        }
+
+        /// <summary>
+        /// Display a list of loadable worlds and provide buttons to load them.
+        /// If there are no loadable worlds, do nothing.
+        /// </summary>
+        static void DisplayLoadWorldScreen() {
+            if(SaveManager.HasLoadableWorlds()) {
+                CurrentScreen = DefaultUIPanel;
+                foreach (String fileName in SaveManager.ListLoadableWorlds()) {
+                    CurrentScreen.AddButton(new Button(fileName.Substring(0, fileName.IndexOf('.')), Art.MenuPanel, () => BeginPlay(fileName)));
+                }
+            }
         }
 
         /// <summary>
@@ -42,9 +74,7 @@ namespace TowerDefense {
         /// </summary>
         public static void Draw() {
             UISpriteBatch.Begin();
-            foreach (UIPanel u in UIPanels) {
-                u.Draw(UISpriteBatch);
-            }
+            CurrentScreen.Draw(UISpriteBatch);
             UISpriteBatch.End();
         }
 
@@ -57,12 +87,12 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Close the title screen and start playing the game.
+        /// Close the title screen and load the chosen world.
         /// </summary>
-        private static void BeginPlay() {
+        private static void BeginPlay(String worldName) {
             CurrentGameState = GameState.Playing;
             Initialized = false;
-            UIPanels.Clear();
+            SaveManager.LoadMap(worldName);
         }
     }
 }

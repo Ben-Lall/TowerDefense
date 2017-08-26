@@ -113,7 +113,7 @@ namespace TowerDefense {
         /// <param name="b"></param>
         /// <param name="height"></param>
         public void AddButton(Button b) {
-            int yOffset = Buttons.Count == 0 ? ButtonStartHeight : Buttons.Last().Value.Y + Y_BUTTON_BUFFER;
+            int yOffset = Buttons.Count == 0 ? ButtonStartHeight : Buttons.Last().Value.Y + Buttons.Last().Key.Height + Y_BUTTON_BUFFER;
             int xOffset = (Bounds.Center.X - b.Size.X / 2) - Bounds.X;
             Buttons.Add(b, new Point(xOffset, yOffset));
         }

@@ -224,19 +224,10 @@ namespace Include {
             // Initialize Input
             Input.PreviousMouseWheel = Mouse.GetState().ScrollWheelValue;
 
-            // Initialize ActivePlayer
-            ActivePlayer = new Player(new Point(((MapWidth / 2) - 1) * TileWidth, ((MapHeight / 2) - 1) * TileHeight));
-            UIPanels = ActivePlayer.UIElements;
-            Camera = new Camera2d(ActivePlayer.Pos.ToVector2(), ScreenWidth, ScreenHeight);
-            DrawSet.Add(ActivePlayer);
-
             // Initialize gameplay stuff.
-            SpawnRate = 6.0;
-            SpawnCooldown = 0;
-            HeatMap.Initialize();
-            WorldMap.Initialize();
-            TileMode = TileDrawMode.Default;
             CurrentGameState = GameState.Title;
+            TileMode = TileDrawMode.Default;
+
         }
 
         /** General Helper Methods **/

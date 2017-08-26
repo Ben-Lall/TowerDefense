@@ -24,17 +24,6 @@ namespace TowerDefense {
         /// </summary>
         private static Tile[,] Map;
 
-        /** AutoMap **/
-
-
-        /// <summary>
-        /// Initialize the world map.
-        /// </summary>
-        public static void Initialize() {
-            Map = new Tile[MapHeight, MapWidth];
-            GenerateMap();
-        }
-
         /// <summary>
         /// Get the tile at the given point.
         /// </summary>
@@ -56,9 +45,10 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Generate a new world map.
+        /// Generate a new world map, and save it with the given name.
         /// </summary>
-        static void GenerateMap() {
+        public static void GenerateMap(String name) {
+            Map = new Tile[MapHeight, MapWidth];
             Random r = new Random();
 
             // Create a voronoi diagram to determine biome areas.
@@ -87,26 +77,22 @@ namespace TowerDefense {
                 }
             }
 
-            AddTower(new Tower(HubTemplate, new Point(MapWidth / 2, MapHeight / 2)));
-            SaveMap();
+            SaveManager.SaveMap(name);
         }
 
         /// <summary>
-        /// Save the world map to a file.
+        /// Load the world map from the given filestream.
         /// </summary>
-        public static void SaveMap() {
-            // Build a temporary file from the current world map.
-            FileStream mapTemp = new FileStream("world.sav.tmp", FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-            for(int y = 0; y < MapHeight; y++) {
+        /// <param name="f"></param>
+        public static void LoadFromFile(FileStream f) {
+            Map = new Tile[MapHeight, MapWidth];
+            byte[] bytes = new byte[Tile.TileDataSize];
+            for (int y = 0; y < MapHeight; y++) {
                 for(int x = 0; x < MapWidth; x++) {
-                    mapTemp.Write(At(x, y).ToByteArray(), 0, Tile.TileDataSize);
+                    f.Read(bytes, 0, Tile.TileDataSize);
+                    Map[y, x] = Tile.LoadFromByteArray(x, y, bytes);
                 }
             }
-
-            // Save the temporary file to the real file and delete the temporary.
-            mapTemp.Dispose();
-            File.Copy("world.sav.tmp", "world.sav", true);
-            File.Delete("world.sav.tmp");
         }
 
         /// <summary>
