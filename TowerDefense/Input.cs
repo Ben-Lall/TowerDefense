@@ -98,8 +98,10 @@ namespace TowerDefense {
                 } else if (IsPlacingTower) {// Stop tower placement
                     IsPlacingTower = false;
                     PendingTowerTemplate = null;
-                } else if (!IsPlacingTower) {
+                } else if (!IsPlacingTower && HasSelectedTowers()) {
                     ClearTowerIllumination();
+                } else {
+                    ActivePlayer.ToggleMenu();
                 }
             } else if (Keyboard.GetState().IsKeyUp(Keys.Escape)) {
                 BackPressed = false;

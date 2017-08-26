@@ -59,6 +59,11 @@ namespace TowerDefense {
         public int HeightTiles { get => Template.Height; }
 
         /// <summary>
+        /// The number of bytes of memory each tower takes when being saved.
+        /// </summary>
+        public static int TowerDataSize { get => 9; }
+
+        /// <summary>
         /// Constructor for a Tower, using a TowerTemplate
         /// </summary>
         /// <param name="template">Template used to construct this tower.</param>
@@ -67,9 +72,9 @@ namespace TowerDefense {
             Template = template;
             Sprite = Template.Sprite;
             TilePos = pos;
-            Width = template.Width * TileWidth;
-            Height = template.Height * TileHeight;
-            MaxHealth = template.MaxHealth;
+            Width = Template.Width * TileWidth;
+            Height = Template.Height * TileHeight;
+            MaxHealth = Template.MaxHealth;
             CurrentHealth = MaxHealth;
         }
 
@@ -181,6 +186,58 @@ namespace TowerDefense {
         /// <returns>Return true if this tower overlaps the given point. False otherwise.</returns>
         public bool ContainsTile(Point p) {
             return (TileX <= p.X && p.X < TileX + WidthTiles && TileY <= p.Y && p.Y < TileY + HeightTiles);
+        }
+
+        /// <summary>
+        /// Get the conversion of this tower to a byte array.
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToByteArray() {
+            byte[] bytes = new byte[TowerDataSize];
+            bytes[0] = (byte)Type;
+            bytes[1] = (byte)(TileX >> 8);
+            bytes[2] = (byte)(TileX);
+            bytes[3] = (byte)(TileY >> 8);
+            bytes[4] = (byte)(TileY);
+            bytes[5] = (byte)(CurrentHealth >> 8);
+            bytes[6] = (byte)CurrentHealth;
+            bytes[7] = (byte)(int)Cooldown;
+            // Get the decimal part of the cooldown
+            int cooldownFrac = 0;
+            double frac = Cooldown - (int)Cooldown;
+            for(int i = 0; i < 8; i++) {
+                frac *= 2;
+                if(frac >= 1) {
+                    cooldownFrac |= 1;
+                    frac -= 1;
+                }
+                cooldownFrac = cooldownFrac << 1;
+            }
+            bytes[8] = (byte)cooldownFrac;
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// Instantiate and return a new tile constructed from the given byte array.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        public static Tower LoadFromByteArray(byte[] bytes) {
+            Tower t = new Tower(new TowerTemplate((TowerType)bytes[0]), new Point(bytes[1] << 8 | bytes[2], bytes[3] << 8 | bytes[4]));
+            t.CurrentHealth = bytes[5] << 8 | bytes[6];
+            // Add the fractional part of the cooldown.
+            t.Cooldown = bytes[7];
+            double frac = 1 / Byte.MaxValue;
+            for(int i = 0; i < 8; i++) {
+                int mask = 1 << i;
+                if((bytes[8] & mask) != 0) {
+                    t.Cooldown += frac;
+                }
+                frac *= 2;
+            }
+
+            return t;
         }
     }
 }

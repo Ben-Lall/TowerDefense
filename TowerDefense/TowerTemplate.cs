@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 /// Enum listing the types of towers available:
 /// <para>Bolt: Fires a simple projectile</para>
 /// </summary>
-enum TowerType { Bolt, Hub }
+enum TowerType { Bolt, Hub, Max = Byte.MaxValue - 1 }
 
 namespace TowerDefense {
     /// <summary>

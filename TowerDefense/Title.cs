@@ -33,6 +33,7 @@ namespace TowerDefense {
         /// </summary>
         public static void Initialize() {
             Initialized = true;
+            WorldName = null;
             DisplayTitleScreen();
         }
 
@@ -92,6 +93,7 @@ namespace TowerDefense {
         private static void BeginPlay(String worldName) {
             CurrentGameState = GameState.Playing;
             Initialized = false;
+            WorldName = worldName.Substring(0, worldName.IndexOf('.'));
             SaveManager.LoadMap(worldName);
         }
     }

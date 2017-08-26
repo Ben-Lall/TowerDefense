@@ -129,6 +129,11 @@ namespace Include {
         /// </summary>
         public static Player ActivePlayer { get; set; }
 
+        /// <summary>
+        /// The name of the currently loaded world.
+        /// </summary>
+        public static String WorldName { get; set; }
+
         /* Gameplay */
 
         /// <summary>
@@ -351,6 +356,13 @@ namespace Include {
             foreach (Tower t in Towers) {
                 t.Selected = false;
             }
+        }
+
+        /// <summary>
+        /// Check if there are any towers selected.
+        /// </summary>
+        public static bool HasSelectedTowers() {
+            return Towers.Any(x => x.Selected);
         }
 
         /** Drawing Helpers **/

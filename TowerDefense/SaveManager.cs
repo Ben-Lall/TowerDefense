@@ -25,16 +25,64 @@ namespace TowerDefense {
             String tempFileName = fileName + TempExtension;
             // Build a temporary file from the current world map.
             FileStream mapTemp = new FileStream(tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-            for (int y = 0; y < MapHeight; y++) {
-                for (int x = 0; x < MapWidth; x++) {
-                    mapTemp.Write(WorldMap.At(x, y).ToByteArray(), 0, Tile.TileDataSize);
-                }
-            }
+            SaveWorldHeader(mapTemp);
+            SaveTiles(mapTemp);
+            SaveTowers(mapTemp);
 
             // Save the temporary file to the real file and delete the temporary.
             mapTemp.Dispose();
             File.Copy(tempFileName, fileName, true);
             File.Delete(tempFileName);
+        }
+
+        /// <summary>
+        /// Save and exit the currently open map.
+        /// </summary>
+        public static void SaveAndExit() {
+            CurrentGameState = GameState.Title;
+            SaveMap(WorldName);
+            Monsters.Clear();
+            Towers.Clear();
+            DrawSet.Clear();
+            Effects.Clear();
+            Players.Clear();
+        }
+
+        /// <summary>
+        /// Write the world map header to the filestream.
+        /// </summary>
+        /// <param name="f"></param>
+        public static void SaveWorldHeader(FileStream f) {
+            // Write the MapWidth and MapHeight
+            byte[] bytes = new byte[4];
+            bytes[0] = (byte)(MapWidth >> 8);
+            bytes[1] = (byte)MapWidth;
+            bytes[2] = (byte)(MapHeight >> 8);
+            bytes[3] = (byte)MapHeight;
+            f.Write(bytes, 0, bytes.Count());
+        }
+
+        /// <summary>
+        /// Write all tiles to the filestream.
+        /// </summary>
+        /// <param name="f"></param>
+        public static void SaveTiles(FileStream f) {
+            for (int y = 0; y < MapHeight; y++) {
+                for (int x = 0; x < MapWidth; x++) {
+                    f.Write(WorldMap.At(x, y).ToByteArray(), 0, Tile.TileDataSize);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Write the Towers to the filestream
+        /// </summary>
+        /// <param name="f"></param>
+        public static void SaveTowers(FileStream f) {
+            foreach(Tower t in Towers) {
+                f.Write(t.ToByteArray(), 0, Tower.TowerDataSize);
+            }
+            f.Write(new byte[] { Byte.MaxValue }, 0, 1); // Write end of towers signifier
         }
 
         /// <summary>
@@ -50,7 +98,9 @@ namespace TowerDefense {
             SpawnRate = 6.0;
             SpawnCooldown = 0;
             HeatMap.Initialize();
-            WorldMap.LoadFromFile(new FileStream(name, FileMode.Open, FileAccess.ReadWrite, FileShare.None));
+            FileStream f = new FileStream(name, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            WorldMap.LoadFromFile(f);
+            f.Dispose();
         }
 
 
@@ -62,7 +112,7 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Return a sorted array of strings of the names of loadable worlds.
+        /// Return a sorted enumerable collection of strings of the names of loadable worlds.
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<String> ListLoadableWorlds() {
@@ -83,7 +133,6 @@ namespace TowerDefense {
                     num += 1;
                 }
             }
-
             return name + num;
         }
 

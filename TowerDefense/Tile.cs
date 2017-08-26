@@ -108,7 +108,7 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Instantiate and return a new tile loaded from the given byte array.
+        /// Instantiate and return a new tile constructed from the given byte array.
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>

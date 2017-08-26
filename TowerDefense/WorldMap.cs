@@ -85,12 +85,52 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="f"></param>
         public static void LoadFromFile(FileStream f) {
+            ReadHeader(f);
+            ReadTiles(f);
+            LoadTowers(f);
+        }
+
+        /// <summary>
+        /// Read and load in the data in the header.
+        /// </summary>
+        /// <param name="f"></param>
+        static void ReadHeader(FileStream f) {
+            byte[] bytes = new byte[4];
+            f.Read(bytes, 0, 4);
+            MapWidth = bytes[0] << 8 | bytes[1];
+            MapHeight = bytes[2] << 8 | bytes[3];
             Map = new Tile[MapHeight, MapWidth];
+        }
+
+        /// <summary>
+        /// Read in the tiles stored from the given filestream.
+        /// </summary>
+        /// <param name="f"></param>
+        static void ReadTiles(FileStream f) {
             byte[] bytes = new byte[Tile.TileDataSize];
             for (int y = 0; y < MapHeight; y++) {
-                for(int x = 0; x < MapWidth; x++) {
+                for (int x = 0; x < MapWidth; x++) {
                     f.Read(bytes, 0, Tile.TileDataSize);
                     Map[y, x] = Tile.LoadFromByteArray(x, y, bytes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Read in the towers from the given filestream.
+        /// </summary>
+        /// <param name="f"></param>
+        static void LoadTowers(FileStream f) {
+            byte[] bytes = new byte[Tower.TowerDataSize];
+            f.Read(bytes, 0, 1);
+            // Check that there are any towers to iterate through.
+            if(bytes[0] != Byte.MaxValue) {
+                f.Seek(-1, SeekOrigin.Current);
+                f.Read(bytes, 0, Tower.TowerDataSize);
+                // Iterate and add towers until the end of the towers section is reached.
+                while (bytes[0] != Byte.MaxValue) {
+                    AddTower(Tower.LoadFromByteArray(bytes));
+                    f.Read(bytes, 0, Tower.TowerDataSize);
                 }
             }
         }

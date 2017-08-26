@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using static Include.Globals;
 
-
 namespace TowerDefense {
     class Player : GameplayObject {
 
@@ -41,6 +40,11 @@ namespace TowerDefense {
         private AutoMap aMap;
 
         /// <summary>
+        /// This player's escape menu.
+        /// </summary>
+        private UIPanel Menu;
+
+        /// <summary>
         /// Whether or not this player's map has been toggled.
         /// </summary>
         public bool MapOverlayToggled { get => aMap.Visible; }
@@ -67,6 +71,13 @@ namespace TowerDefense {
             // The AutoMap
             aMap = new AutoMap(Pos.ToVector2());
             UIElements.Add(aMap);
+            // The menu
+            int width = ScreenWidth / 6;
+            int height = ScreenHeight / 6;
+            Menu = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth / 2 - width / 2, ScreenHeight / 2 - height / 2, width, height), UIType.Menu, 8);
+            Menu.AddButton(new Button("Save & Exit", Art.MenuPanel, () => SaveManager.SaveAndExit()));
+            UIElements.Add(Menu);
+            Menu.Visible = false;
         }
 
         /// <summary>
@@ -176,6 +187,13 @@ namespace TowerDefense {
         /// </summary>
         public void ToggleMapUI() {
             aMap.Visible = !aMap.Visible;
+        }
+
+        /// <summary>
+        /// Toggle this player's menu.
+        /// </summary>
+        public void ToggleMenu() {
+            Menu.Visible = !Menu.Visible;
         }
     }
 }
