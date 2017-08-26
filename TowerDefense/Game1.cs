@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+enum GameState { Title, Loading, Playing, Paused }
+
 namespace TowerDefense {
     /// <summary>
     /// This is the main type for the game.
@@ -61,8 +63,26 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
-            Include.Globals.MouseState = Mouse.GetState();
             SortCollections();
+            if (CurrentGameState == GameState.Title) {
+                if(!Title.Initialized) {
+                    Title.Initialize();
+                }
+                Title.Update(gameTime);
+            } else if (CurrentGameState == GameState.Loading) {
+
+            } else if (CurrentGameState == GameState.Playing) {
+                UpdatePlaying(gameTime);
+            }
+            base.Update(gameTime);
+        }
+
+
+        /// <summary>
+        /// Update method for when the game is in the playing state.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        void UpdatePlaying(GameTime gameTime) {
             if (!Paused) {
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
@@ -71,10 +91,8 @@ namespace TowerDefense {
             }
 
             if (IsActive) {
-                Input.HandleInput();
+                Input.HandleGameInput();
             }
-
-            base.Update(gameTime);
         }
 
         /// <summary>
@@ -143,7 +161,22 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Blue);
+            if (CurrentGameState == GameState.Title) {
+                Title.Draw();
+            } else if (CurrentGameState == GameState.Loading) {
 
+            } else if (CurrentGameState == GameState.Playing) {
+                DrawPlaying(gameTime);
+            }
+
+            base.Draw(gameTime);
+        }
+
+        /// <summary>
+        /// Draw method for when the game is in the playing state.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        void DrawPlaying(GameTime gameTime) {
             /* Draw world elements */
             WorldSpriteBatch.Begin(SpriteSortMode.Deferred,
                     null, SamplerState.PointClamp, null, null, null, Camera.GetTransformation());
@@ -169,8 +202,6 @@ namespace TowerDefense {
             ActivePlayer.DrawUI();
             DrawDebug();
             UISpriteBatch.End();
-
-            base.Draw(gameTime);
         }
 
         /// <summary>
@@ -260,11 +291,11 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMap() {
             // Shade in the tiles within the camera's viewport based on tile draw mode.
-            if (TileMode == Include.TileDrawMode.DEFAULT) {
+            if (TileMode == Include.TileDrawMode.Default) {
                 WorldMap.Draw();
-            } else if (TileMode == Include.TileDrawMode.HEATMAP) {
+            } else if (TileMode == Include.TileDrawMode.HeatMap) {
                 HeatMap.Draw();
-            } else if(TileMode == Include.TileDrawMode.HEATMAP_NUMBERS) {
+            } else if(TileMode == Include.TileDrawMode.HeatMapNumbers) {
                 HeatMap.Draw(true);
             }
 

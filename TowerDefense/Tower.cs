@@ -83,10 +83,10 @@ namespace TowerDefense {
 
             // Draw this tower, with sprite positioning dependent on tower type.
             switch(Template.Type) {
-                case TowerType.BOLT:
+                case TowerType.Bolt:
                     Sprite.Draw(new Point(CenterPoint.X, CenterPoint.Y - Height / 2), WorldSpriteBatch);
                     break;
-                case TowerType.HUB:
+                case TowerType.Hub:
                     Sprite.Draw(CenterPoint, WorldSpriteBatch);
                     break;
             }
@@ -103,7 +103,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime) {
-            ((TowerSprite)Sprite).Update(gameTime, TowerAnimationType.IDLE);
+            ((TowerSprite)Sprite).Update(gameTime, TowerAnimationType.Idle);
 
             Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
             if (Cooldown == 0) {

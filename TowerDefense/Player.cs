@@ -59,8 +59,9 @@ namespace TowerDefense {
             // Personal UI elements
             UIElements = new List<UIPanel>();
             // The towerPanel
-            Rectangle buttonBox = new Rectangle(ScreenWidth - MenuPanelWidth + (MenuPanelWidth / 4), 5, MenuPanelWidth / 2, MenuPanelHeight / 12);
-            UIPanel towerPanel = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth - MenuPanelWidth, 0, MenuPanelWidth, MenuPanelHeight), null, UIType.TOWERPANEL);
+            int menuPanelWidth = ScreenWidth / 8;
+            Rectangle buttonBox = new Rectangle(ScreenWidth - menuPanelWidth + (menuPanelWidth / 4), 5, menuPanelWidth / 2, ScreenHeight / 12);
+            UIPanel towerPanel = new UIPanel(Art.MenuPanel, new Rectangle(ScreenWidth - menuPanelWidth, 0, menuPanelWidth, ScreenHeight), null, UIType.TowerPanel);
             towerPanel.AddButton(new Button(buttonBox, Art.TowerButton, Art.Tower, () => BeginTowerPlacement(UlTowers[0])));
             UIElements.Add(towerPanel);
             // The AutoMap
@@ -135,7 +136,7 @@ namespace TowerDefense {
         /// </summary>
         private void UpdateUI() {
             foreach(UIPanel u in UIElements) {
-                if(u.Type == UIType.TOWERPANEL) {
+                if(u.Type == UIType.TowerPanel) {
                     u.Visible = !MapOverlayToggled && !IsPlacingTower;
                 }
             }

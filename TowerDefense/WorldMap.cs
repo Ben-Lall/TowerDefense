@@ -12,7 +12,7 @@ namespace TowerDefense {
     /// <summary>
     /// Types of world geography.
     /// </summary>
-    enum GeoType { NONE, FIELD, SWAMP, DESERT, TUNDRA, CAVE, NUMBER_OF_GEOGRAPHY_TYPES };
+    enum GeoType { None, Field, Swamp, Desert, Tundra, Cave, NumberOfGeoTypes};
 
     /// <summary>
     /// A Matrix of Tiles representing the world map.
@@ -64,12 +64,12 @@ namespace TowerDefense {
             GeoType[,] voronoi = new GeoType[MapHeight, MapWidth];
 
             // Create a set of seeds.
-            Point[] seeds = new Point[(int)GeoType.NUMBER_OF_GEOGRAPHY_TYPES];
-            seeds[(int)GeoType.FIELD] = new Point(MapWidth / 2, MapHeight / 2);
-            seeds[(int)GeoType.SWAMP] = new Point(3 * MapWidth / 4, 3 * MapHeight / 4);
-            seeds[(int)GeoType.DESERT] = new Point(MapWidth / 4, MapHeight / 4);
-            seeds[(int)GeoType.TUNDRA] = new Point(MapWidth / 4, 3 * MapHeight / 4);
-            seeds[(int)GeoType.CAVE] = new Point(3 * MapWidth / 4, MapHeight / 4);
+            Point[] seeds = new Point[(int)GeoType.NumberOfGeoTypes];
+            seeds[(int)GeoType.Field] = new Point(MapWidth / 2, MapHeight / 2);
+            seeds[(int)GeoType.Swamp] = new Point(3 * MapWidth / 4, 3 * MapHeight / 4);
+            seeds[(int)GeoType.Desert ] = new Point(MapWidth / 4, MapHeight / 4);
+            seeds[(int)GeoType.Tundra] = new Point(MapWidth / 4, 3 * MapHeight / 4);
+            seeds[(int)GeoType.Cave] = new Point(3 * MapWidth / 4, MapHeight / 4);
 
             // Initialize voronoi
             for (int y = 0; y < MapHeight; y++) {
@@ -82,7 +82,7 @@ namespace TowerDefense {
             for (int y = 0; y < MapHeight; y++) {
                 for (int x = 0; x < MapWidth; x++) {
                     int ID = GetSpriteIDFromGeoType(voronoi[y, x], r);
-                    Map[y, x] = new Tile(TileType.OPEN, x, y, voronoi[y, x], ID);
+                    Map[y, x] = new Tile(TileType.Open, x, y, voronoi[y, x], ID);
                 }
             }
 
@@ -101,14 +101,14 @@ namespace TowerDefense {
             int offset = 0;
 
             switch(gt) {
-                case GeoType.FIELD:
+                case GeoType.Field:
                     if (rand >= 0.90) {
                         offset = 2;
                     } else if (rand >= 0.75) {
                         offset = 1;
                     }
                     return Art.FieldStartIndex + offset;
-                case GeoType.SWAMP:
+                case GeoType.Swamp:
                     if (rand >= 0.98) {
                         offset = 4;
                     } else if (rand >= 0.92) {
@@ -117,21 +117,21 @@ namespace TowerDefense {
                         offset = 1;
                     }
                     return Art.SwampStartIndex + offset;
-                case GeoType.DESERT:
+                case GeoType.Desert:
                     if (rand >= 0.90) {
                         offset = 2;
                     } else if (rand >= 0.75) {
                         offset = 1;
                     }
                     return Art.DesertStartIndex + offset;
-                case GeoType.CAVE:
+                case GeoType.Cave:
                     if (rand >= 0.98) {
                         offset = 2;
                     } else if (rand >= 0.80) {
                         offset = 1;
                     }
                     return Art.CaveStartIndex + offset;
-                case GeoType.TUNDRA:
+                case GeoType.Tundra:
                     if (rand >= 0.90) {
                         offset = 2;
                     } else if (rand >= 0.75) {
@@ -212,7 +212,7 @@ namespace TowerDefense {
                 }
                 Debug.Assert(y > 0 && x > 0);
                 if (At(x / TileWidth, y / TileHeight).IsEmpty()) {
-                    AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.IMP, new Point(x, y)));
+                    AddMonster(new Monster(new CreatureSprite(Art.Imp), MonsterType.Imp, new Point(x, y)));
                 }
             }
         }

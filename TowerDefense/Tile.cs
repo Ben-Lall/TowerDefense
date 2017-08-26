@@ -6,12 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using static Include.Globals;
 
-
-
 /// <summary>
 /// Enumerator representing the different types of possible tiles
 /// </summary>
-enum TileType { OPEN, LIMITED, WALL}
+enum TileType { Open, Limited, Wall}
 
 namespace TowerDefense {
     /// <summary>
@@ -71,7 +69,7 @@ namespace TowerDefense {
         /// </summary>
         /// <returns></returns>
         public bool IsEmpty() {
-            return Type == TileType.OPEN && !ContainsTower;
+            return Type == TileType.Open && !ContainsTower;
         }
 
         /// <summary>
@@ -79,7 +77,7 @@ namespace TowerDefense {
         /// </summary>
         /// <returns></returns>
         public bool ObstructsTower() {
-            return ContainsTower || Type == TileType.WALL;
+            return ContainsTower || Type == TileType.Wall;
         }
 
         /// <summary>

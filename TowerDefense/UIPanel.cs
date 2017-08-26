@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TowerDefense {
-    enum UIType { TOWERPANEL, AUTOMAP, NUMBER_OF_UI_TYPES}
+    enum UIType { TowerPanel, Automap, Menu }
 
     class UIPanel {
 
@@ -61,11 +61,11 @@ namespace TowerDefense {
 
             // Define depth based on the type of UI.
             switch(Type) {
-                case UIType.TOWERPANEL:
+                case UIType.TowerPanel:
                     Depth = 50;
                     break;
-                case UIType.AUTOMAP:
-                    Depth = 0;
+                case UIType.Menu:
+                    Depth = 10;
                     break;
                 default:
                     Depth = 30;
@@ -98,11 +98,11 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Determine if the given point is within the bounds of this UI Panel, and that this UI Panel is visible.
+        /// Determine if the given point is within the bounds of this UI Panel, as long as this UI Panel is visible.
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        public bool IsClicked(Point p) {
+        public bool Contains(Point p) {
             return Visible && Bounds.Contains(p);
         }
 

@@ -10,7 +10,7 @@ namespace TowerDefense {
     /// <summary>
     /// Enumerator detailing the types of animations.
     /// </summary>
-    enum CreatureAnimationType { IDLE, LEFT, RIGHT, UP, DOWN, NUMBER_OF_ANIMATION_TYPES }
+    enum CreatureAnimationType { Idle, Left, Right, Up, Down, NumberOfAnimationTypes }
 
     /// <summary>
     /// Class that draws animated sprites for creatures.
@@ -33,7 +33,7 @@ namespace TowerDefense {
         /// <param name="spriteSheet">2D Array of sprites, built following the structure of AnimationType.</param>
         /// <param name="timePerFrame">The amount of time for each frame to remain visible (measured in seconds).</param>
         public CreatureSprite(Texture2D[][] spriteSheet, double timePerFrame = 0.2) {
-            FrameType = CreatureAnimationType.IDLE;
+            FrameType = CreatureAnimationType.Idle;
             SpriteSheet = spriteSheet;
             Frame = 0;
             TimePerFrame = timePerFrame;
@@ -45,7 +45,7 @@ namespace TowerDefense {
         /// <param name="template">The AnimatedSprite whose sprite data is to be copied.</param>
         /// <param name="timePerFrame">The amount of time for each frame to remain visible (measured in seconds).</param>
         public CreatureSprite(AnimatedSprite template, double timePerFrame = 0.2) {
-            FrameType = CreatureAnimationType.IDLE;
+            FrameType = CreatureAnimationType.Idle;
             SpriteSheet = template.SpriteSheet;
             Frame = 0;
             TimePerFrame = timePerFrame;
@@ -58,19 +58,19 @@ namespace TowerDefense {
         /// <param name="dir">The direction this sprite is moving in.</param>
         public void Update(GameTime gameTime, Vector2 dir) {
             // Get the proper animation type
-            CreatureAnimationType animationType = CreatureAnimationType.IDLE;
+            CreatureAnimationType animationType = CreatureAnimationType.Idle;
             if (!dir.Equals(Vector2.Zero)) {
                 if(Math.Abs(dir.X) > Math.Abs(dir.Y)) { // Movement is tending more towards X axis
                     if (dir.X < 0) {
-                        animationType = CreatureAnimationType.LEFT;
+                        animationType = CreatureAnimationType.Left;
                     } else {
-                        animationType = CreatureAnimationType.RIGHT;
+                        animationType = CreatureAnimationType.Right;
                     }
                 } else { // Movement is tending more towards Y axis
                     if (dir.Y < 0) {
-                        animationType = CreatureAnimationType.UP;
+                        animationType = CreatureAnimationType.Up;
                     } else {
-                        animationType = CreatureAnimationType.DOWN;
+                        animationType = CreatureAnimationType.Down;
                     }
                 }
             }

@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 
 /// <summary>
-/// Enum containing the different types of monster.
+/// The different types of monster.
 /// </summary>
-enum MonsterType { IMP, NUMBER_OF_MONSTERS }
+enum MonsterType { Imp, NumberOfMonsters}
 
-enum CombatType { MELEE, RANGED, NUMBER_OF_COMBAT_TYPES }
+/// <summary>
+/// The different combat styles a monster can have.
+/// </summary>
+enum CombatType { Melee, Ranged }
 
 namespace TowerDefense {
     /// <summary>
@@ -77,8 +80,8 @@ namespace TowerDefense {
             Pos = pos;
             Type = type;
             switch(Type) {
-                case MonsterType.IMP:
-                    CombatType = CombatType.MELEE;
+                case MonsterType.Imp:
+                    CombatType = CombatType.Melee;
                     Speed = 8.2;
                     MaxHealth = 10;
                     AttackDamage = 3;
@@ -111,7 +114,7 @@ namespace TowerDefense {
             Debug.Assert(CenterPoint.X >= 0 && CenterPoint.Y >= 0 && CenterPoint.X < MapWidth * TileWidth && CenterPoint.Y < MapHeight * TileHeight, "Violation of: Monster is dimensions of the map");
             if (Cooldown > 0) { // Handle cooldown before this monster can take any other actions.
                 Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
-                if (CombatType == CombatType.MELEE) { // Give displacement for drawing "bash" attack animation
+                if (CombatType == CombatType.Melee) { // Give displacement for drawing "bash" attack animation
                     Vector2 dirVector = HeatMap.GetDirVector(CenterPoint);
 
                     ((CreatureSprite)Sprite).Update(gameTime, dirVector);
@@ -148,7 +151,7 @@ namespace TowerDefense {
             if (Target != null && Target.IsAlive) {
                 Target.TakeDamage(AttackDamage);
                 Cooldown = 1.0f / AttackRate;
-                if (CombatType == CombatType.RANGED) {
+                if (CombatType == CombatType.Ranged) {
                     Effects.Add(new Bolt(CenterPoint.ToVector2(), Target.CenterPoint.ToVector2(), Color.White, (float)(1.0 / AttackRate)));
                 }
             }

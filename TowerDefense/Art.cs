@@ -131,16 +131,16 @@ namespace TowerDefense {
             if (!dir.Exists)
                 throw new DirectoryNotFoundException();
 
-            Texture2D[][] spriteSheet = new Texture2D[(int)TowerAnimationType.NUMBER_OF_ANIMATION_TYPES][];
+            Texture2D[][] spriteSheet = new Texture2D[(int)TowerAnimationType.NumberOfAnimationTypes][];
             FileInfo[] files = dir.GetFiles("*.*");
 
-            spriteSheet[(int)TowerAnimationType.IDLE] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'i')];
+            spriteSheet[(int)TowerAnimationType.Idle] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'i')];
 
             foreach (FileInfo file in files) {
                 string fileName = Path.GetFileNameWithoutExtension(file.Name);
                 switch (fileName[0]) {
                     case 'i':
-                        spriteSheet[(int)TowerAnimationType.IDLE][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
+                        spriteSheet[(int)TowerAnimationType.Idle][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
                         break;
                 }
             }
@@ -159,32 +159,32 @@ namespace TowerDefense {
             if (!dir.Exists)
                 throw new DirectoryNotFoundException();
 
-            Texture2D[][] spriteSheet = new Texture2D[(int)CreatureAnimationType.NUMBER_OF_ANIMATION_TYPES][];
+            Texture2D[][] spriteSheet = new Texture2D[(int)CreatureAnimationType.NumberOfAnimationTypes][];
             FileInfo[] files = dir.GetFiles("*.*");
 
-            spriteSheet[(int)CreatureAnimationType.IDLE] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'i')];
-            spriteSheet[(int)CreatureAnimationType.LEFT] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'l')];
-            spriteSheet[(int)CreatureAnimationType.RIGHT] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'r')];
-            spriteSheet[(int)CreatureAnimationType.UP] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'u')];
-            spriteSheet[(int)CreatureAnimationType.DOWN] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'd')];
+            spriteSheet[(int)CreatureAnimationType.Idle] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'i')];
+            spriteSheet[(int)CreatureAnimationType.Left] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'l')];
+            spriteSheet[(int)CreatureAnimationType.Right] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'r')];
+            spriteSheet[(int)CreatureAnimationType.Up] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'u')];
+            spriteSheet[(int)CreatureAnimationType.Down] = new Texture2D[files.Count(f => Path.GetFileNameWithoutExtension(f.Name)[0] == 'd')];
 
             foreach (FileInfo file in files) {
                 string fileName = Path.GetFileNameWithoutExtension(file.Name);
                 switch(fileName[0]) {
                     case 'i':
-                        spriteSheet[(int)CreatureAnimationType.IDLE][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
+                        spriteSheet[(int)CreatureAnimationType.Idle][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
                         break;
                     case 'l':
-                        spriteSheet[(int)CreatureAnimationType.LEFT][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
+                        spriteSheet[(int)CreatureAnimationType.Left][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
                         break;
                     case 'r':
-                        spriteSheet[(int)CreatureAnimationType.RIGHT][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
+                        spriteSheet[(int)CreatureAnimationType.Right][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
                         break;
                     case 'u':
-                        spriteSheet[(int)CreatureAnimationType.UP][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
+                        spriteSheet[(int)CreatureAnimationType.Up][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
                         break;
                     case 'd':
-                        spriteSheet[(int)CreatureAnimationType.DOWN][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
+                        spriteSheet[(int)CreatureAnimationType.Down][fileName[fileName.Length - 1] - '0' - 1] = content.Load<Texture2D>(folderDirectory + "/" + fileName);
                         break;
                 }
             }

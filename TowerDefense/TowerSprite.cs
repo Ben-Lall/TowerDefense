@@ -10,7 +10,7 @@ namespace TowerDefense {
     /// <summary>
     /// Enumerator detailing the types of animations.
     /// </summary>
-    enum TowerAnimationType { IDLE, NUMBER_OF_ANIMATION_TYPES }
+    enum TowerAnimationType { Idle, NumberOfAnimationTypes }
 
     /// <summary>
     /// Class that draws animated sprites for creatures.

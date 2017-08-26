@@ -12,7 +12,7 @@ namespace Include {
     /// <summary>
     /// Create a new map class for this along with a new map class!
     /// </summary>
-    enum TileDrawMode { DEFAULT, HEATMAP, HEATMAP_NUMBERS, TOTAL_DRAW_MODES }
+    enum TileDrawMode { Default, HeatMap, HeatMapNumbers, TotalDrawModes }
 
     /// <summary>
     /// A class containing global variables and helper methods.
@@ -29,6 +29,11 @@ namespace Include {
         /// The game window.
         /// </summary>
         public static GameWindow Window { get; set; }
+
+        /// <summary>
+        /// The current game state.
+        /// </summary>
+        public static GameState CurrentGameState;
 
         /* SpriteBatches */
 
@@ -50,16 +55,10 @@ namespace Include {
         /* Input */
 
         /// <summary>
-        /// The mouse's current state.
-        /// </summary>
-        public static MouseState MouseState { get; set; }
-
-        /// <summary>
         /// The world position of the mouse.
         /// </summary>
         public static Vector2 WorldMousePos { get => Vector2.Transform(
-        new Vector2(MouseState.X, MouseState.Y), Matrix.Invert(Camera.Transform));
-        }
+        new Vector2(Mouse.GetState().X, Mouse.GetState().Y), Matrix.Invert(Camera.Transform)); }
 
         /* Graphics */
 
@@ -97,16 +96,6 @@ namespace Include {
         /// Point representing the coordinates of the top-left corner of the viewport, measured in units of tiles.
         /// </summary>
         public static Camera2d Camera { get; set; }
-
-        /// <summary>
-        /// Width in pixels of the menu panel.
-        /// </summary>
-        public static int MenuPanelWidth { get; set; }
-
-        /// <summary>
-        /// Height in pixels of the menu panel.
-        /// </summary>
-        public static int MenuPanelHeight { get; set; }
 
         /// <summary>
         /// A set of towers / creatures, sorted by coordinate position, so as to be drawn in the correct order.
@@ -219,10 +208,6 @@ namespace Include {
 
             Window = window;
 
-            // Set the menu panel's height and width.
-            MenuPanelWidth = ScreenWidth / 8;
-            MenuPanelHeight = ScreenHeight;
-
             // Set the map dimensions
             MapWidth = 2000;
             MapHeight = 2000;
@@ -237,7 +222,7 @@ namespace Include {
             UlTowers.Add(BoltTowerTemplate);
 
             // Initialize Input
-            Input.PreviousMouseWheel = MouseState.ScrollWheelValue;
+            Input.PreviousMouseWheel = Mouse.GetState().ScrollWheelValue;
 
             // Initialize ActivePlayer
             ActivePlayer = new Player(new Point(((MapWidth / 2) - 1) * TileWidth, ((MapHeight / 2) - 1) * TileHeight));
@@ -250,8 +235,8 @@ namespace Include {
             SpawnCooldown = 0;
             HeatMap.Initialize();
             WorldMap.Initialize();
-            TileMode = TileDrawMode.DEFAULT;
-            Paused = true;
+            TileMode = TileDrawMode.Default;
+            CurrentGameState = GameState.Title;
         }
 
         /** General Helper Methods **/
@@ -396,13 +381,14 @@ namespace Include {
 
         /// <summary>
         /// Return true if the cursor is on the map, false otherwise.
+        /// Assumes CurrentGameState is Playing
         /// </summary>
         /// <returns></returns>
         public static bool CursorIsOnMap() {
-            if (IsPlacingTower) {
-                return 0 < MouseState.X && MouseState.X < ScreenWidth && MouseState.Y > 0 && MouseState.Y < ScreenHeight;
-            }
-            return 0 < MouseState.X && MouseState.X < (ScreenWidth - MenuPanelWidth) && MouseState.Y > 0 && MouseState.Y < ScreenWidth;
+            MouseState ms = Mouse.GetState();
+            return 0 < ms.X && ms.X < ScreenWidth && ms.Y > 0 && 
+                ms.Y < ScreenHeight &&
+                UIPanels.TrueForAll(x => !x.Contains(ms.Position));
         }
 
         /// <summary>
@@ -483,38 +469,10 @@ namespace Include {
             
         }
 
-        /// <summary>
-        /// Starting from the start point, find the closest tower of the matching type, and return the distance from its closest tile.
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="target"></param>
-        /// <returns>The closest tile position of the target type, if any exist.  Returns 0 otherwise.</returns>
-        public static double GetClosestTileDistance(Point start, TowerType targetType) {
-            if (Towers.Count > 0 && Towers.Exists(t => t.Type == TowerType.HUB)) { 
-                double distance = int.MaxValue;
-                foreach (Tower t in Towers) {
-                    if (t.Type == targetType) {
-                        for (int y = 0; y < t.HeightTiles; y++) {
-                            for (int x = 0; x < t.WidthTiles; x++) {
-                                Point p = t.TilePos + new Point(x, y);
-                                double currentDistance = Distance(start, p);
-                                if (currentDistance <= distance) {
-                                    distance = currentDistance;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return distance;
-            }
-            return 0;
-        }
-
         /** Collision **/
         
-        public static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.BOLT); }
-        public static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.HUB); }
+        public static TowerTemplate BoltTowerTemplate { get => new TowerTemplate(TowerType.Bolt); }
+        public static TowerTemplate HubTemplate { get => new TowerTemplate(TowerType.Hub); }
 
     }
 }

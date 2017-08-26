@@ -50,9 +50,25 @@ namespace TowerDefense {
         public static int PreviousMouseWheel { get; set; }
 
         /// <summary>
-        /// Handle user input.
+        /// Handle user input during the gamestate where the title is displayed.
         /// </summary>
-        public static void HandleInput() {
+        public static void HandleTitleInput() {
+            // Update mouseState
+            MouseState mouseState = Mouse.GetState();
+
+            if (mouseState.LeftButton == ButtonState.Pressed && !MousePressed) {
+                HandleLeftMouseClick(mouseState);
+                MousePressed = true;
+            } else if (mouseState.LeftButton == ButtonState.Released) {
+                MousePressed = false;
+            }
+        }
+
+
+        /// <summary>
+        /// Handle user input during the gamestate where the game is playing.
+        /// </summary>
+        public static void HandleGameInput() {
             // Update mouseState
             MouseState mouseState = Mouse.GetState();
 
@@ -110,7 +126,7 @@ namespace TowerDefense {
             // Tile draw mode
             if (Keyboard.GetState().IsKeyDown(Keys.H) && !TileModePressed) {
                 TileModePressed = true;
-                TileMode = (Include.TileDrawMode)(((int)(TileMode) + 1) % (int)(Include.TileDrawMode.TOTAL_DRAW_MODES));
+                TileMode = (Include.TileDrawMode)(((int)(TileMode) + 1) % (int)(Include.TileDrawMode.TotalDrawModes));
             }
             if (Keyboard.GetState().IsKeyUp(Keys.H) && TileModePressed) {
                 TileModePressed = false;
@@ -195,15 +211,21 @@ namespace TowerDefense {
         /// <param name="mouseState">The mouse's current state.</param>
         /// <returns>The object that the mouse is hovering over, or null if it isn't mousing over any object.</returns>
         private static object GetClickedObject(MouseState mouseState) {
-            // Check if a UI element was clicked. 
-            foreach (UIPanel u in UIPanels) {
-                if (u.IsClicked(mouseState.Position)) {
+            // Check if a UI element was clicked.
+            List<UIPanel> UI = new List<UIPanel>();
+            if(CurrentGameState == GameState.Title) {
+                UI = Title.UIPanels;
+            } else {
+                UI = UIPanels;
+            }
+            foreach (UIPanel u in UI) {
+                if (u.Contains(mouseState.Position)) {
                     return u;
                 }
             }
 
             // Next, check if a tower was selected
-            if (CursorIsOnMap()) {
+            if (CurrentGameState == GameState.Playing && CursorIsOnMap()) {
                 Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
                 foreach (Tower t in Towers) {
                     if (t.ContainsTile(clickedTile)) {

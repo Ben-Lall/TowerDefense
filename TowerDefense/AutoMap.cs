@@ -20,7 +20,7 @@ namespace TowerDefense {
         bool Panning;
 
         public AutoMap(Vector2 startPos) {
-            Type = UIType.AUTOMAP;
+            Type = UIType.Automap;
             Depth = 0;
             Visible = false;
             Bounds = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
