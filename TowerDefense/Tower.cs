@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
+
 
 namespace TowerDefense {
     /// <summary>
@@ -82,10 +84,6 @@ namespace TowerDefense {
         /// Draw this tower to its position on the screen.
         /// </summary>
         public override void Draw() {
-            if (Selected) {
-                DrawBoundingBox();
-            }
-
             // Draw this tower, with sprite positioning dependent on tower type.
             switch(Template.Type) {
                 case TowerType.Bolt:

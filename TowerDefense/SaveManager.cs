@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
+
 
 
 namespace TowerDefense {
@@ -20,13 +22,16 @@ namespace TowerDefense {
         /// <summary>
         /// Save the world map to a file.
         /// </summary>
-        public static void SaveMap(String name) {
+        /// <param name="name">The name of the world.</param>
+        /// <param name="width">The width of the world, in units of tiles.</param>
+        /// <param name="height">The height of the world, in units of tiles.</param>
+        public static void SaveMap(String name, int width, int height) {
             String fileName = name + WorldSaveExtension;
             String tempFileName = fileName + TempExtension;
             // Build a temporary file from the current world map.
             FileStream mapTemp = new FileStream(tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-            SaveWorldHeader(mapTemp);
-            SaveTiles(mapTemp);
+            SaveWorldHeader(mapTemp, width, height);
+            SaveTiles(mapTemp, width, height);
             SaveTowers(mapTemp);
 
             // Save the temporary file to the real file and delete the temporary.
@@ -36,29 +41,18 @@ namespace TowerDefense {
         }
 
         /// <summary>
-        /// Save and exit the currently open map.
-        /// </summary>
-        public static void SaveAndExit() {
-            CurrentGameState = GameState.Title;
-            SaveMap(WorldName);
-            Monsters.Clear();
-            Towers.Clear();
-            DrawSet.Clear();
-            Effects.Clear();
-            Players.Clear();
-        }
-
-        /// <summary>
         /// Write the world map header to the filestream.
         /// </summary>
         /// <param name="f"></param>
-        public static void SaveWorldHeader(FileStream f) {
+        /// <param name="width">The width of the world, in units of tiles.</param>
+        /// <param name="height">The height of the world, in units of tiles.</param>
+        public static void SaveWorldHeader(FileStream f, int width, int height) {
             // Write the MapWidth and MapHeight
             byte[] bytes = new byte[4];
-            bytes[0] = (byte)(MapWidth >> 8);
-            bytes[1] = (byte)MapWidth;
-            bytes[2] = (byte)(MapHeight >> 8);
-            bytes[3] = (byte)MapHeight;
+            bytes[0] = (byte)(width >> 8);
+            bytes[1] = (byte)width;
+            bytes[2] = (byte)(height >> 8);
+            bytes[3] = (byte)height;
             f.Write(bytes, 0, bytes.Count());
         }
 
@@ -66,9 +60,11 @@ namespace TowerDefense {
         /// Write all tiles to the filestream.
         /// </summary>
         /// <param name="f"></param>
-        public static void SaveTiles(FileStream f) {
-            for (int y = 0; y < MapHeight; y++) {
-                for (int x = 0; x < MapWidth; x++) {
+        /// <param name="width">The width of the world, in units of tiles.</param>
+        /// <param name="height">The height of the world, in units of tiles.</param>
+        public static void SaveTiles(FileStream f, int width, int height) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
                     f.Write(WorldMap.At(x, y).ToByteArray(), 0, Tile.TileDataSize);
                 }
             }
@@ -79,8 +75,10 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="f"></param>
         public static void SaveTowers(FileStream f) {
-            foreach(Tower t in Towers) {
-                f.Write(t.ToByteArray(), 0, Tower.TowerDataSize);
+            if (Towers != null) {
+                foreach (Tower t in Towers) {
+                    f.Write(t.ToByteArray(), 0, Tower.TowerDataSize);
+                }
             }
             f.Write(new byte[] { Byte.MaxValue }, 0, 1); // Write end of towers signifier
         }
@@ -89,20 +87,40 @@ namespace TowerDefense {
         /// Load the map of the given name.
         /// </summary>
         public static void LoadMap(String name) {
-            // Initialize ActivePlayer
-            ActivePlayer = new Player(new Point(((MapWidth / 2) - 1) * TileWidth, ((MapHeight / 2) - 1) * TileHeight));
-            UIPanels = ActivePlayer.UIElements;
-            Camera = new Camera2d(ActivePlayer.Pos.ToVector2(), ScreenWidth, ScreenHeight);
-            DrawSet.Add(ActivePlayer);
-
-            SpawnRate = 6.0;
-            SpawnCooldown = 0;
-            HeatMap.Initialize();
             FileStream f = new FileStream(name, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            WorldMap.LoadFromFile(f);
+            InitializeGameState(f);
             f.Dispose();
         }
 
+        /// <summary>
+        /// Read and load in the data in the header.
+        /// </summary>
+        /// <param name="f"></param>
+        public static void ReadHeader(FileStream f) {
+            byte[] bytes = new byte[4];
+            f.Read(bytes, 0, 4);
+            MapWidth = bytes[0] << 8 | bytes[1];
+            MapHeight = bytes[2] << 8 | bytes[3];
+        }
+
+        /// <summary>
+        /// Read in the towers from the given filestream.
+        /// </summary>
+        /// <param name="f"></param>
+        public static void LoadTowers(FileStream f) {
+            byte[] bytes = new byte[Tower.TowerDataSize];
+            f.Read(bytes, 0, 1);
+            // Check that there are any towers to iterate through.
+            if (bytes[0] != Byte.MaxValue) {
+                f.Seek(-1, SeekOrigin.Current);
+                f.Read(bytes, 0, Tower.TowerDataSize);
+                // Iterate and add towers until the end of the towers section is reached.
+                while (bytes[0] != Byte.MaxValue) {
+                    AddTower(Tower.LoadFromByteArray(bytes));
+                    f.Read(bytes, 0, Tower.TowerDataSize);
+                }
+            }
+        }
 
         /// <summary>
         /// Check if there are any loadable worlds in the current directory.

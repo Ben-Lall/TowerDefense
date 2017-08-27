@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using static Include.GameState;
 using static Include.Globals;
+
 
 namespace TowerDefense {
     class AutoMap : UIPanel {

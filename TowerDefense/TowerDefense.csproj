@@ -43,6 +43,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AutoMap.cs" />
+    <Compile Include="GameState.cs" />
     <Compile Include="HeatMap.cs" />
     <Compile Include="CreatureSprite.cs" />
     <Compile Include="AnimatedSprite.cs" />

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
 
 namespace TowerDefense {
@@ -50,14 +51,25 @@ namespace TowerDefense {
         public static int PreviousMouseWheel { get; set; }
 
         /// <summary>
-        /// Handle user input during the gamestate where the title is displayed.
+        /// Handle the player's input.
         /// </summary>
-        public static void HandleTitleInput() {
+        public static void HandleInput() {
             // Update mouseState
             MouseState mouseState = Mouse.GetState();
+            if(CurrentGameState == GameStatus.Title) {
+                HandleTitleInput(mouseState);
+            } else {
+                HandleGameInput(mouseState);
+            }
+        }
 
+        /// <summary>
+        /// Handle user input during the gamestate where the title is displayed.
+        /// </summary>
+        public static void HandleTitleInput(MouseState mouseState) {
+            /** Mouse handling **/
             if (mouseState.LeftButton == ButtonState.Pressed && !MousePressed) {
-                HandleLeftMouseClick(mouseState);
+                TitleState.CurrentScreen.Click(mouseState.Position);
                 MousePressed = true;
             } else if (mouseState.LeftButton == ButtonState.Released) {
                 MousePressed = false;
@@ -68,10 +80,7 @@ namespace TowerDefense {
         /// <summary>
         /// Handle user input during the gamestate where the game is playing.
         /// </summary>
-        public static void HandleGameInput() {
-            // Update mouseState
-            MouseState mouseState = Mouse.GetState();
-
+        public static void HandleGameInput(MouseState mouseState) {
             /** Mouse handling **/
             if (mouseState.LeftButton == ButtonState.Pressed && !MousePressed) {
                 HandleLeftMouseClick(mouseState);
@@ -95,11 +104,10 @@ namespace TowerDefense {
                 BackPressed = true;
                 if (ActivePlayer.MapOverlayToggled) {
                     ActivePlayer.ToggleMapUI();
-                } else if (IsPlacingTower) {// Stop tower placement
-                    IsPlacingTower = false;
-                    PendingTowerTemplate = null;
-                } else if (!IsPlacingTower && HasSelectedTowers()) {
-                    ClearTowerIllumination();
+                } else if (ActivePlayer.IsPlacingTower) {// Stop tower placement
+                    ActivePlayer.PendingTowerTemplate = null;
+                } else if (!ActivePlayer.IsPlacingTower && ActivePlayer.HasSelectedTowers()) {
+                    ActivePlayer.ClearSelectedTowers();
                 } else {
                     ActivePlayer.ToggleMenu();
                 }
@@ -119,7 +127,7 @@ namespace TowerDefense {
             // Grid overlay toggle
             if (Keyboard.GetState().IsKeyDown(Keys.G) && !GridPressed) {
                 // Toggle grid overlay.
-                GridToggle = !GridToggle;
+                ActivePlayer.GridToggle = !ActivePlayer.GridToggle;
                 GridPressed = true;
             } else if (Keyboard.GetState().IsKeyUp(Keys.G) && GridPressed) {
                 GridPressed = false;
@@ -128,7 +136,7 @@ namespace TowerDefense {
             // Tile draw mode
             if (Keyboard.GetState().IsKeyDown(Keys.H) && !TileModePressed) {
                 TileModePressed = true;
-                TileMode = (Include.TileDrawMode)(((int)(TileMode) + 1) % (int)(Include.TileDrawMode.TotalDrawModes));
+                ActivePlayer.TileMode = (TileDrawMode)(((int)(ActivePlayer.TileMode) + 1) % (int)(TileDrawMode.TotalDrawModes));
             }
             if (Keyboard.GetState().IsKeyUp(Keys.H) && TileModePressed) {
                 TileModePressed = false;
@@ -145,11 +153,7 @@ namespace TowerDefense {
             // Delete button
             if (Keyboard.GetState().IsKeyDown(Keys.Delete) && !DeletePressed) {
                 DeletePressed = true;
-                foreach(Tower t in Towers) {
-                    if(t.Selected) {
-                        t.CurrentHealth = 0;
-                    }
-                }
+                ActivePlayer.RemoveSelectedTowers();
             }
             if (Keyboard.GetState().IsKeyUp(Keys.Delete) && DeletePressed) {
                 DeletePressed = false;
@@ -188,52 +192,13 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="mouseState">The mouse's current state.</param>
         private static void HandleLeftMouseClick(MouseState mouseState) {
-            object selectedItem = GetClickedObject(mouseState);
-            if (selectedItem != null) {
-                if (UIPanel.IsUIElement(selectedItem)) { // if a UIPanel was pressed
-                    ((UIPanel)selectedItem).Click(mouseState.Position);
-                } else if (selectedItem.GetType() == typeof(Tower)) { // if a tower was clicked
-                    if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift)) { // and shift was held
-                        ((Tower)selectedItem).Selected = !((Tower)selectedItem).Selected;
-                    } else { // shift was not held
-                        ClearTowerIllumination();
-                        ((Tower)selectedItem).Selected = true;
-                    }
+            foreach (UIPanel u in ActivePlayer.UIElements) {
+                if (u.Contains(mouseState.Position)) {
+                    u.Click(mouseState.Position);
+                    return;
                 }
-            } else if (IsPlacingTower && CursorIsOnMap() && ValidTowerLocation()) {
-                PlacePendingTower();
-            } else { // Actions that would deselect the selected towers on mouse click
-                ClearTowerIllumination();
             }
-        }
-
-        /// <summary>
-        /// Get the object that the mouse is hovering over.
-        /// </summary>
-        /// <param name="mouseState">The mouse's current state.</param>
-        /// <returns>The object that the mouse is hovering over, or null if it isn't mousing over any object.</returns>
-        private static object GetClickedObject(MouseState mouseState) {
-            // Check if a UI element was clicked.
-            if (CurrentGameState == GameState.Title) {
-                return Title.CurrentScreen.Contains(mouseState.Position) ? Title.CurrentScreen : null;
-            } else {
-                foreach (UIPanel u in UIPanels) {
-                    if (u.Contains(mouseState.Position)) {
-                        return u;
-                    }
-                }
-
-                // Next, check if a tower was selected
-                if (CurrentGameState == GameState.Playing && CursorIsOnMap()) {
-                    Point clickedTile = PixelToTile(WorldMousePos.ToPoint());
-                    foreach (Tower t in Towers) {
-                        if (t.ContainsTile(clickedTile)) {
-                            return t;
-                        }
-                    }
-                }
-                return null;
-            }
+            HandleWorldClick();
         }
     }
 }    

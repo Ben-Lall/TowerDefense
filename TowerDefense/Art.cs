@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework.Content;
 using System.IO;
 using static Include.Globals;
 
-
 namespace TowerDefense {
     /// <summary>
     /// A static class dedicated to art assets and all associated information.

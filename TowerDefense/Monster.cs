@@ -1,4 +1,6 @@
-﻿using static Include.Globals;
+﻿using static Include.GameState;
+using static Include.Globals;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;

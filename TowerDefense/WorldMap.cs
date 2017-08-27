@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
+
 
 
 namespace TowerDefense {
@@ -14,6 +16,11 @@ namespace TowerDefense {
     /// Types of world geography.
     /// </summary>
     enum GeoType { None, Field, Swamp, Desert, Tundra, Cave, NumberOfGeoTypes};
+
+    /// <summary>
+    /// Draw modes for the world map.
+    /// </summary>
+    enum TileDrawMode { Default, HeatMap, HeatMapNumbers, TotalDrawModes }
 
     /// <summary>
     /// A Matrix of Tiles representing the world map.
@@ -30,7 +37,6 @@ namespace TowerDefense {
         /// <param name="p"></param>
         /// <returns></returns>
         public static Tile At(Point p) {
-            Debug.Assert(p.X >= 0 && p.Y >= 0 && p.X < MapWidth && p.Y < MapHeight, "Violation of: p is within bounds.");
             return Map[p.Y, p.X];
         }
 
@@ -40,44 +46,46 @@ namespace TowerDefense {
         /// <param name="p"></param>
         /// <returns></returns>
         public static Tile At(int x, int y) {
-            Debug.Assert(x >= 0 && y >= 0 && x < MapWidth && y < MapHeight, "Violation of: (x, y) is within bounds.");
             return Map[y, x];
         }
 
         /// <summary>
         /// Generate a new world map, and save it with the given name.
         /// </summary>
-        public static void GenerateMap(String name) {
-            Map = new Tile[MapHeight, MapWidth];
+        /// <param name="name">The name of the world.</param>
+        /// <param name="width">The width of the world, in units of tiles.</param>
+        /// <param name="height">The height of the world, in units of tiles.</param>
+        public static void GenerateMap(String name, int width, int height) {
+            Map = new Tile[height, width];
             Random r = new Random();
 
             // Create a voronoi diagram to determine biome areas.
-            GeoType[,] voronoi = new GeoType[MapHeight, MapWidth];
+            GeoType[,] voronoi = new GeoType[height, width];
 
             // Create a set of seeds.
             Point[] seeds = new Point[(int)GeoType.NumberOfGeoTypes];
-            seeds[(int)GeoType.Field] = new Point(MapWidth / 2, MapHeight / 2);
-            seeds[(int)GeoType.Swamp] = new Point(3 * MapWidth / 4, 3 * MapHeight / 4);
-            seeds[(int)GeoType.Desert ] = new Point(MapWidth / 4, MapHeight / 4);
-            seeds[(int)GeoType.Tundra] = new Point(MapWidth / 4, 3 * MapHeight / 4);
-            seeds[(int)GeoType.Cave] = new Point(3 * MapWidth / 4, MapHeight / 4);
+            seeds[(int)GeoType.Field] = new Point(width / 2, height / 2);
+            seeds[(int)GeoType.Swamp] = new Point(3 * width / 4, 3 * height / 4);
+            seeds[(int)GeoType.Desert] = new Point(width / 4, height / 4);
+            seeds[(int)GeoType.Tundra] = new Point(width / 4, 3 * height / 4);
+            seeds[(int)GeoType.Cave] = new Point(3 * width / 4, height / 4);
 
             // Initialize voronoi
-            for (int y = 0; y < MapHeight; y++) {
-                for (int x = 0; x < MapWidth; x++) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
                     voronoi[y, x] = GetClosestSeed(new Point(x, y), seeds);
                 }
             }
 
             // Set tiles.
-            for (int y = 0; y < MapHeight; y++) {
-                for (int x = 0; x < MapWidth; x++) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
                     int ID = GetSpriteIDFromGeoType(voronoi[y, x], r);
                     Map[y, x] = new Tile(TileType.Open, x, y, voronoi[y, x], ID);
                 }
             }
 
-            SaveManager.SaveMap(name);
+            SaveManager.SaveMap(name, width, height);
         }
 
         /// <summary>
@@ -85,52 +93,13 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="f"></param>
         public static void LoadFromFile(FileStream f) {
-            ReadHeader(f);
-            ReadTiles(f);
-            LoadTowers(f);
-        }
-
-        /// <summary>
-        /// Read and load in the data in the header.
-        /// </summary>
-        /// <param name="f"></param>
-        static void ReadHeader(FileStream f) {
-            byte[] bytes = new byte[4];
-            f.Read(bytes, 0, 4);
-            MapWidth = bytes[0] << 8 | bytes[1];
-            MapHeight = bytes[2] << 8 | bytes[3];
             Map = new Tile[MapHeight, MapWidth];
-        }
 
-        /// <summary>
-        /// Read in the tiles stored from the given filestream.
-        /// </summary>
-        /// <param name="f"></param>
-        static void ReadTiles(FileStream f) {
             byte[] bytes = new byte[Tile.TileDataSize];
             for (int y = 0; y < MapHeight; y++) {
                 for (int x = 0; x < MapWidth; x++) {
                     f.Read(bytes, 0, Tile.TileDataSize);
                     Map[y, x] = Tile.LoadFromByteArray(x, y, bytes);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Read in the towers from the given filestream.
-        /// </summary>
-        /// <param name="f"></param>
-        static void LoadTowers(FileStream f) {
-            byte[] bytes = new byte[Tower.TowerDataSize];
-            f.Read(bytes, 0, 1);
-            // Check that there are any towers to iterate through.
-            if(bytes[0] != Byte.MaxValue) {
-                f.Seek(-1, SeekOrigin.Current);
-                f.Read(bytes, 0, Tower.TowerDataSize);
-                // Iterate and add towers until the end of the towers section is reached.
-                while (bytes[0] != Byte.MaxValue) {
-                    AddTower(Tower.LoadFromByteArray(bytes));
-                    f.Read(bytes, 0, Tower.TowerDataSize);
                 }
             }
         }
@@ -196,7 +165,7 @@ namespace TowerDefense {
         /// <param name="seeds">Array of seeds, where each seed's GeoType is represented by its index.</param>
         /// <returns></returns>
         static GeoType GetClosestSeed(Point p, Point[] seeds) {
-            double closestDistance = MapWidth * MapHeight;
+            double closestDistance = int.MaxValue;
             int geoType = 0;
             for(int i = 1; i < seeds.Count(); i++) {
                 double d = Distance(p, seeds[i]);

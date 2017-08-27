@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
 
 
@@ -11,7 +12,7 @@ namespace TowerDefense {
     /// <summary>
     /// The title screen.
     /// </summary>
-    static class Title {
+    static class TitleState {
         /// <summary>
         /// The list of UI Panels for the title screen.
         /// </summary>
@@ -52,7 +53,7 @@ namespace TowerDefense {
         /// </summary>
         static void DisplayPlayScreen() {
             CurrentScreen = DefaultUIPanel;
-            CurrentScreen.AddButton(new Button("Create New World", Art.MenuPanel, () => WorldMap.GenerateMap(SaveManager.NextDefaultWorldName())));
+            CurrentScreen.AddButton(new Button("Create New World", Art.MenuPanel, () => WorldMap.GenerateMap(SaveManager.NextDefaultWorldName(), 2000, 2000)));
             Color loadTextColor = SaveManager.HasLoadableWorlds() ? Color.Black : Color.Gray;
             CurrentScreen.AddButton(new Button("Load World", loadTextColor, Art.MenuPanel, DisplayLoadWorldScreen));
         }
@@ -84,14 +85,14 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         public static void Update(GameTime gameTime) {
-            Input.HandleTitleInput();
+            Input.HandleInput();
         }
 
         /// <summary>
         /// Close the title screen and load the chosen world.
         /// </summary>
         private static void BeginPlay(String worldName) {
-            CurrentGameState = GameState.Playing;
+            CurrentGameState = GameStatus.Playing;
             Initialized = false;
             WorldName = worldName.Substring(0, worldName.IndexOf('.'));
             SaveManager.LoadMap(worldName);

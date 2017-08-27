@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
+
 
 namespace TowerDefense
 {
@@ -90,11 +92,6 @@ namespace TowerDefense
         /// Whether or not this GameplayObject is alive.
         /// </summary>
         public bool IsAlive { get => CurrentHealth > 0; }
-
-        /// <summary>
-        /// Whether or not this GameplayObject has been selected.
-        /// </summary>
-        public bool Selected { get; set; }
 
         /// <summary>
         /// Sprite used for this GameplayObject.

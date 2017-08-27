@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Include.GameState;
 using static Include.Globals;
+
 
 
 namespace TowerDefense {
@@ -18,7 +20,7 @@ namespace TowerDefense {
         /// <summary>
         /// The maximum heat differential.
         /// </summary>
-        static float FieldMax { get => (float)SQRT2 * Player.SpawnUpperBound / TileWidth; }
+        static float FieldMax { get => (float)Include.Globals.SQRT2 * Player.SpawnUpperBound / TileWidth; }
 
         /// <summary>
         /// The color for a goal tile.

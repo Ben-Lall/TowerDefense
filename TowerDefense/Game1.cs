@@ -1,4 +1,5 @@
-﻿using static Include.Globals;
+﻿using static Include.GameState;
+using static Include.Globals;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -6,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-enum GameState { Title, Loading, Playing, Paused }
+enum GameStatus { Title, Loading, Playing, Paused }
 
 namespace TowerDefense {
     /// <summary>
@@ -27,11 +28,9 @@ namespace TowerDefense {
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize() {
-            // Set tile size to be 32x32
-            TileWidth = 32;
-            TileHeight = 32;
+            CurrentGameState = GameStatus.Title;
+            Include.Globals.Initialize(Window);
             base.Initialize();
-            InitializeGlobals(Window);
         }
 
         /// <summary>
@@ -63,15 +62,15 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
-            SortCollections();
-            if (CurrentGameState == GameState.Title) {
-                if(!Title.Initialized) {
-                    Title.Initialize();
+            if (CurrentGameState == GameStatus.Title) {
+                if(!TitleState.Initialized) {
+                    TitleState.Initialize();
                 }
-                Title.Update(gameTime);
-            } else if (CurrentGameState == GameState.Loading) {
+                TitleState.Update(gameTime);
+            } else if (CurrentGameState == GameStatus.Loading) {
 
-            } else if (CurrentGameState == GameState.Playing) {
+            } else if (CurrentGameState == GameStatus.Playing) {
+                SortCollections();
                 UpdatePlaying(gameTime);
             }
             base.Update(gameTime);
@@ -91,7 +90,7 @@ namespace TowerDefense {
             }
 
             if (IsActive) {
-                Input.HandleGameInput();
+                Input.HandleInput();
             }
         }
 
@@ -161,11 +160,11 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Blue);
-            if (CurrentGameState == GameState.Title) {
-                Title.Draw();
-            } else if (CurrentGameState == GameState.Loading) {
+            if (Include.Globals.CurrentGameState == GameStatus.Title) {
+                TitleState.Draw();
+            } else if (Include.Globals.CurrentGameState == GameStatus.Loading) {
 
-            } else if (CurrentGameState == GameState.Playing) {
+            } else if (Include.Globals.CurrentGameState == GameStatus.Playing) {
                 DrawPlaying(gameTime);
             }
 
@@ -185,7 +184,7 @@ namespace TowerDefense {
             double time = gameTime.ElapsedGameTime.TotalSeconds;
             DrawGameplayObjects();
 
-            if (IsPlacingTower) {
+            if (ActivePlayer.IsPlacingTower) {
                 DrawPendingTower();
             }
             WorldSpriteBatch.End();
@@ -227,16 +226,19 @@ namespace TowerDefense {
         /// Draw each element in DrawSet.
         /// </summary>
         private void DrawGameplayObjects() {
+            // Draw the box of all selected towers.
+            foreach(Tower t in ActivePlayer.SelectedTowers) {
+                t.DrawBoundingBox();
+            }
+
             // Gameplay Objects in the proper order.
             foreach (GameplayObject g in DrawSet) {
                 g.Draw();
             }
 
             // Draw firing ranges of all selected towers
-            foreach (Tower t in Towers) {
-                if (t.Selected) {
-                    t.DrawAttackRange();
-                }
+            foreach (Tower t in ActivePlayer.SelectedTowers) {
+                t.DrawAttackRange();
             }
         }
 
@@ -244,12 +246,12 @@ namespace TowerDefense {
         /// Draw a silhouette of the pending tower over the mouse's current location.  Draw it with a red tint if the target area is obstructed.
         /// </summary>
         protected void DrawPendingTower() {
-            Point drawSize = new Point(PendingTowerTemplate.SpriteWidth, PendingTowerTemplate.SpriteHeight);
+            Point drawSize = new Point(ActivePlayer.PendingTowerTemplate.SpriteWidth, ActivePlayer.PendingTowerTemplate.SpriteHeight);
             if (CursorIsOnMap()) { // Draw the tower so that it snaps to the hovered grid position.
                 Point placementPos = GetAreaStartPoint();
 
                 //Draw the tower to snap to the selected tiles
-                Tower projectedTower = new Tower(PendingTowerTemplate, placementPos);
+                Tower projectedTower = new Tower(ActivePlayer.PendingTowerTemplate, placementPos);
                 projectedTower.Draw();
 
                 //TODO: Check if the destination of this tower is obstructed, and change the tint accordingly
@@ -291,19 +293,19 @@ namespace TowerDefense {
         /// </summary>
         protected void DrawMap() {
             // Shade in the tiles within the camera's viewport based on tile draw mode.
-            if (TileMode == Include.TileDrawMode.Default) {
+            if (ActivePlayer.TileMode == TileDrawMode.Default) {
                 WorldMap.Draw();
-            } else if (TileMode == Include.TileDrawMode.HeatMap) {
+            } else if (ActivePlayer.TileMode == TileDrawMode.HeatMap) {
                 HeatMap.Draw();
-            } else if(TileMode == Include.TileDrawMode.HeatMapNumbers) {
+            } else if(ActivePlayer.TileMode == TileDrawMode.HeatMapNumbers) {
                 HeatMap.Draw(true);
             }
 
             // If the player is currently in placement mode, highlight the selected tiles.
-            if (IsPlacingTower && CursorIsOnMap()) {
+            if (ActivePlayer.IsPlacingTower && CursorIsOnMap()) {
                 Point pos = GetAreaStartPoint();
-                for (int y = pos.Y; y < pos.Y + PendingTowerTemplate.Height; y++) {
-                    for (int x = pos.X; x < pos.X + PendingTowerTemplate.Width; x++) {
+                for (int y = pos.Y; y < pos.Y + ActivePlayer.PendingTowerTemplate.Height; y++) {
+                    for (int x = pos.X; x < pos.X + ActivePlayer.PendingTowerTemplate.Width; x++) {
                         if (WorldMap.At(x, y).ObstructsTower()) {
                             WorldMap.At(x, y).Draw(Color.Red);
                         } else {
@@ -313,7 +315,7 @@ namespace TowerDefense {
                 }
             }
             // Overlay grid
-            if (GridToggle) {
+            if (ActivePlayer.GridToggle) {
                 DrawGrid();
             }
         }
