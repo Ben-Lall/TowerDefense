@@ -1,14 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static Include.GameState;
 using static Include.Globals;
-
-
 
 namespace TowerDefense {
     /// <summary>
@@ -18,6 +18,18 @@ namespace TowerDefense {
 
         public static String WorldSaveExtension { get => ".sav"; }
         public static String TempExtension { get => ".tmp"; }
+        public static CancellationTokenSource CTS = new CancellationTokenSource();
+
+
+        /// <summary>
+        /// Create a new thread and begin map generation.
+        /// </summary>
+        /// <param name="worldName">The name of the world.</param>
+        /// <param name="width">The width of the world, in units of tiles.</param>
+        /// <param name="height">The height of the world, in units of tiles.</param>
+        public static async void GenerateMap(String worldName, int width, int height) {
+            await Task.Run(() => WorldMap.GenerateMap(worldName, width, height), CTS.Token);
+        }
 
         /// <summary>
         /// Save the world map to a file.
@@ -29,7 +41,7 @@ namespace TowerDefense {
             String fileName = name + WorldSaveExtension;
             String tempFileName = fileName + TempExtension;
             // Build a temporary file from the current world map.
-            FileStream mapTemp = new FileStream(tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+            FileStream mapTemp = new FileStream(tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete);
             SaveWorldHeader(mapTemp, width, height);
             SaveTiles(mapTemp, width, height);
             SaveTowers(mapTemp);
@@ -86,10 +98,12 @@ namespace TowerDefense {
         /// <summary>
         /// Load the map of the given name.
         /// </summary>
-        public static void LoadMap(String name) {
+        public static async void LoadMap(String name) {
+            ActivePlayer = new Player(new Point(32000, 32000));
             FileStream f = new FileStream(name, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            InitializeGameState(f);
-            f.Dispose();
+            await Task.Run(() => InitializeGameState(f), CTS.Token);
+            DrawSet.Add(ActivePlayer);
+            Players.Add(ActivePlayer);
         }
 
         /// <summary>
@@ -120,6 +134,7 @@ namespace TowerDefense {
                     f.Read(bytes, 0, Tower.TowerDataSize);
                 }
             }
+            LoadProgress += 0.1f;
         }
 
         /// <summary>
@@ -154,5 +169,24 @@ namespace TowerDefense {
             return name + num;
         }
 
+        /// <summary>
+        /// Clear the directory of any temporary files.
+        /// </summary>
+        static void ClearTempFiles() {
+            String[] files = Directory.GetFiles(".", "*" + TempExtension);
+            foreach(String filePath in files) {
+                File.Delete(filePath);
+            }
+        }
+
+        /// <summary>
+        /// Abort the currently running load operation.  The aborted operation may be
+        /// a world generation operation or a world load operation.
+        /// </summary>
+        public static void AbortLoad() {
+            CTS.Cancel();
+            CurrentGameState = GameStatus.Title;
+            ClearTempFiles();
+        }
     }
 }

@@ -96,7 +96,6 @@ namespace TowerDefense {
             MaxHealth = 100;
             CurrentHealth = MaxHealth;
             Speed = 8;
-
             Camera = new Camera2d(Pos.ToVector2(), ScreenWidth, ScreenHeight);
             SelectedTowers = new List<Tower>();
 
@@ -212,6 +211,7 @@ namespace TowerDefense {
         /// Build the default UI elements for this player. 
         /// </summary>
         void BuildDefaultUI() {
+
             UIElements = new List<UIPanel>();
             // The towerPanel
             int menuPanelWidth = ScreenWidth / 8;

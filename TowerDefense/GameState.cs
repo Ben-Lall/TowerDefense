@@ -120,6 +120,11 @@ namespace Include {
         public static bool Paused { get; set; }
 
         /// <summary>
+        /// Whether the game is currently playing.
+        /// </summary>
+        public static bool Playing { get => CurrentGameState == GameStatus.Playing; }
+
+        /// <summary>
         /// The amount of time between monster spawns.  Measured in units of seconds.
         /// </summary>
         public static double SpawnRate { get; set; }
@@ -132,8 +137,9 @@ namespace Include {
         /// <summary>
         /// Initialize a new gamestate.
         /// </summary>
-        /// <param name="window"></param>
+        /// <param name="f">The file from which to load the gamestate.</param>
         public static void InitializeGameState(FileStream f) {
+            CurrentGameState = GameStatus.Loading;
             // Initialize collections.
             Towers = new List<Tower>();
             Monsters = new List<Monster>();
@@ -146,28 +152,42 @@ namespace Include {
             SpawnCooldown = 0;
 
             // Load data from file.
+            LoadProgress = 0;
             SaveManager.ReadHeader(f);
             HeatMap.Initialize();
+
+            LoadText = "Loading World";
             WorldMap.LoadFromFile(f);
+
+            LoadText = "Loading Towers";
             SaveManager.LoadTowers(f);
 
-            // Initialize ActivePlayer.
-            ActivePlayer = new Player(new Point(((MapWidth / 2) - 1) * TileWidth, ((MapHeight / 2) - 1) * TileHeight));
-            DrawSet.Add(ActivePlayer);
+            f.Dispose();
+            CurrentGameState = GameStatus.Playing;
         }
+
 
         /// <summary>
         /// Save and exit the currently GameState.
         /// </summary>
         public static void SaveAndExit() {
             SaveManager.SaveMap(WorldName, MapWidth, MapHeight);
+            ExitGame();
+
+        }
+
+        /// <summary>
+        /// Close the current game, clearing all data involved.
+        /// </summary>
+        public static void ExitGame() {
             // Clear collections
             Monsters.Clear();
             Towers.Clear();
             DrawSet.Clear();
             Effects.Clear();
             Players.Clear();
-            
+            ActivePlayer = null;
+
             // Reset to title
             CurrentGameState = GameStatus.Title;
         }

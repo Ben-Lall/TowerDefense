@@ -93,7 +93,6 @@ namespace TowerDefense {
                     Sprite.Draw(CenterPoint, WorldSpriteBatch);
                     break;
             }
-            
 
             if (CurrentHealth < MaxHealth) {
                 Rectangle healthBarBox = new Rectangle(CenterPoint + new Point(SpriteWidth / 6 + 1, SpriteHeight + 2), new Point(SpriteWidth * 2 / 3, 10));
@@ -107,7 +106,6 @@ namespace TowerDefense {
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime) {
             ((TowerSprite)Sprite).Update(gameTime, TowerAnimationType.Idle);
-
             Cooldown = Math.Max(0, Cooldown - gameTime.ElapsedGameTime.TotalSeconds);
             if (Cooldown == 0) {
                 Attack();

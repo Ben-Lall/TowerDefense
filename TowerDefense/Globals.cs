@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TowerDefense;
 
@@ -36,6 +38,8 @@ namespace Include {
         /// </summary>
         public static int ScreenHeight { get => Window.ClientBounds.Height; }
 
+        public static Point ScreenCenter { get => new Point(ScreenWidth / 2, ScreenHeight / 2); }
+
         /* Graphics */
 
         /// <summary>
@@ -53,6 +57,27 @@ namespace Include {
         /// </summary>
         public static GameStatus CurrentGameState;
 
+        /* Loading Screen information */
+
+        /// <summary>
+        /// The text to be displayed on the loading screen.
+        /// </summary>
+        public static String LoadText;
+
+        /// <summary>
+        /// The amount of progress the current load operation has made. Between 0 and 1 inclusive. 
+        /// </summary>
+        public static float LoadProgress;
+
+        /// <summary>
+        /// Whether or not the game has finished generating a world.
+        /// </summary>
+        public static bool DoneGenerating;
+
+        /// <summary>
+        /// Initialize globals.
+        /// </summary>
+        /// <param name="window"></param>
         public static void Initialize(GameWindow window) {
             Window = window;
             Input.PreviousMouseWheel = Mouse.GetState().ScrollWheelValue;
@@ -67,8 +92,6 @@ namespace Include {
             Graphics.ApplyChanges();
 
         }
-
-
 
         /** Constants **/
         public static double SQRT2 { get { return Math.Sqrt(2); } }

@@ -68,7 +68,10 @@ namespace TowerDefense {
                 }
                 TitleState.Update(gameTime);
             } else if (CurrentGameState == GameStatus.Loading) {
-
+                if (!TitleState.LoadingScreenInitialized) {
+                    TitleState.InitializeLoadingScreen();
+                }
+                TitleState.Update(gameTime);
             } else if (CurrentGameState == GameStatus.Playing) {
                 SortCollections();
                 UpdatePlaying(gameTime);
@@ -82,6 +85,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="gameTime"></param>
         void UpdatePlaying(GameTime gameTime) {
+
             if (!Paused) {
                 UpdateTowers(gameTime);
                 UpdateMonsters(gameTime);
@@ -160,11 +164,11 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Blue);
-            if (Include.Globals.CurrentGameState == GameStatus.Title) {
+            if (CurrentGameState == GameStatus.Title) {
                 TitleState.Draw();
-            } else if (Include.Globals.CurrentGameState == GameStatus.Loading) {
-
-            } else if (Include.Globals.CurrentGameState == GameStatus.Playing) {
+            } else if (CurrentGameState == GameStatus.Loading) {
+                TitleState.DrawLoadingScreen();
+            } else if (CurrentGameState == GameStatus.Playing) {
                 DrawPlaying(gameTime);
             }
 

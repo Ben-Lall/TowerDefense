@@ -56,6 +56,7 @@ namespace TowerDefense {
         /// <param name="width">The width of the world, in units of tiles.</param>
         /// <param name="height">The height of the world, in units of tiles.</param>
         public static void GenerateMap(String name, int width, int height) {
+            CurrentGameState = GameStatus.Loading;
             Map = new Tile[height, width];
             Random r = new Random();
 
@@ -71,21 +72,32 @@ namespace TowerDefense {
             seeds[(int)GeoType.Cave] = new Point(3 * width / 4, height / 4);
 
             // Initialize voronoi
+            LoadText = "Building biomes boundaries";
+            LoadProgress = 0;
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     voronoi[y, x] = GetClosestSeed(new Point(x, y), seeds);
                 }
+                LoadProgress += (1.0f / height) / 2;
             }
 
             // Set tiles.
+            LoadText = "Building Tilemap";
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     int ID = GetSpriteIDFromGeoType(voronoi[y, x], r);
                     Map[y, x] = new Tile(TileType.Open, x, y, voronoi[y, x], ID);
                 }
+                LoadProgress += (1.0f / height) / 2;
             }
 
+            LoadText = "Saving map";
             SaveManager.SaveMap(name, width, height);
+
+            CurrentGameState = GameStatus.Title;
+            LoadText = null;
+            LoadProgress = 0;
+            DoneGenerating = true;
         }
 
         /// <summary>
@@ -93,6 +105,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="f"></param>
         public static void LoadFromFile(FileStream f) {
+            float operationWorth = 0.9f;
             Map = new Tile[MapHeight, MapWidth];
 
             byte[] bytes = new byte[Tile.TileDataSize];
@@ -101,6 +114,7 @@ namespace TowerDefense {
                     f.Read(bytes, 0, Tile.TileDataSize);
                     Map[y, x] = Tile.LoadFromByteArray(x, y, bytes);
                 }
+                LoadProgress += operationWorth * ( 1.0f / MapHeight);
             }
         }
 

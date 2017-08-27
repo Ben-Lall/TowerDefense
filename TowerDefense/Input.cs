@@ -56,7 +56,7 @@ namespace TowerDefense {
         public static void HandleInput() {
             // Update mouseState
             MouseState mouseState = Mouse.GetState();
-            if(CurrentGameState == GameStatus.Title) {
+            if(CurrentGameState == GameStatus.Title || CurrentGameState == GameStatus.Loading) {
                 HandleTitleInput(mouseState);
             } else {
                 HandleGameInput(mouseState);
@@ -74,6 +74,16 @@ namespace TowerDefense {
             } else if (mouseState.LeftButton == ButtonState.Released) {
                 MousePressed = false;
             }
+
+            /** Keyboard handling **/
+
+            // Back/cancel
+            if (!BackPressed && Keyboard.GetState().IsKeyDown(Keys.Escape)) {
+                BackPressed = true;
+                TitleState.DropScreen();
+            } else if (Keyboard.GetState().IsKeyUp(Keys.Escape)) {
+                BackPressed = false;
+            }
         }
 
 
@@ -85,6 +95,9 @@ namespace TowerDefense {
             if (mouseState.LeftButton == ButtonState.Pressed && !MousePressed) {
                 HandleLeftMouseClick(mouseState);
                 MousePressed = true;
+                if (!Playing) {
+                    return;
+                }
             } else if (mouseState.LeftButton == ButtonState.Released) {
                 MousePressed = false;
             }
