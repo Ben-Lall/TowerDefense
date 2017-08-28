@@ -28,7 +28,7 @@ namespace TowerDefense {
         /// <param name="width">The width of the world, in units of tiles.</param>
         /// <param name="height">The height of the world, in units of tiles.</param>
         public static async void GenerateMap(String worldName, int width, int height) {
-            await Task.Run(() => WorldMap.GenerateMap(worldName, width, height), CTS.Token);
+            await Task.Run(() => WorldMap.GenerateMap(worldName, width, height, CTS.Token));
         }
 
         /// <summary>
@@ -101,9 +101,10 @@ namespace TowerDefense {
         public static async void LoadMap(String name) {
             ActivePlayer = new Player(new Point(32000, 32000));
             FileStream f = new FileStream(name, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            await Task.Run(() => InitializeGameState(f), CTS.Token);
+            await Task.Run(() => InitializeGameState(f, CTS.Token));
             DrawSet.Add(ActivePlayer);
             Players.Add(ActivePlayer);
+            f.Dispose();
         }
 
         /// <summary>
@@ -185,8 +186,13 @@ namespace TowerDefense {
         /// </summary>
         public static void AbortLoad() {
             CTS.Cancel();
+            CTS.Dispose();
+            CTS = new CancellationTokenSource();
+
             CurrentGameState = GameStatus.Title;
             ClearTempFiles();
+            LoadText = "";
+            LoadProgress = 0;
         }
     }
 }

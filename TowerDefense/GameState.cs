@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TowerDefense;
 using static Include.Globals;
@@ -138,8 +139,9 @@ namespace Include {
         /// Initialize a new gamestate.
         /// </summary>
         /// <param name="f">The file from which to load the gamestate.</param>
-        public static void InitializeGameState(FileStream f) {
+        public static void InitializeGameState(FileStream f, CancellationToken c) {
             CurrentGameState = GameStatus.Loading;
+            if (c.IsCancellationRequested) { return; }
             // Initialize collections.
             Towers = new List<Tower>();
             Monsters = new List<Monster>();
@@ -151,19 +153,24 @@ namespace Include {
             SpawnRate = 6.0;
             SpawnCooldown = 0;
 
+
+            if (c.IsCancellationRequested) { return; }
             // Load data from file.
             LoadProgress = 0;
             SaveManager.ReadHeader(f);
             HeatMap.Initialize();
 
+            if (c.IsCancellationRequested) { return; }
             LoadText = "Loading World";
             WorldMap.LoadFromFile(f);
 
+            if (c.IsCancellationRequested) { return; }
             LoadText = "Loading Towers";
             SaveManager.LoadTowers(f);
 
-            f.Dispose();
+            if (c.IsCancellationRequested) { return; }
             CurrentGameState = GameStatus.Playing;
+            
         }
 
 

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static Include.GameState;
 using static Include.Globals;
@@ -55,13 +56,16 @@ namespace TowerDefense {
         /// <param name="name">The name of the world.</param>
         /// <param name="width">The width of the world, in units of tiles.</param>
         /// <param name="height">The height of the world, in units of tiles.</param>
-        public static void GenerateMap(String name, int width, int height) {
+        /// <param name="c">Cancellation token for async operation.</param>
+        public static void GenerateMap(String name, int width, int height, CancellationToken c) {
             CurrentGameState = GameStatus.Loading;
             Map = new Tile[height, width];
             Random r = new Random();
 
             // Create a voronoi diagram to determine biome areas.
             GeoType[,] voronoi = new GeoType[height, width];
+
+            if (c.IsCancellationRequested) { return; }
 
             // Create a set of seeds.
             Point[] seeds = new Point[(int)GeoType.NumberOfGeoTypes];
@@ -71,10 +75,13 @@ namespace TowerDefense {
             seeds[(int)GeoType.Tundra] = new Point(width / 4, 3 * height / 4);
             seeds[(int)GeoType.Cave] = new Point(3 * width / 4, height / 4);
 
+
             // Initialize voronoi
             LoadText = "Building biomes boundaries";
             LoadProgress = 0;
             for (int y = 0; y < height; y++) {
+                if (c.IsCancellationRequested) { return; }
+
                 for (int x = 0; x < width; x++) {
                     voronoi[y, x] = GetClosestSeed(new Point(x, y), seeds);
                 }
@@ -82,22 +89,28 @@ namespace TowerDefense {
             }
 
             // Set tiles.
-            LoadText = "Building Tilemap";
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    int ID = GetSpriteIDFromGeoType(voronoi[y, x], r);
-                    Map[y, x] = new Tile(TileType.Open, x, y, voronoi[y, x], ID);
+            if (!c.IsCancellationRequested) {
+                LoadText = "Building Tilemap";
+                for (int y = 0; y < height; y++) {
+                    if (c.IsCancellationRequested) { return; }
+
+                    for (int x = 0; x < width; x++) {
+                        int ID = GetSpriteIDFromGeoType(voronoi[y, x], r);
+                        Map[y, x] = new Tile(TileType.Open, x, y, voronoi[y, x], ID);
+                    }
+                    LoadProgress += (1.0f / height) / 2;
                 }
-                LoadProgress += (1.0f / height) / 2;
             }
 
-            LoadText = "Saving map";
-            SaveManager.SaveMap(name, width, height);
+            if (!c.IsCancellationRequested) {
+                LoadText = "Saving map";
+                SaveManager.SaveMap(name, width, height);
 
-            CurrentGameState = GameStatus.Title;
-            LoadText = null;
-            LoadProgress = 0;
-            DoneGenerating = true;
+                CurrentGameState = GameStatus.Title;
+                LoadText = null;
+                LoadProgress = 0;
+                DoneGenerating = true;
+            }
         }
 
         /// <summary>
