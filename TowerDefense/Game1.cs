@@ -164,6 +164,8 @@ namespace TowerDefense {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Blue);
+            UISpriteBatch.Begin();
+
             if (CurrentGameState == GameStatus.Title) {
                 TitleState.Draw();
             } else if (CurrentGameState == GameStatus.Loading) {
@@ -172,6 +174,7 @@ namespace TowerDefense {
                 DrawPlaying(gameTime);
             }
 
+            UISpriteBatch.End();
             base.Draw(gameTime);
         }
 
@@ -201,10 +204,8 @@ namespace TowerDefense {
             BoltSpriteBatch.End();
 
             /* Draw UI elements */
-            UISpriteBatch.Begin();
             ActivePlayer.DrawUI();
             DrawDebug();
-            UISpriteBatch.End();
         }
 
         /// <summary>

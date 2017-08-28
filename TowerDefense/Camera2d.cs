@@ -18,15 +18,23 @@ namespace TowerDefense {
 
         public int Width { get; set; }
         public int Height { get; set; }
+
+        private int _mapWidth {get; set;}
+        public int MapWidth { get => _mapWidth == 0 ? Include.GameState.MapWidth : _mapWidth; }
+
+        private int _mapHeight { get; set; }
+        public int MapHeight { get => _mapHeight == 0 ? Include.GameState.MapHeight : _mapHeight; }
         /// <summary>
         /// Pixel Position of the top-left corner of the camera.
         /// </summary>
         public Point Pos {
-            get { return new Point(MathHelper.Clamp((int)pos.X - Width / 2, 0, MapWidth * TileWidth - Width), MathHelper.Clamp((int)pos.Y - Height / 2, 0, MapHeight * TileHeight - Height)); }
+            get { return new Point(MathHelper.Clamp((int)pos.X - Width / 2, 0, CameraMaxX), MathHelper.Clamp((int)pos.Y - Height / 2, 0, CameraMaxY)); }
         }
         protected float Rotation { get; set; } // Camera Rotation
         public int ViewPortHeight { get => TileHeight * Height; }
         public int ViewPortWidth { get => TileWidth * Width; }
+        public int CameraMaxX { get => MapWidth * TileWidth - Width; }
+        public int CameraMaxY { get => MapHeight * TileHeight - Height; }
         public Point CameraStart { get => new Point(Pos.X, Pos.Y); }
         public Point CameraTileStart { get => new Point(CameraStart.X / TileWidth, CameraStart.Y / TileHeight); }
         public Point CameraHeatStart { get => new Point(CameraStart.X / HeatMap.HeatTileWidth, CameraStart.Y / HeatMap.HeatTileHeight); }
@@ -44,6 +52,17 @@ namespace TowerDefense {
         /// Create a new camera centered at the given position.
         /// </summary>
         /// <param name="pos">Centerpoint of this camera</param>
+        public Camera2d(Vector2 pos, int width, int height, int mapWidth, int mapHeight) {
+            zoom = 1.0f;
+            Rotation = 0.0f;
+            Width = width;
+            Height = height;
+            _mapWidth = mapWidth;
+            _mapHeight = mapHeight;
+            this.pos = pos;
+            Move(new Vector2(0, 0)); // Align the camera to the acceptable boundaries.
+        }
+
         public Camera2d(Vector2 pos, int width, int height) {
             zoom = 1.0f;
             Rotation = 0.0f;

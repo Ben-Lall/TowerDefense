@@ -93,7 +93,7 @@ namespace TowerDefense {
         /// </summary>
         /// <param name="tint">The color</param>
         public void Draw(Color tint) {
-            WorldSpriteBatch.Draw(Art.TileSet, new Rectangle((X * TileWidth), (Y * TileHeight), TileWidth, TileHeight), Art.GetSourceRectangle(WorldMap.At(X, Y).SpriteId), tint);
+            WorldSpriteBatch.Draw(Art.TileSet, new Rectangle((X * TileWidth), (Y * TileHeight), TileWidth, TileHeight), Art.GetSourceRectangle(SpriteId), tint);
         }
 
         /// <summary>

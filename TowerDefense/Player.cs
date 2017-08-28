@@ -131,7 +131,7 @@ namespace TowerDefense {
             aMap.Update();
             // Using the input direction, move the map or the player depending on what's active.
             if (MapOverlayToggled) {
-                aMap.PanCamera(Direction);
+                aMap.PanCamera(Direction, gameTime);
                 ((CreatureSprite)Sprite).Update(gameTime, Vector2.Zero);
             } else {
                 ((CreatureSprite)Sprite).Update(gameTime, Direction);

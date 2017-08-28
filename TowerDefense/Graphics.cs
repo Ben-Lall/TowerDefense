@@ -1,4 +1,4 @@
-﻿using static Include.GameState;
+﻿using static Include.Globals;
 using System;
 using System.Collections.Generic;
 using System.Linq;

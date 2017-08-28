@@ -33,6 +33,11 @@ namespace TowerDefense {
         private static Tile[,] Map;
 
         /// <summary>
+        /// Gives a random valid GeoType.
+        /// </summary>
+        public static GeoType RandomGeoType {get => (GeoType)(new Random().Next(1, (int)(GeoType.NumberOfGeoTypes - 1))); }
+
+        /// <summary>
         /// Get the tile at the given point.
         /// </summary>
         /// <param name="p"></param>
@@ -137,7 +142,7 @@ namespace TowerDefense {
         /// <param name="gt">Geography type.</param>
         /// <param name="r">Random number generator.  Passed in to reduce this function's overhead.</param>
         /// <returns></returns>
-        static int GetSpriteIDFromGeoType(GeoType gt, Random r) {
+        public static int GetSpriteIDFromGeoType(GeoType gt, Random r) {
             double rand = r.NextDouble();
             int offset = 0;
 

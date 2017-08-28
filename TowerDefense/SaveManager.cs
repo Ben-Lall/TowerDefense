@@ -101,9 +101,13 @@ namespace TowerDefense {
         public static async void LoadMap(String name) {
             ActivePlayer = new Player(new Point(32000, 32000));
             FileStream f = new FileStream(name, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            await Task.Run(() => InitializeGameState(f, CTS.Token));
-            DrawSet.Add(ActivePlayer);
-            Players.Add(ActivePlayer);
+            CancellationToken c = CTS.Token;
+            await Task.Run(() => InitializeGameState(f, c));
+            if(!c.IsCancellationRequested) {
+                DrawSet.Add(ActivePlayer);
+                Players.Add(ActivePlayer);
+                TitleState.Initialized = false;
+            }
             f.Dispose();
         }
 

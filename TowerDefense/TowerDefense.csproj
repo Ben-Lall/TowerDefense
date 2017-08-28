@@ -54,6 +54,7 @@
     <Compile Include="EnglishSort.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Input.cs" />
+    <Compile Include="SampleMap.cs" />
     <Compile Include="SaveManager.cs" />
     <Compile Include="Title.cs" />
     <Compile Include="UIPanel.cs" />

@@ -15,23 +15,6 @@ using static Include.Globals;
 namespace Include {
     static class GameState {
 
-        /* SpriteBatches */
-
-        /// <summary>
-        /// SpriteBatch containing details of drawing creatures and map features.
-        /// </summary>
-        public static SpriteBatch WorldSpriteBatch { get; set; }
-
-        /// <summary>
-        /// SpriteBatch containing details of drawing UI elements.
-        /// </summary>
-        public static SpriteBatch UISpriteBatch { get; set; }
-
-        /// <summary>
-        /// SpriteBatch containing details of Bolt Effects.
-        /// </summary>
-        public static SpriteBatch BoltSpriteBatch { get; set; }
-
         /* Input */
 
         /// <summary>
@@ -180,7 +163,6 @@ namespace Include {
         public static void SaveAndExit() {
             SaveManager.SaveMap(WorldName, MapWidth, MapHeight);
             ExitGame();
-
         }
 
         /// <summary>

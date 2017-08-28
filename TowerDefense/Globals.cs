@@ -16,6 +16,23 @@ namespace Include {
     /// A class containing global variables and helper methods.
     /// </summary>
     static class Globals {
+        /* SpriteBatches */
+
+        /// <summary>
+        /// SpriteBatch containing details of drawing creatures and map features.
+        /// </summary>
+        public static SpriteBatch WorldSpriteBatch { get; set; }
+
+        /// <summary>
+        /// SpriteBatch containing details of drawing UI elements.
+        /// </summary>
+        public static SpriteBatch UISpriteBatch { get; set; }
+
+        /// <summary>
+        /// SpriteBatch containing details of Bolt Effects.
+        /// </summary>
+        public static SpriteBatch BoltSpriteBatch { get; set; }
+
         /* System */
 
         /// <summary>
@@ -39,6 +56,9 @@ namespace Include {
         public static int ScreenHeight { get => Window.ClientBounds.Height; }
 
         public static Point ScreenCenter { get => new Point(ScreenWidth / 2, ScreenHeight / 2); }
+
+        public static int MaxScreenHeight { get => 1080; }
+        public static int MaxScreenWidth { get => 1920; }
 
         /* Graphics */
 

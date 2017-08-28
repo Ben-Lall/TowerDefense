@@ -36,6 +36,12 @@ namespace TowerDefense {
         static Rectangle DefaultPanelBounds { get => new Rectangle(2 * ScreenWidth / 5, ScreenHeight / 3, ScreenWidth / 5, ScreenHeight / 3); }
         static UIPanel DefaultUIPanel { get => new UIPanel(Art.MenuPanel, DefaultPanelBounds, UIType.Menu, DefaultPanelBounds.Height / 6); }
 
+        /* Sample World data */
+
+        /// <summary>
+        /// The sample map.
+        /// </summary>
+        static SampleMap Sample;
 
         /// <summary>
         /// Initialize the title screen.
@@ -44,6 +50,9 @@ namespace TowerDefense {
             ScreenList = new List<UIPanel>();
             Initialized = true;
             WorldName = null;
+            GeoType SampleType = WorldMap.RandomGeoType;
+            Sample = new SampleMap();
+
             LoadTitleScreen();
         }
 
@@ -124,19 +133,16 @@ namespace TowerDefense {
         /// Draw the title screen.
         /// </summary>
         public static void Draw() {
-            UISpriteBatch.Begin();
+            Sample.Draw();
             CurrentScreen.Draw(UISpriteBatch);
-            UISpriteBatch.End();
         }
 
         /// <summary>
         /// Draw the current loading screen.
         /// </summary>
         public static void DrawLoadingScreen() {
-            UISpriteBatch.Begin();
-            CurrentScreen.Draw(UISpriteBatch);
+            Draw();
             DrawLoadingProgress();
-            UISpriteBatch.End();
         }
 
         /// <summary>
@@ -175,6 +181,7 @@ namespace TowerDefense {
                 DropScreen();
                 LoadPlayScreen();
             }
+            Sample.Update(gameTime);
             Input.HandleInput();
         }
 
@@ -182,7 +189,6 @@ namespace TowerDefense {
         /// Close the title screen and load the chosen world.
         /// </summary>
         private static void BeginPlay(String worldName) {
-            Initialized = false;
             WorldName = worldName.Substring(0, worldName.IndexOf('.'));
             SaveManager.LoadMap(worldName);
         }
