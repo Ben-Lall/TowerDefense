@@ -28,7 +28,16 @@ namespace TowerDefense {
         /// <param name="width">The width of the world, in units of tiles.</param>
         /// <param name="height">The height of the world, in units of tiles.</param>
         public static async void GenerateMap(String worldName, int width, int height) {
-            await Task.Run(() => WorldMap.GenerateMap(worldName, width, height, CTS.Token));
+            CurrentGameState = GameStatus.Loading;
+            Map = await Task.Run(() => WorldMap.GenerateMap(worldName, width, height, CTS.Token));
+            if (DoneGenerating) {
+                LoadText = "Saving map";
+                SaveMap(worldName, width, height);
+                DoneGenerating = false;
+            }
+            LoadText = null;
+            LoadProgress = 0;
+            CurrentGameState = GameStatus.Title;
         }
 
         /// <summary>

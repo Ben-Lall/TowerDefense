@@ -16,12 +16,12 @@ namespace TowerDefense {
         /// <summary>
         /// The list of UI Panels for the title screen.
         /// </summary>
-        public static List<UIPanel> ScreenList;
+        public static Stack<UIPanel> ScreenList;
 
         /// <summary>
         /// The currently displaying screen of the menu.
         /// </summary>
-        public static UIPanel CurrentScreen { get => ScreenList.Last(); }
+        public static UIPanel CurrentScreen { get => ScreenList.Peek(); }
 
         /// <summary>
         /// Whether or not the title screen has been initialized.
@@ -47,7 +47,7 @@ namespace TowerDefense {
         /// Initialize the title screen.
         /// </summary>
         public static void Initialize() {
-            ScreenList = new List<UIPanel>();
+            ScreenList = new Stack<UIPanel>();
             Initialized = true;
             WorldName = null;
             GeoType SampleType = WorldMap.RandomGeoType;
@@ -62,7 +62,7 @@ namespace TowerDefense {
         public static void InitializeLoadingScreen() {
             LoadingScreenInitialized = true;
             UIPanel screen = DefaultUIPanel;
-            ScreenList.Add(screen);
+            ScreenList.Push(screen);
             AddCancelButton();
         }
 
@@ -71,7 +71,7 @@ namespace TowerDefense {
         /// </summary>
         static void LoadTitleScreen() {
             UIPanel screen = DefaultUIPanel;
-            ScreenList.Add(screen);
+            ScreenList.Push(screen);
             screen.AddButton(new Button("Play", Art.MenuPanel, LoadPlayScreen));
         }
 
@@ -80,7 +80,7 @@ namespace TowerDefense {
         /// </summary>
         static void LoadPlayScreen() {
             UIPanel screen = DefaultUIPanel;
-            ScreenList.Add(screen);
+            ScreenList.Push(screen);
             screen.AddButton(new Button("Create New World", Art.MenuPanel, () => SaveManager.GenerateMap(SaveManager.NextDefaultWorldName(), 2000, 2000)));
             Color loadTextColor = SaveManager.HasLoadableWorlds() ? Color.Black : Color.Gray;
             screen.AddButton(new Button("Load World", loadTextColor, Art.MenuPanel, LoadWorldSelectScreen));
@@ -112,7 +112,7 @@ namespace TowerDefense {
         static void LoadWorldSelectScreen() {
             if(SaveManager.HasLoadableWorlds()) {
                 UIPanel screen = DefaultUIPanel;
-                ScreenList.Add(screen);
+                ScreenList.Push(screen);
                 foreach (String fileName in SaveManager.ListLoadableWorlds()) {
                     screen.AddButton(new Button(fileName.Substring(0, fileName.IndexOf('.')), Art.MenuPanel, () => BeginPlay(fileName)));
                 }
@@ -125,7 +125,7 @@ namespace TowerDefense {
         /// </summary>
         public static void DropScreen() {
             if(CurrentGameState != GameStatus.Loading && ScreenList.Count > 1) {
-                ScreenList.RemoveRange(ScreenList.Count - 1, 1);
+                ScreenList.Pop();
             }
         }
 
@@ -176,11 +176,7 @@ namespace TowerDefense {
                 LoadingScreenInitialized = false;
                 DropScreen();
             }
-            if(DoneGenerating) {
-                DoneGenerating = false;
-                DropScreen();
-                LoadPlayScreen();
-            }
+
             Sample.Update(gameTime);
             Input.HandleInput();
         }

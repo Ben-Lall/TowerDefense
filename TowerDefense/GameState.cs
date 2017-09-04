@@ -62,6 +62,11 @@ namespace Include {
         public static String WorldName { get; set; }
 
         /// <summary>
+        /// The representation of the map, as a 2d array of Tiles.
+        /// </summary>
+        public static Tile[,] Map;
+
+        /// <summary>
         /// Integer representing the width of the game map, measured in units of tiles.
         /// </summary>
         public static int MapWidth { get; set; }
