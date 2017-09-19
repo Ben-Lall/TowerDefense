@@ -80,7 +80,7 @@ namespace TowerDefense {
             // Back/cancel
             if (!BackPressed && Keyboard.GetState().IsKeyDown(Keys.Escape)) {
                 BackPressed = true;
-                TitleState.DropScreen();
+                TitleState.Back();
             } else if (Keyboard.GetState().IsKeyUp(Keys.Escape)) {
                 BackPressed = false;
             }

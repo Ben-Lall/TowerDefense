@@ -29,8 +29,9 @@ namespace TowerDefense {
         /// <param name="height">The height of the world, in units of tiles.</param>
         public static async void GenerateMap(String worldName, int width, int height) {
             CurrentGameState = GameStatus.Loading;
-            Map = await Task.Run(() => WorldMap.GenerateMap(worldName, width, height, CTS.Token));
-            if (DoneGenerating) {
+            CancellationToken c = CTS.Token;
+            Map = await Task.Run(() => WorldMap.GenerateMap(worldName, width, height, c));
+            if (!c.IsCancellationRequested) {
                 LoadText = "Saving map";
                 SaveMap(worldName, width, height);
                 DoneGenerating = false;
@@ -115,8 +116,13 @@ namespace TowerDefense {
             if(!c.IsCancellationRequested) {
                 DrawSet.Add(ActivePlayer);
                 Players.Add(ActivePlayer);
+                WorldName = name.Substring(0, name.IndexOf('.'));
                 TitleState.Initialized = false;
+            } else {
+                CurrentGameState = GameStatus.Title;
             }
+            LoadText = null;
+            LoadProgress = 0;
             f.Dispose();
         }
 
@@ -198,14 +204,11 @@ namespace TowerDefense {
         /// a world generation operation or a world load operation.
         /// </summary>
         public static void AbortLoad() {
+            LoadText = "Cancelling";
             CTS.Cancel();
             CTS.Dispose();
             CTS = new CancellationTokenSource();
-
-            CurrentGameState = GameStatus.Title;
             ClearTempFiles();
-            LoadText = "";
-            LoadProgress = 0;
         }
     }
 }

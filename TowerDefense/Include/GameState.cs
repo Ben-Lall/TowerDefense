@@ -141,7 +141,6 @@ namespace Include {
             SpawnRate = 6.0;
             SpawnCooldown = 0;
 
-
             if (c.IsCancellationRequested) { return; }
             // Load data from file.
             LoadProgress = 0;

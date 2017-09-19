@@ -100,8 +100,7 @@ namespace TowerDefense {
         public void PanCamera(Vector2 direction, GameTime gameTime) {
             if(!direction.Equals(Vector2.Zero)) {
                 Panning = true;
-                AutoMapCamera.Move(new Vector2((float)Math.Round(direction.X) * AutoMapTileSize.X / 4 * (float)gameTime.ElapsedGameTime.TotalSeconds, 
-                    (float)Math.Round(direction.Y) * AutoMapTileSize.Y / 4 * (float)gameTime.ElapsedGameTime.TotalSeconds));
+                AutoMapCamera.Move(new Vector2((float)Math.Round(direction.X) * AutoMapTileSize.X, (float)Math.Round(direction.Y) * AutoMapTileSize.Y));
             }
         }
 

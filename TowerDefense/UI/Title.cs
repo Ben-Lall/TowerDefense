@@ -41,7 +41,7 @@ namespace TowerDefense {
         /// <summary>
         /// The sample map.
         /// </summary>
-        static SampleMap Sample;
+        static SampleMap Background;
 
         /// <summary>
         /// Initialize the title screen.
@@ -51,7 +51,7 @@ namespace TowerDefense {
             Initialized = true;
             WorldName = null;
             GeoType SampleType = WorldMap.RandomGeoType;
-            Sample = new SampleMap();
+            Background = new SampleMap();
 
             LoadTitleScreen();
         }
@@ -81,10 +81,18 @@ namespace TowerDefense {
         static void LoadPlayScreen() {
             UIPanel screen = DefaultUIPanel;
             ScreenList.Push(screen);
-            screen.AddButton(new Button("Create New World", Art.MenuPanel, () => SaveManager.GenerateMap(SaveManager.NextDefaultWorldName(), 2000, 2000)));
+            screen.AddButton(new Button("Create New World", Art.MenuPanel, LoadCreateWorldScreen));
             Color loadTextColor = SaveManager.HasLoadableWorlds() ? Color.Black : Color.Gray;
             screen.AddButton(new Button("Load World", loadTextColor, Art.MenuPanel, LoadWorldSelectScreen));
             AddBackButton();
+        }
+
+        /// <summary>
+        /// Load the create world screen.
+        /// </summary>
+        static void LoadCreateWorldScreen() {
+            // Currently, just directly creates a new world.
+            SaveManager.GenerateMap(SaveManager.NextDefaultWorldName(), 2000, 2000);
         }
 
         /// <summary>
@@ -106,6 +114,24 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Add a new world button to the current screen.
+        /// </summary>
+        static void AddNewWorldButton() {
+            Button newWorldButton = new Button("New World", Art.MenuPanel, LoadCreateWorldScreen);
+            Point offset = new Point((CurrentScreen.Bounds.Width - newWorldButton.Width - 4) / 2, CurrentScreen.Bounds.Height - newWorldButton.Height - 4);
+            CurrentScreen.AddButton(newWorldButton, offset);
+        }
+
+        /// <summary>
+        /// Add a refresh button to the current screen.
+        /// </summary>
+        static void AddRefreshButton() {
+            Button refreshButton = new Button("Refresh", Art.MenuPanel, RefreshWorldSelectScreen);
+            Point offset = new Point(CurrentScreen.Bounds.Width - refreshButton.Width - 4, CurrentScreen.Bounds.Height - refreshButton.Height - 4);
+            CurrentScreen.AddButton(refreshButton, offset);
+        }
+
+        /// <summary>
         /// Display a list of loadable worlds and provide buttons to load them.
         /// If there are no loadable worlds, do nothing.
         /// </summary>
@@ -118,6 +144,16 @@ namespace TowerDefense {
                 }
             }
             AddBackButton();
+            AddNewWorldButton();
+            AddRefreshButton();
+        }
+
+        /// <summary>
+        /// Refresh the world select screen.  Assumes the world select screen is the active screen.
+        /// </summary>
+        static void RefreshWorldSelectScreen() {
+            DropScreen();
+            LoadWorldSelectScreen();
         }
 
         /// <summary>
@@ -130,10 +166,21 @@ namespace TowerDefense {
         }
 
         /// <summary>
+        /// Perform the back action, whatever it may be.
+        /// </summary>
+        public static void Back() {
+            if(CurrentGameState == GameStatus.Loading) {
+                SaveManager.AbortLoad();
+            } else {
+                DropScreen();
+            }
+        }
+
+        /// <summary>
         /// Draw the title screen.
         /// </summary>
         public static void Draw() {
-            Sample.Draw();
+            Background.Draw();
             CurrentScreen.Draw(UISpriteBatch);
         }
 
@@ -177,7 +224,7 @@ namespace TowerDefense {
                 DropScreen();
             }
 
-            Sample.Update(gameTime);
+            Background.Update(gameTime);
             Input.HandleInput();
         }
 
@@ -185,7 +232,6 @@ namespace TowerDefense {
         /// Close the title screen and load the chosen world.
         /// </summary>
         private static void BeginPlay(String worldName) {
-            WorldName = worldName.Substring(0, worldName.IndexOf('.'));
             SaveManager.LoadMap(worldName);
         }
     }
